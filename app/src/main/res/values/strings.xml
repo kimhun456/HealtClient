@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">HealthClient</string>
+    <string name="title_activity_draw">DrawActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="bluetooth_settings">Bluetooth</string>
+    <string name="insulin_value">No data</string>
+</resources>
