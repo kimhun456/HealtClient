@@ -23,8 +23,8 @@
             android:name=".data.HealthContentProvider"
             android:authorities="org.swmem.healthclient"
             android:enabled="true"
-            android:exported="true">
-        </provider>
+            android:exported="true"></provider>
+
     </application>
 
 </manifest>

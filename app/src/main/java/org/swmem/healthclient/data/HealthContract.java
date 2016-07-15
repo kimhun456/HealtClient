@@ -42,7 +42,6 @@ public class HealthContract {
     // looking at weather data. content://com.example.android.sunshine.app/givemeroot/ will fail,
     // as the ContentProvider hasn't been given any information on what to do with "givemeroot".
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
-    public static final String Insulin = "insulin";
     public static final String PATH_INSULIN = "insulin";
 
     // To make it easy to query for the exact date, we normalize all dates that go into
@@ -65,14 +64,17 @@ public class HealthContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_INSULIN).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + Insulin;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_INSULIN;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + Insulin;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_INSULIN;
 
         // Table name
         public static final String TABLE_NAME = "insulin";
 
-        public static final String COLUMN_VALUE = "value";
+        public static final String COLUMN_GLUCOSE_VALUE = "glucose";
+        public static final String COLUMN_TEMPERATURE_VALUE = "temperature";
+        public static final String COLUMN_RAW_VALUE = "raw";
+        public static final String COLUMN_DEVICE_ID = "device_id";
         public static final String COLUMN_TIME = "time";
         public static final String COLUMN_TYPE = "type";
 
@@ -80,5 +82,7 @@ public class HealthContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
+
+
 
 }

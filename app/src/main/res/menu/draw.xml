@@ -7,12 +7,12 @@
         android:id="@+id/nfc_menu"
         android:orderInCategory="100"
         android:icon="@mipmap/ic_nfc"
-        android:title="@string/bluetooth_settings"
-        app:showAsAction="always" />
+        android:title="@string/NFC_settings"
+        app:showAsAction="never" />
     <item
         android:id="@+id/bluetooth_menu"
         android:orderInCategory="100"
         android:icon="@mipmap/ic_bluetooth"
         android:title="@string/bluetooth_settings"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 </menu>

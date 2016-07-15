@@ -1,10 +1,15 @@
 <resources>
-    <string name="app_name">HealthClient</string>
-    <string name="title_activity_draw">DrawActivity</string>
+    <string name="app_name">GLUCARE</string>
+    <string name="title_activity_draw">Main</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="user_name">SAMSUNG</string>
+    <string name="user_email">asdf@samsung.com</string>
 
     <string name="bluetooth_settings">Bluetooth</string>
+    <string name="information_setting">Information</string>
+    <string name="NFC_settings">NFC</string>
     <string name="insulin_value">No data</string>
+    <string name="setting">Settings</string>
 </resources>

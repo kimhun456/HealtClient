@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/insulin_value"
-        android:id="@+id/value"
+        android:id="@+id/lastValueText"
         android:layout_gravity="center_horizontal" />
 
     <com.github.mikephil.charting.charts.LineChart

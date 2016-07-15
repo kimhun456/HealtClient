@@ -25,9 +25,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class HealthDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
-    static final String DATABASE_NAME = "health.db";
+    static final String DATABASE_NAME = "glucare.db";
 
     public HealthDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -39,7 +39,10 @@ public class HealthDbHelper extends SQLiteOpenHelper {
         // location setting, the city name, and the latitude and longitude
         final String SQL_CREATE_INSULIN_TABLE = "CREATE TABLE " + HealthContract.InsulinEntry.TABLE_NAME + " (" +
                 HealthContract.InsulinEntry._ID + " INTEGER PRIMARY KEY," +
-                HealthContract.InsulinEntry.COLUMN_VALUE + " INTEGER NOT NULL, " +
+                HealthContract.InsulinEntry.COLUMN_RAW_VALUE + " REAL NOT NULL, " +
+                HealthContract.InsulinEntry.COLUMN_GLUCOSE_VALUE + " REAL NOT NULL, " +
+                HealthContract.InsulinEntry.COLUMN_TEMPERATURE_VALUE + " REAL NOT NULL, " +
+                HealthContract.InsulinEntry.COLUMN_DEVICE_ID + " TEXT NOT NULL, " +
                 HealthContract.InsulinEntry.COLUMN_TYPE + " TEXT NOT NULL, " +
                 HealthContract.InsulinEntry.COLUMN_TIME + " INTEGER NOT NULL " +
                 " );";
