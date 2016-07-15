@@ -15,14 +15,12 @@ import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import org.swmem.healthclient.data.HealthContract;
 
-public class DrawActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    TextView lastValueText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,23 +37,13 @@ public class DrawActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        lastValueText = (TextView)findViewById(R.id.lastValueText);
 
-
-        ContentResolver contentResolver = getContentResolver();
-        Cursor cursor = contentResolver.query(HealthContract.InsulinEntry.CONTENT_URI,null,null,null,null);
-
-        try{
-
-
-            if(cursor.moveToLast()){
-                int index = cursor.getColumnIndex(HealthContract.InsulinEntry.COLUMN_RAW_VALUE);
-                lastValueText.setText(Double.toString(cursor.getDouble(index)));
-            }
-
-        } finally {
-            cursor.close();
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new BluetoothFragment(), null)
+                    .commit();
         }
+
 
     }
 
@@ -78,14 +66,17 @@ public class DrawActivity extends AppCompatActivity
         contentResolver.insert(HealthContract.InsulinEntry.CONTENT_URI,contentValues);
         Cursor cursor = getContentResolver().query(HealthContract.InsulinEntry.CONTENT_URI,null,null,null,null);
 
-        try {
-            while (cursor.moveToNext()) {
-                int index = cursor.getColumnIndex(HealthContract.InsulinEntry.COLUMN_RAW_VALUE);
-                Log.e("hi", Integer.toString(cursor.getInt(index)));
+        if(cursor != null) {
+            try {
+                while (cursor.moveToNext()) {
+                    int index = cursor.getColumnIndex(HealthContract.InsulinEntry.COLUMN_RAW_VALUE);
+                    Log.e("hi", Integer.toString(cursor.getInt(index)));
+                }
+            } finally {
+                cursor.close();
             }
-        } finally {
-            cursor.close();
         }
+
 
     }
 
