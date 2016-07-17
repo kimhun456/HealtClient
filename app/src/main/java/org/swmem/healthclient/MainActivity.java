@@ -21,6 +21,8 @@ import org.swmem.healthclient.data.HealthContract;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private final String BLEUTOOTH_FRAGMENT_TAG = "BluetoothFragment";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,15 +42,12 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new BluetoothFragment(), null)
+                    .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
                     .commit();
         }
 
 
     }
-
-
-
 
     public void insertDummyData(double value){
 
@@ -80,7 +79,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -94,7 +92,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.draw, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
