@@ -5,9 +5,13 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.swmem.healthclient.data.HealthContract;
 
@@ -24,6 +28,7 @@ public class BluetoothFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -54,12 +59,37 @@ public class BluetoothFragment extends Fragment {
 
         }
 
-
-
-
         // Inflate the layout for this fragment
         return rootView;
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
+        inflater.inflate(R.menu.bluetooth, menu);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+
+        //noinspection SimplifiableIfStatement
+
+        switch (id){
+            case R.id.scan:
+
+                Toast.makeText(getActivity().getBaseContext(),"scan",Toast.LENGTH_LONG).show();
+
+                break;
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }

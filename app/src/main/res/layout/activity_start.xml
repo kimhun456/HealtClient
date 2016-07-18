@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="30dp"
+    android:background="@drawable/background"
+    tools:context="org.swmem.healthclient.StartActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:layout_weight="7">
+
+        <TextView
+            android:typeface="sans"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:id="@+id/title_text"
+            android:textSize="40sp"
+            android:text="@string/app_name"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/start_bluetooth_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/bluetooth"
+            android:background="@color/deep_blue"
+            android:paddingLeft="10dp"
+            android:textColor="@color/white"
+            android:text="@string/bluetooth_settings"/>
+
+        <Button
+            android:id="@+id/start_nfc_button"
+            android:layout_marginTop="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/nfc"
+            android:paddingLeft="10dp"
+            android:background="@color/deep_orange"
+            android:textColor="@color/white"
+            android:text="@string/NFC_settings"/>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
