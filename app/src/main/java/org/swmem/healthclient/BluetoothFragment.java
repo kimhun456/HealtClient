@@ -42,14 +42,14 @@ public class BluetoothFragment extends Fragment {
 
 
         ContentResolver contentResolver = getActivity().getContentResolver();
-        Cursor cursor = contentResolver.query(HealthContract.InsulinEntry.CONTENT_URI,null,null,null,null);
+        Cursor cursor = contentResolver.query(HealthContract.GlucoseEntry.CONTENT_URI,null,null,null,null);
 
 
         if (cursor != null) {
             try{
 
                 if(cursor.moveToLast()){
-                    int index = cursor.getColumnIndex(HealthContract.InsulinEntry.COLUMN_RAW_VALUE);
+                    int index = cursor.getColumnIndex(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE);
                     lastValueText.setText(Double.toString(cursor.getDouble(index)));
                 }
 

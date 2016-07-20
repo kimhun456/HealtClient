@@ -86,20 +86,20 @@ public class MainActivity extends AppCompatActivity
         Log.d("TIME TEST", Long.toString(time.toMillis(false)));
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put(HealthContract.InsulinEntry.COLUMN_TYPE,HealthContract.InsulinEntry.BLEUTOOTH);
-        contentValues.put(HealthContract.InsulinEntry.COLUMN_TIME,time.toMillis(false));
-        contentValues.put(HealthContract.InsulinEntry.COLUMN_RAW_VALUE,value);
-        contentValues.put(HealthContract.InsulinEntry.COLUMN_GLUCOSE_VALUE,value);
-        contentValues.put(HealthContract.InsulinEntry.COLUMN_TEMPERATURE_VALUE,value);
-        contentValues.put(HealthContract.InsulinEntry.COLUMN_DEVICE_ID,"123");
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,time.toMillis(false));
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,value);
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,value);
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,value);
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
         ContentResolver contentResolver = getContentResolver();
-        contentResolver.insert(HealthContract.InsulinEntry.CONTENT_URI,contentValues);
-        Cursor cursor = getContentResolver().query(HealthContract.InsulinEntry.CONTENT_URI,null,null,null,null);
+        contentResolver.insert(HealthContract.GlucoseEntry.CONTENT_URI,contentValues);
+        Cursor cursor = getContentResolver().query(HealthContract.GlucoseEntry.CONTENT_URI,null,null,null,null);
 
         if(cursor != null) {
             try {
                 while (cursor.moveToNext()) {
-                    int index = cursor.getColumnIndex(HealthContract.InsulinEntry.COLUMN_RAW_VALUE);
+                    int index = cursor.getColumnIndex(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE);
                     Log.e("hi", Integer.toString(cursor.getInt(index)));
                 }
             } finally {

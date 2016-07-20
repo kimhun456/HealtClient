@@ -21,7 +21,7 @@ public class HealthContentProvider extends ContentProvider {
     static{
         sInsulinQueryBuilder = new SQLiteQueryBuilder();
         sInsulinQueryBuilder.setTables(
-                HealthContract.InsulinEntry.TABLE_NAME);
+                HealthContract.GlucoseEntry.TABLE_NAME);
     }
 
     static UriMatcher buildUriMatcher() {
@@ -35,7 +35,7 @@ public class HealthContentProvider extends ContentProvider {
         final String authority = HealthContract.CONTENT_AUTHORITY;
 
         // For each type of URI you want to add, create a corresponding code.
-        matcher.addURI(authority, HealthContract.PATH_INSULIN, INSULIN);
+        matcher.addURI(authority, HealthContract.PATH_GLUCOSE, INSULIN);
 
         return matcher;
     }
@@ -52,7 +52,7 @@ public class HealthContentProvider extends ContentProvider {
         switch (match) {
             case INSULIN:
                 rowsDeleted = db.delete(
-                        HealthContract.InsulinEntry.TABLE_NAME, selection, selectionArgs);
+                        HealthContract.GlucoseEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -73,7 +73,7 @@ public class HealthContentProvider extends ContentProvider {
         switch (match) {
             // Student: Uncomment and fill out these two cases
             case INSULIN:
-                return HealthContract.InsulinEntry.CONTENT_TYPE;
+                return HealthContract.GlucoseEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -88,9 +88,9 @@ public class HealthContentProvider extends ContentProvider {
         switch (match) {
 
             case INSULIN: {
-                long _id = db.insert(HealthContract.InsulinEntry.TABLE_NAME, null, values);
+                long _id = db.insert(HealthContract.GlucoseEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
-                    returnUri = HealthContract.InsulinEntry.buildLocationUri(_id);
+                    returnUri = HealthContract.GlucoseEntry.buildLocationUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
@@ -119,7 +119,7 @@ public class HealthContentProvider extends ContentProvider {
             case INSULIN:
             {
                 retCursor = mOpenHelper.getReadableDatabase().query(
-                        HealthContract.InsulinEntry.TABLE_NAME,
+                        HealthContract.GlucoseEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -150,7 +150,7 @@ public class HealthContentProvider extends ContentProvider {
 
         switch (match) {
             case INSULIN:
-                rowsUpdated = db.update(HealthContract.InsulinEntry.TABLE_NAME, values, selection,
+                rowsUpdated = db.update(HealthContract.GlucoseEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
             default:

@@ -42,7 +42,7 @@ public class HealthContract {
     // looking at weather data. content://com.example.android.sunshine.app/givemeroot/ will fail,
     // as the ContentProvider hasn't been given any information on what to do with "givemeroot".
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
-    public static final String PATH_INSULIN = "insulin";
+    public static final String PATH_GLUCOSE = "glucose";
 
     // To make it easy to query for the exact date, we normalize all dates that go into
     // the database to the start of the the Julian day at UTC.
@@ -55,18 +55,18 @@ public class HealthContract {
     }
 
     /* Inner class that defines the table contents of the location table */
-    public static final class InsulinEntry implements BaseColumns {
+    public static final class GlucoseEntry implements BaseColumns {
 
         public static final String BLEUTOOTH = "bluetooth";
         public static final String NFC = "nfc";
 
         public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_INSULIN).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_GLUCOSE).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_INSULIN;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GLUCOSE;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_INSULIN;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GLUCOSE;
 
         // Table name
         public static final String TABLE_NAME = "insulin";
