@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.swmem.healthclient.data;
+package org.swmem.healthclient.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -25,7 +25,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class HealthDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 8;
 
     static final String DATABASE_NAME = "glucare.db";
 
@@ -40,7 +40,7 @@ public class HealthDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_INSULIN_TABLE = "CREATE TABLE " + HealthContract.GlucoseEntry.TABLE_NAME + " (" +
                 HealthContract.GlucoseEntry._ID + " INTEGER PRIMARY KEY," +
                 HealthContract.GlucoseEntry.COLUMN_RAW_VALUE + " REAL NOT NULL, " +
-                HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE + " REAL NOT NULL, " +
+                HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE + " REAL , " +
                 HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE + " REAL NOT NULL, " +
                 HealthContract.GlucoseEntry.COLUMN_DEVICE_ID + " TEXT NOT NULL, " +
                 HealthContract.GlucoseEntry.COLUMN_TYPE + " TEXT NOT NULL, " +

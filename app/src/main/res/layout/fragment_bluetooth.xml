@@ -10,18 +10,36 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
+    <LinearLayout
+        android:layout_weight="7"
+        android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/insulin_value"
-        android:id="@+id/lastValueText"
-        android:layout_gravity="center_horizontal" />
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <TextView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/insulin_value"
+            android:id="@+id/lastValueText"/>
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/up_arrow"
+            />
+
+
+    </LinearLayout>
+
 
     <com.github.mikephil.charting.charts.LineChart
+        android:layout_weight="3"
         android:id="@+id/chart"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
 
 </LinearLayout>

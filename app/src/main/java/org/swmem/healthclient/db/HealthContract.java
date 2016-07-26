@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.swmem.healthclient.data;
+package org.swmem.healthclient.db;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -69,7 +69,7 @@ public class HealthContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GLUCOSE;
 
         // Table name
-        public static final String TABLE_NAME = "insulin";
+        public static final String TABLE_NAME = "glucose_table";
 
         public static final String COLUMN_GLUCOSE_VALUE = "glucose";
         public static final String COLUMN_TEMPERATURE_VALUE = "temperature";

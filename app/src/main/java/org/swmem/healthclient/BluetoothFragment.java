@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,16 +14,55 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.swmem.healthclient.data.HealthContract;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+
+import org.swmem.healthclient.db.HealthContract;
+
+import java.util.ArrayList;
 
 
 public class BluetoothFragment extends Fragment {
 
 
     TextView lastValueText;
+    LineChart chart;
+
+
+    private static final String[] DETAIL_COLUMNS = {
+            HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
+            HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,
+            HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,
+            HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,
+            HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,
+            HealthContract.GlucoseEntry.COLUMN_TIME,
+            HealthContract.GlucoseEntry.COLUMN_TYPE
+    };
+
+    // These indices are tied to DETAIL_COLUMNS.  If DETAIL_COLUMNS changes, these
+    // must change.
+    public static final int COL_GLUCOSE_ID = 0;
+    public static final int COL_GLUCOSE_GLUCOSE_VALUE = 1;
+    public static final int COL_GLUCOSE_TEMPEATURE_VALUE = 2;
+    public static final int COL_GLUCOSE_RAW_VALUE = 3;
+    public static final int COL_GLUCOSE_DEVICE_ID = 4;
+    public static final int COL_GLUCOSE_TIME = 5;
+    public static final int COL_GLUCOSE_TYPE = 6;
+
+
 
     public BluetoothFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        chart.invalidate();
     }
 
     @Override
@@ -35,22 +75,44 @@ public class BluetoothFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+
+        Log.v("cursor", "asdfasfsd");
+
         View rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
 
 
         lastValueText = (TextView)rootView.findViewById(R.id.lastValueText);
 
 
-        ContentResolver contentResolver = getActivity().getContentResolver();
-        Cursor cursor = contentResolver.query(HealthContract.GlucoseEntry.CONTENT_URI,null,null,null,null);
+        updateData(rootView);
 
+
+        // Inflate the layout for this fragment
+        return rootView;
+    }
+
+
+    private void updateData(View rootView){
+
+
+
+        ContentResolver contentResolver = getActivity().getContentResolver();
+
+        // 모든 데이터를 불러오게 된다.
+        Cursor cursor = contentResolver.query(HealthContract.GlucoseEntry.CONTENT_URI,
+                DETAIL_COLUMNS,
+                null,
+                null,
+                null);
+
+
+        updateChart(rootView,cursor);
 
         if (cursor != null) {
             try{
 
                 if(cursor.moveToLast()){
-                    int index = cursor.getColumnIndex(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE);
-                    lastValueText.setText(Double.toString(cursor.getDouble(index)));
+                    lastValueText.setText(Double.toString(cursor.getDouble(COL_GLUCOSE_RAW_VALUE)));
                 }
 
             } finally {
@@ -59,9 +121,87 @@ public class BluetoothFragment extends Fragment {
 
         }
 
-        // Inflate the layout for this fragment
-        return rootView;
     }
+
+    private void updateChart(View rootView,Cursor cursor){
+
+        chart = (LineChart) rootView.findViewById(R.id.chart);
+
+//        chart.setDescription("asdf");
+        chart.setTouchEnabled(true);
+        chart.setDoubleTapToZoomEnabled(false);
+        chart.setScaleYEnabled(false);
+
+
+        int SECONDS = 1000;
+        int MINUTES = 60 * SECONDS;
+        int HOURS = 60 * MINUTES;
+        int DAYS = 24 * HOURS;
+
+        long gapOfMinutes = 1;
+        long limitDays = 1;
+
+
+        long currentMilliseconds = System.currentTimeMillis();
+        long pastMilliseconds = currentMilliseconds - limitDays * DAYS;
+
+        ArrayList<String> xaxisValues = Utility.getXaxisValues(currentMilliseconds);
+
+        ArrayList<Entry> entries = new ArrayList<Entry>();
+
+
+        cursor.moveToFirst();
+
+//        while (cursor.moveToNext()) {
+//
+//            Log.v("cursor",  "ID = " + cursor.getInt(COL_GLUCOSE_ID) + " RAW VALUE =  " + cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
+//            Log.v ("cursor" ,"date : " +  Utility.formatDate(cursor.getLong(COL_GLUCOSE_TIME)));
+//
+//
+//            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
+//
+//            if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
+//
+//
+//                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
+//
+//                Log.v("cursor", "value : " + rawValue+ "index : " + Utility.getIndexOfEntry(currentDate,currentMilliseconds));
+//
+//
+//                entries.add(new Entry(rawValue, Utility.getIndexOfEntry(currentDate,currentMilliseconds)));
+//
+//
+//            }
+//        }
+
+
+
+        for(long i=pastMilliseconds ; i<=currentMilliseconds; i+=MINUTES){
+
+            float rawValue = (float) (Math.random()*40 + 60);
+
+            entries.add(new Entry(rawValue, Utility.getIndexOfEntry(i,currentMilliseconds)));
+
+        }
+
+
+        LineDataSet setComp1 = new LineDataSet(entries, "RAW VALUE");
+        setComp1.setAxisDependency(YAxis.AxisDependency.LEFT);
+
+
+        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        dataSets.add(setComp1);
+        LineData data = new LineData(xaxisValues, dataSets);
+
+
+        chart.setData(data);
+        chart.zoom(22f,1f,1f,1f);
+        chart.moveViewToX(xaxisValues.size()-1);
+
+        chart.invalidate(); // refresh
+    }
+
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {

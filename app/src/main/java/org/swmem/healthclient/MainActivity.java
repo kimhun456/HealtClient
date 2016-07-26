@@ -2,7 +2,6 @@ package org.swmem.healthclient;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -11,13 +10,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.format.Time;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import org.swmem.healthclient.data.HealthContract;
+import org.swmem.healthclient.db.HealthContract;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -52,7 +49,6 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-
         // type 에 따라서 Bluetooth 나 NFC Service 소환
         String type = getIntent().getStringExtra(TYPE);
 
@@ -75,38 +71,21 @@ public class MainActivity extends AppCompatActivity
                     .commit();
         }
 
-
-
-
     }
+
+
 
     public void insertDummyData(double value){
 
-        Time time = new Time();   time.setToNow();
-        Log.d("TIME TEST", Long.toString(time.toMillis(false)));
-
         ContentValues contentValues = new ContentValues();
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,time.toMillis(false));
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,Utility.getCurrentDate());
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
         ContentResolver contentResolver = getContentResolver();
         contentResolver.insert(HealthContract.GlucoseEntry.CONTENT_URI,contentValues);
-        Cursor cursor = getContentResolver().query(HealthContract.GlucoseEntry.CONTENT_URI,null,null,null,null);
-
-        if(cursor != null) {
-            try {
-                while (cursor.moveToNext()) {
-                    int index = cursor.getColumnIndex(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE);
-                    Log.e("hi", Integer.toString(cursor.getInt(index)));
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-
 
     }
 

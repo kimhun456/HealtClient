@@ -16,7 +16,7 @@
         </activity>
 
         <provider
-            android:name=".data.HealthContentProvider"
+            android:name=".db.HealthContentProvider"
             android:authorities="org.swmem.healthclient"
             android:enabled="true"
             android:exported="true" />

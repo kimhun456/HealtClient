@@ -1,4 +1,4 @@
-package org.swmem.healthclient.data;
+package org.swmem.healthclient.db;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -15,7 +15,7 @@ public class HealthContentProvider extends ContentProvider {
 
     private static final SQLiteQueryBuilder sInsulinQueryBuilder;
 
-    static final int INSULIN = 100;
+    static final int GLUCOSE = 100;
 
 
     static{
@@ -35,7 +35,7 @@ public class HealthContentProvider extends ContentProvider {
         final String authority = HealthContract.CONTENT_AUTHORITY;
 
         // For each type of URI you want to add, create a corresponding code.
-        matcher.addURI(authority, HealthContract.PATH_GLUCOSE, INSULIN);
+        matcher.addURI(authority, HealthContract.PATH_GLUCOSE, GLUCOSE);
 
         return matcher;
     }
@@ -50,7 +50,7 @@ public class HealthContentProvider extends ContentProvider {
 
         if ( null == selection ) selection = "1";
         switch (match) {
-            case INSULIN:
+            case GLUCOSE:
                 rowsDeleted = db.delete(
                         HealthContract.GlucoseEntry.TABLE_NAME, selection, selectionArgs);
                 break;
@@ -72,7 +72,7 @@ public class HealthContentProvider extends ContentProvider {
 
         switch (match) {
             // Student: Uncomment and fill out these two cases
-            case INSULIN:
+            case GLUCOSE:
                 return HealthContract.GlucoseEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -87,7 +87,7 @@ public class HealthContentProvider extends ContentProvider {
 
         switch (match) {
 
-            case INSULIN: {
+            case GLUCOSE: {
                 long _id = db.insert(HealthContract.GlucoseEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
                     returnUri = HealthContract.GlucoseEntry.buildLocationUri(_id);
@@ -115,8 +115,8 @@ public class HealthContentProvider extends ContentProvider {
 
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
-            // "INSULIN/*/*"
-            case INSULIN:
+            // "GLUCOSE/*/*"
+            case GLUCOSE:
             {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         HealthContract.GlucoseEntry.TABLE_NAME,
@@ -149,7 +149,7 @@ public class HealthContentProvider extends ContentProvider {
         int rowsUpdated;
 
         switch (match) {
-            case INSULIN:
+            case GLUCOSE:
                 rowsUpdated = db.update(HealthContract.GlucoseEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
