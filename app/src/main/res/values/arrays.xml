@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="pref_limit_day_options">
+        <item>@string/pref_limit_day_label_default</item>
+        <item>@string/pref_limit_day_label_two</item>
+        <item>@string/pref_limit_day_label_three</item>
+    </string-array>
+
+    <string-array name="pref_limit_day_values">
+        <item>@string/pref_limit_day_default</item>
+        <item>@string/pref_limit_day_two</item>
+        <item>@string/pref_limit_day_three</item>
+    </string-array>
+</resources>

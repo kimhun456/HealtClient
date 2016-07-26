@@ -15,6 +15,8 @@
  */
 package org.swmem.healthclient;
 
+import android.content.Context;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class Utility {
-
 
     private static final int rateINC_MORE = 2;
     private static final int rateINC_LESS = 1;
@@ -124,56 +125,6 @@ public class Utility {
     }
 
 
-    public static ArrayList<String> getXaxisValues(long currentTimeMillis){
 
-        int SECONDS = 1000;
-        int MINUTES = 60 * SECONDS;
-        int HOURS = 60 * MINUTES;
-        int DAYS = 24 * HOURS;
-
-        long gapOfMinutes = 1;
-        long limitDays = 1;
-
-        ArrayList<String> xValues = new ArrayList<String>();
-
-
-        Log.v("current TIme" , formatDate(currentTimeMillis));
-
-        currentTimeMillis -= limitDays * DAYS;
-
-        Log.v("past TIme" , formatDate(currentTimeMillis));
-
-
-        for(long i = 0; i<= limitDays * DAYS; i+=MINUTES ){
-
-
-            xValues.add(getGraphDateFormat(currentTimeMillis + i));
-
-        }
-
-        return xValues;
-    }
-
-    public static int getIndexOfEntry(long findMiiliSeconds , long currentTimeMillis){
-
-        int SECONDS = 1000;
-        int MINUTES = 60 * SECONDS;
-        int HOURS = 60 * MINUTES;
-        int DAYS = 24 * HOURS;
-
-        long gapOfMinutes = 1;
-        long limitDays = 1;
-
-        long pastMilliseconds = currentTimeMillis - limitDays * DAYS;
-
-
-        long diff = findMiiliSeconds - pastMilliseconds;
-
-
-        int index  = (int) (diff /=MINUTES) + 1;
-
-        return index;
-
-    }
 
 }

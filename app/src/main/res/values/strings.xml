@@ -14,6 +14,28 @@
     <string name="insulin_value">No data</string>
     <string name="setting">Settings</string>
 
+    <!-- PREFENCE-->
+
+    <string name="pref_limit_day_key" translatable="false">limitDays</string>
+    <string name="pref_limit_day_label" translatable="true">Limit days</string>
+    <string name="pref_limit_day_summary" translatable="true">그래프에 표현 할 날짜 수를 정해줍니다.</string>
+
+    <string name="pref_limit_day_default" translatable="false">1</string>
+    <string name="pref_limit_day_two" translatable="false">2</string>
+    <string name="pref_limit_day_three" translatable="false">3</string>
+
+    <string name="pref_limit_day_label_default">1 day</string>
+    <string name="pref_limit_day_label_two">2 day</string>
+    <string name="pref_limit_day_label_three">3 day</string>
+
+
+    <string name="pref_graph_title">Graph</string>
+
+    <string name="action_settings" translatable="false">Settings</string>
+
+
+
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

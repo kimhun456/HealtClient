@@ -35,7 +35,7 @@ public class StartActivity extends AppCompatActivity {
                 Intent intent = new Intent(getBaseContext(),MainActivity.class);
                 intent.putExtra(TYPE, BLEUTOOTH);
                 startActivity(intent);
-//                finish();
+                finish();
             }
         });
 
@@ -46,7 +46,7 @@ public class StartActivity extends AppCompatActivity {
                 Intent intent = new Intent(getBaseContext(),MainActivity.class);
                 intent.putExtra(TYPE, NFC);
                 startActivity(intent);
-//                finish();
+                finish();
             }
         });
 

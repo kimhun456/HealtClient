@@ -2,6 +2,7 @@ package org.swmem.healthclient;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -138,12 +139,17 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_bluetooth) {
-            // Handle the camera action
+
+
         } else if (id == R.id.nav_info) {
 
         } else if (id == R.id.nav_nfc) {
 
         } else if (id == R.id.nav_setting) {
+
+            Intent intent = new Intent(getBaseContext(), SettingActivity.class);
+            startActivity(intent);
+
 
         } else if (id == R.id.nav_view) {
 

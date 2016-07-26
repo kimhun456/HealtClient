@@ -3,6 +3,7 @@ package org.swmem.healthclient;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,7 +32,12 @@ public class BluetoothFragment extends Fragment {
 
     TextView lastValueText;
     LineChart chart;
+    long limitDays;
 
+    private final int SECONDS = 1000;
+    private final int MINUTES = 60 * SECONDS;
+    private final int HOURS = 60 * MINUTES;
+    private final int DAYS = 24 * HOURS;
 
     private static final String[] DETAIL_COLUMNS = {
             HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
@@ -57,6 +63,8 @@ public class BluetoothFragment extends Fragment {
 
     public BluetoothFragment() {
         // Required empty public constructor
+
+
     }
 
     @Override
@@ -74,6 +82,10 @@ public class BluetoothFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+
+        String limitday = PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString(getString(R.string.pref_limit_day_key),"1");
+        limitDays = Long.parseLong(limitday);
 
 
         Log.v("cursor", "asdfasfsd");
@@ -133,19 +145,10 @@ public class BluetoothFragment extends Fragment {
         chart.setScaleYEnabled(false);
 
 
-        int SECONDS = 1000;
-        int MINUTES = 60 * SECONDS;
-        int HOURS = 60 * MINUTES;
-        int DAYS = 24 * HOURS;
-
-        long gapOfMinutes = 1;
-        long limitDays = 1;
-
-
         long currentMilliseconds = System.currentTimeMillis();
         long pastMilliseconds = currentMilliseconds - limitDays * DAYS;
 
-        ArrayList<String> xaxisValues = Utility.getXaxisValues(currentMilliseconds);
+        ArrayList<String> xaxisValues = getXaxisValues(currentMilliseconds);
 
         ArrayList<Entry> entries = new ArrayList<Entry>();
 
@@ -180,17 +183,15 @@ public class BluetoothFragment extends Fragment {
 
             float rawValue = (float) (Math.random()*40 + 60);
 
-            entries.add(new Entry(rawValue, Utility.getIndexOfEntry(i,currentMilliseconds)));
+            entries.add(new Entry(rawValue, getIndexOfEntry(i,currentMilliseconds)));
 
         }
 
 
-        LineDataSet setComp1 = new LineDataSet(entries, "RAW VALUE");
-        setComp1.setAxisDependency(YAxis.AxisDependency.LEFT);
-
-
+        LineDataSet lineDataSet = new LineDataSet(entries, "RAW VALUE");
+        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
         ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
-        dataSets.add(setComp1);
+        dataSets.add(lineDataSet);
         LineData data = new LineData(xaxisValues, dataSets);
 
 
@@ -201,6 +202,41 @@ public class BluetoothFragment extends Fragment {
         chart.invalidate(); // refresh
     }
 
+    private ArrayList<String> getXaxisValues(long currentTimeMillis){
+
+        ArrayList<String> xValues = new ArrayList<String>();
+
+
+        Log.v("current TIme" , Utility.formatDate(currentTimeMillis));
+
+        currentTimeMillis -= limitDays * DAYS;
+
+        Log.v("past TIme" , Utility.formatDate(currentTimeMillis));
+
+
+        for(long i = 0; i<= limitDays * DAYS; i+=MINUTES ){
+
+
+            xValues.add(Utility.getGraphDateFormat(currentTimeMillis + i));
+
+        }
+
+        return xValues;
+    }
+
+    private int getIndexOfEntry(long findMiiliSeconds , long currentTimeMillis){
+
+        long pastMilliseconds = currentTimeMillis - limitDays * DAYS;
+
+
+        long diff = findMiiliSeconds - pastMilliseconds;
+
+
+        int index  = (int) (diff /=MINUTES) + 1;
+
+        return index;
+
+    }
 
 
     @Override
