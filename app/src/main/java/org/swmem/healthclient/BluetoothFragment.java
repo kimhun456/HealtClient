@@ -104,26 +104,24 @@ public class BluetoothFragment extends Fragment {
 
         // Inflate the layout for this fragment
         return rootView;
+
     }
 
 
     private void updateData(View rootView){
 
-        ContentResolver contentResolver = getActivity().getContentResolver();
+        updateChart(rootView);
 
         // 모든 데이터를 불러오게 된다.
-        Cursor cursor = contentResolver.query(HealthContract.GlucoseEntry.CONTENT_URI,
+        Cursor cursor = getActivity().getContentResolver().query(HealthContract.GlucoseEntry.CONTENT_URI,
                 DETAIL_COLUMNS,
                 null,
                 null,
                 null);
 
-        updateChart(rootView,cursor);
-
 
         long lastDate = 0;
         double lastValue = 0;
-        cursor.moveToFirst();
         while (cursor.moveToNext()) {
             long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
             if(currentDate > lastDate){
@@ -139,8 +137,14 @@ public class BluetoothFragment extends Fragment {
         cursor.close();
     }
 
-    private void updateChart(View rootView,Cursor cursor){
+    private void updateChart(View rootView){
 
+        // 모든 데이터를 불러오게 된다.
+        Cursor cursor = getActivity().getContentResolver().query(HealthContract.GlucoseEntry.CONTENT_URI,
+                DETAIL_COLUMNS,
+                null,
+                null,
+                null);
 
         final int BLUETOOTH = 1;
         final int NFC = 2;
@@ -305,10 +309,12 @@ public class BluetoothFragment extends Fragment {
         }else{
             chart.moveViewToX(lastDataIndex);
         }
+
         chart.setKeepPositionOnRotation(true);
         chart.setMarkerView(new MyMarkerView(getContext(), R.layout.marker_view));
         chart.invalidate(); // refresh
 
+        cursor.close();
     }
 
     private ArrayList<String> getXAxisValues(long currentTimeMillis){
