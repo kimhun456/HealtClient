@@ -33,6 +33,9 @@
 
     <string name="action_settings" translatable="false">Settings</string>
 
+    <string name="chart_description">Glucose Chart</string>
+    <string name="upper_limit">HIGH GLUCOSE</string>
+    <string name="down_limit">LOW GLUCOSE</string>
 
 
 

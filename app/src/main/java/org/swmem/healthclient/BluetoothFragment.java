@@ -2,7 +2,6 @@ package org.swmem.healthclient;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -19,6 +18,7 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -109,8 +109,6 @@ public class BluetoothFragment extends Fragment {
 
     private void updateData(View rootView){
 
-
-
         ContentResolver contentResolver = getActivity().getContentResolver();
 
         // 모든 데이터를 불러오게 된다.
@@ -120,66 +118,96 @@ public class BluetoothFragment extends Fragment {
                 null,
                 null);
 
-
         updateChart(rootView,cursor);
 
-        if (cursor != null) {
-            try{
 
-                if(cursor.moveToLast()){
-                    lastValueText.setText(Double.toString(cursor.getDouble(COL_GLUCOSE_RAW_VALUE)));
-                }
-
-            } finally {
-                cursor.close();
+        long lastDate = 0;
+        double lastValue = 0;
+        cursor.moveToFirst();
+        while (cursor.moveToNext()) {
+            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
+            if(currentDate > lastDate){
+                lastDate = currentDate;
+                lastValue = cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
             }
 
         }
 
+        if(lastValue != 0){
+            lastValueText.setText(""+lastValue);
+        }
+        cursor.close();
     }
 
     private void updateChart(View rootView,Cursor cursor){
 
-        chart = (LineChart) rootView.findViewById(R.id.chart);
 
-//        chart.setDescription();
-        chart.setTouchEnabled(true);
-        chart.setDoubleTapToZoomEnabled(false);
-        chart.setScaleYEnabled(false);
+        final int BLUETOOTH = 1;
+        final int NFC = 2;
 
+
+        int BLUETOOTH_COLOR = ContextCompat.getColor(getContext(),R.color.deep_blue);
+        int NFC_COLOR = ContextCompat.getColor(getContext(),R.color.deep_orange);
+        int UPPER_LIMIT_COLOR = ContextCompat.getColor(getContext(),R.color.deep_red);
+        int DOWN_LIMIT_COLOR = ContextCompat.getColor(getContext(),R.color.sunshine_dark_blue);
+
+        int lastDataIndex = 0;
+        float highGlucose = 160f;
+        float lowGlucose = 80f;
 
         long currentMilliseconds = System.currentTimeMillis();
         long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
 
-        ArrayList<String> xaxisValues = getXaxisValues(currentMilliseconds);
-
         ArrayList<Entry> entries = new ArrayList<Entry>();
-
-
         ArrayList<Integer> colors = new ArrayList<Integer>();
+        ArrayList<String> xAxisValues = getXAxisValues(currentMilliseconds);
+
+
+        chart = (LineChart) rootView.findViewById(R.id.chart);
+
+        // bluetooth or NFC 구별하는 배열
+        int bluetoothOrNFC[];
+        bluetoothOrNFC = new int[xAxisValues.size()];
+        for(int i=0;i<bluetoothOrNFC.length;i++){
+            bluetoothOrNFC[i] = 0;
+        }
+
 
         while (cursor.moveToNext()) {
-
-//            Log.v("cursor",  "ID = " + cursor.getInt(COL_GLUCOSE_ID) + " RAW VALUE =  " + cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
-//            Log.v ("cursor" ,"date : " +  Utility.formatDate(cursor.getLong(COL_GLUCOSE_TIME)));
-
-
             long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
 
             if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
 
-                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
+                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
+                String type = cursor.getString(COL_GLUCOSE_TYPE);
+                int index = getIndexOfEntries(currentDate,currentMilliseconds);
 
-                int index = getIndexOfEntry(currentDate,currentMilliseconds);
-                if(index <= 0){
+//                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
+//                Log.v ("cursor" ,"type : " +  cursor.getString(COL_GLUCOSE_TYPE));
+//                Log.v("cursor",  "RAW VALUE :  " +rawValue);
+//                Log.v ("cursor" ,"index : " +  index );
+//                Log.v ("cursor" ,"______________________");
+
+                if(index < 0){
                     continue;
                 }
+                if(index > lastDataIndex){
+                    lastDataIndex = index;
+                }
+
                 entries.add(new Entry(rawValue, index));
+
+                if(type.equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
+                    bluetoothOrNFC[index] = BLUETOOTH;
+                }else{
+                    bluetoothOrNFC[index] = NFC;
+                }
+
 
             }
         }
 
-
+        // sort the entries ascending order by index.
         Collections.sort(entries, new Comparator<Entry>() {
             @Override
             public int compare(Entry t1, Entry t2) {
@@ -191,54 +219,99 @@ public class BluetoothFragment extends Fragment {
         });
 
 
-//        for(long i=currentMilliseconds; i>=pastMilliseconds; i-= MINUTES * 2){
-//
-//            float rawValue = (float) (Math.random()*30 + 60);
-//
-//            entries.add(new Entry(rawValue, getIndexOfEntry(i,currentMilliseconds)));
-//        }
+        // Color 결정하는 부분.
+        int current = BLUETOOTH;
+        for(int i=0;i<bluetoothOrNFC.length;i++){
 
+            // 만약 데이터가 처음부터 없으면 블루투스 컬러로 설정한다.
+            if(i  == 0){
+                if(bluetoothOrNFC[i] != NFC && bluetoothOrNFC[i] != BLUETOOTH){
+                    colors.add(BLUETOOTH_COLOR);
+                    current = BLUETOOTH;
+                    continue;
+                }
+            }
+            if(bluetoothOrNFC[i] == 0){
+                if(current == BLUETOOTH){
+                    colors.add(BLUETOOTH_COLOR);
+                }else{
+                    colors.add(NFC_COLOR);
+                }
+            }else if(bluetoothOrNFC[i] == BLUETOOTH){
 
-        LineDataSet lineDataSet = new LineDataSet(entries, "RAW VALUE");
-        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-
-        for(int i=0;i<xaxisValues.size();i++){
-            double tmp = Math.random();
-
-            if(tmp <=0.5){
-                colors.add( ContextCompat.getColor(getContext(),R.color.deep_blue));
+                colors.add(BLUETOOTH_COLOR);
+                current = BLUETOOTH;
             }else{
-                colors.add( ContextCompat.getColor(getContext(),R.color.deep_orange));
+                colors.add(NFC_COLOR);
+                current = NFC;
             }
 
         }
 
+        // 리미트 라인 설정하는 곳
+        LimitLine ll1 = new LimitLine(highGlucose, getString(R.string.upper_limit));
+        ll1.setLineWidth(4f);
+        ll1.enableDashedLine(10f, 5f, 0f);
+        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        ll1.setTextSize(14f);
+        ll1.setTextColor(UPPER_LIMIT_COLOR);
+        ll1.setLineColor(UPPER_LIMIT_COLOR);
+
+        LimitLine ll2 = new LimitLine(lowGlucose, getString(R.string.down_limit));
+        ll2.setLineWidth(4f);
+        ll2.enableDashedLine(10f, 5f, 0f);
+        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        ll2.setTextSize(14f);
+        ll2.setTextColor(DOWN_LIMIT_COLOR);
+        ll2.setLineColor(DOWN_LIMIT_COLOR);
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.removeAllLimitLines();
+        leftAxis.addLimitLine(ll1);
+        leftAxis.addLimitLine(ll2);
+
+
+        // 데이터 세트 설정
+        LineDataSet lineDataSet = new LineDataSet(entries, "RAW VALUE");
+        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+        lineDataSet.setValueTextSize(0f);
         lineDataSet.setCircleColors(colors);
         lineDataSet.setColors(colors);
-//        lineDataSet.setCircleColor(ContextCompat.getColor(getContext(),R.color.cyan));
-        lineDataSet.setHighLightColor(ContextCompat.getColor(getContext(),R.color.cyan));
-
+        lineDataSet.setHighLightColor(ContextCompat.getColor(getContext(),R.color.black));
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet);
+        LineData data = new LineData(xAxisValues, dataSets);
 
 
-        LineData data = new LineData(xaxisValues, dataSets);
-
-
+        // 레헨드 셋팅
         Legend legend = chart.getLegend();
-        legend.setCustom(new int[]{ContextCompat.getColor(getContext(),R.color.deep_blue),ContextCompat.getColor(getContext(),R.color.deep_orange)}, new String[] { "BlueTooth", "NFC" });
+        legend.setCustom(new int[]{BLUETOOTH_COLOR,NFC_COLOR}, new String[] { "BlueTooth", "NFC" });
 
+
+        // 차트 설정들
+        chart.setDescription(getString(R.string.chart_description));
+        chart.setTouchEnabled(true);
+        chart.setDoubleTapToZoomEnabled(false);
+        chart.setScaleYEnabled(false);
         chart.setData(data);
-        chart.zoom(22f,1f,1f,1f);
-        chart.moveViewToX(xaxisValues.size()-1);
+        chart.zoom(30f,1f,1f,1f);
 
-
+        if(lastDataIndex - 40 > 0){
+            chart.moveViewToX(lastDataIndex-40);
+        }else if(lastDataIndex - 20 > 0){
+            chart.moveViewToX(lastDataIndex-20);
+        }else if(lastDataIndex - 10 > 0){
+            chart.moveViewToX(lastDataIndex-10);
+        }else{
+            chart.moveViewToX(lastDataIndex);
+        }
         chart.setKeepPositionOnRotation(true);
         chart.setMarkerView(new MyMarkerView(getContext(), R.layout.marker_view));
         chart.invalidate(); // refresh
+
     }
 
-    private ArrayList<String> getXaxisValues(long currentTimeMillis){
+    private ArrayList<String> getXAxisValues(long currentTimeMillis){
 
         ArrayList<String> xValues = new ArrayList<String>();
 
@@ -252,15 +325,13 @@ public class BluetoothFragment extends Fragment {
 
         for(long i = 0; i<= limitDays * DAYS; i+=MINUTES ){
 
-
             xValues.add(Utility.getGraphDateFormat(currentTimeMillis + i));
-
         }
 
         return xValues;
     }
 
-    private int getIndexOfEntry(long findMiiliSeconds , long currentTimeMillis){
+    private int getIndexOfEntries(long findMiiliSeconds , long currentTimeMillis){
 
         long pastMilliseconds = currentTimeMillis - limitDays * DAYS;
 
@@ -268,7 +339,7 @@ public class BluetoothFragment extends Fragment {
         long diff = findMiiliSeconds - pastMilliseconds;
 
 
-        int index  = (int) (diff /=MINUTES) + 1;
+        int index  = (int) (diff /=MINUTES);
 
         return index;
 

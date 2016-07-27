@@ -10,7 +10,7 @@
         android:layout_centerHorizontal="true"
         android:text=""
         android:textSize="15sp"
-        android:textColor="@color/cyan"
+        android:textColor="@color/black"
         android:ellipsize="end"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceSmall" />
