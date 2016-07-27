@@ -25,13 +25,17 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class HealthDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 11;
 
     static final String DATABASE_NAME = "glucare.db";
 
     public HealthDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+
+
+
     }
+
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {

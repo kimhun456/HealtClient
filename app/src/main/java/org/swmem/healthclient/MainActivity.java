@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -72,6 +73,10 @@ public class MainActivity extends AppCompatActivity
                     .commit();
         }
 
+
+
+//        insertDummies();
+
     }
 
 
@@ -87,6 +92,48 @@ public class MainActivity extends AppCompatActivity
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
         ContentResolver contentResolver = getContentResolver();
         contentResolver.insert(HealthContract.GlucoseEntry.CONTENT_URI,contentValues);
+
+    }
+
+    public void insertDummies(){
+
+        long currentMilli = System.currentTimeMillis();
+        double prevValue = 92;
+        ContentValues contentValues[] = new ContentValues[1440];
+        for(int i=0;i<1440;i++){
+
+            double rand = Math.random();
+            long time =  currentMilli - 1000*60* i;
+            contentValues[i] = new ContentValues();
+            if(rand < 0.5){
+                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
+            }else{
+
+                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.NFC);
+            }
+
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TIME,time);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,prevValue);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,prevValue);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,prevValue);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
+
+            if(Math.random() > 0.5){
+
+                prevValue += rand;
+
+            }else{
+
+                prevValue += rand;
+
+            }
+
+        }
+
+        ContentResolver contentResolver = getContentResolver();
+
+        contentResolver.bulkInsert(HealthContract.GlucoseEntry.CONTENT_URI, contentValues);
+
 
     }
 

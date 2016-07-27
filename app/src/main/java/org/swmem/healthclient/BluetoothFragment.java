@@ -2,9 +2,11 @@ package org.swmem.healthclient;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -23,8 +26,11 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.graph.MyMarkerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 public class BluetoothFragment extends Fragment {
@@ -87,9 +93,6 @@ public class BluetoothFragment extends Fragment {
         String limitday = PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString(getString(R.string.pref_limit_day_key),"1");
         limitDays = Long.parseLong(limitday);
 
-
-        Log.v("cursor", "asdfasfsd");
-
         View rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
 
 
@@ -139,66 +142,99 @@ public class BluetoothFragment extends Fragment {
 
         chart = (LineChart) rootView.findViewById(R.id.chart);
 
-//        chart.setDescription("asdf");
+//        chart.setDescription();
         chart.setTouchEnabled(true);
         chart.setDoubleTapToZoomEnabled(false);
         chart.setScaleYEnabled(false);
 
 
         long currentMilliseconds = System.currentTimeMillis();
-        long pastMilliseconds = currentMilliseconds - limitDays * DAYS;
+        long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
 
         ArrayList<String> xaxisValues = getXaxisValues(currentMilliseconds);
 
         ArrayList<Entry> entries = new ArrayList<Entry>();
 
 
-        cursor.moveToFirst();
+        ArrayList<Integer> colors = new ArrayList<Integer>();
 
-//        while (cursor.moveToNext()) {
-//
+        while (cursor.moveToNext()) {
+
 //            Log.v("cursor",  "ID = " + cursor.getInt(COL_GLUCOSE_ID) + " RAW VALUE =  " + cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
 //            Log.v ("cursor" ,"date : " +  Utility.formatDate(cursor.getLong(COL_GLUCOSE_TIME)));
-//
-//
-//            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
-//
-//            if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
-//
-//
-//                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
-//
-//                Log.v("cursor", "value : " + rawValue+ "index : " + Utility.getIndexOfEntry(currentDate,currentMilliseconds));
-//
-//
-//                entries.add(new Entry(rawValue, Utility.getIndexOfEntry(currentDate,currentMilliseconds)));
-//
-//
-//            }
-//        }
 
 
+            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
 
-        for(long i=pastMilliseconds ; i<=currentMilliseconds; i+=MINUTES){
+            if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
 
-            float rawValue = (float) (Math.random()*40 + 60);
+                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
 
-            entries.add(new Entry(rawValue, getIndexOfEntry(i,currentMilliseconds)));
+                int index = getIndexOfEntry(currentDate,currentMilliseconds);
+                if(index <= 0){
+                    continue;
+                }
+                entries.add(new Entry(rawValue, index));
 
+            }
         }
+
+
+        Collections.sort(entries, new Comparator<Entry>() {
+            @Override
+            public int compare(Entry t1, Entry t2) {
+                if(t1.getXIndex() > t2.getXIndex())
+                    return 0;
+                else
+                    return -1;
+            }
+        });
+
+
+//        for(long i=currentMilliseconds; i>=pastMilliseconds; i-= MINUTES * 2){
+//
+//            float rawValue = (float) (Math.random()*30 + 60);
+//
+//            entries.add(new Entry(rawValue, getIndexOfEntry(i,currentMilliseconds)));
+//        }
 
 
         LineDataSet lineDataSet = new LineDataSet(entries, "RAW VALUE");
         lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+
+        for(int i=0;i<xaxisValues.size();i++){
+            double tmp = Math.random();
+
+            if(tmp <=0.5){
+                colors.add( ContextCompat.getColor(getContext(),R.color.deep_blue));
+            }else{
+                colors.add( ContextCompat.getColor(getContext(),R.color.deep_orange));
+            }
+
+        }
+
+        lineDataSet.setCircleColors(colors);
+        lineDataSet.setColors(colors);
+//        lineDataSet.setCircleColor(ContextCompat.getColor(getContext(),R.color.cyan));
+        lineDataSet.setHighLightColor(ContextCompat.getColor(getContext(),R.color.cyan));
+
+        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet);
+
+
         LineData data = new LineData(xaxisValues, dataSets);
 
+
+        Legend legend = chart.getLegend();
+        legend.setCustom(new int[]{ContextCompat.getColor(getContext(),R.color.deep_blue),ContextCompat.getColor(getContext(),R.color.deep_orange)}, new String[] { "BlueTooth", "NFC" });
 
         chart.setData(data);
         chart.zoom(22f,1f,1f,1f);
         chart.moveViewToX(xaxisValues.size()-1);
 
+
+        chart.setKeepPositionOnRotation(true);
+        chart.setMarkerView(new MyMarkerView(getContext(), R.layout.marker_view));
         chart.invalidate(); // refresh
     }
 
