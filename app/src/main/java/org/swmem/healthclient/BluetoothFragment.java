@@ -1,6 +1,8 @@
 package org.swmem.healthclient;
 
+import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -23,6 +25,9 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.service.BTCTemplateService;
+import org.swmem.healthclient.utils.Constants;
+import org.swmem.healthclient.utils.Logs;
 
 import java.util.ArrayList;
 
@@ -30,6 +35,7 @@ import java.util.ArrayList;
 public class BluetoothFragment extends Fragment {
 
 
+    private static final java.lang.String TAG = "BluetoothFragment";
     TextView lastValueText;
     LineChart chart;
     long limitDays;
@@ -38,6 +44,8 @@ public class BluetoothFragment extends Fragment {
     private final int MINUTES = 60 * SECONDS;
     private final int HOURS = 60 * MINUTES;
     private final int DAYS = 24 * HOURS;
+
+    private BTCTemplateService mService;
 
     private static final String[] DETAIL_COLUMNS = {
             HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
@@ -238,7 +246,6 @@ public class BluetoothFragment extends Fragment {
 
     }
 
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
@@ -262,10 +269,22 @@ public class BluetoothFragment extends Fragment {
 
                 Toast.makeText(getActivity().getBaseContext(),"scan",Toast.LENGTH_LONG).show();
 
+                doScan();
                 break;
 
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void doScan() {
+        Intent intent = new Intent(getActivity(), DeviceListActivity.class);
+        getActivity().startActivityForResult(intent, Constants.REQUEST_CONNECT_DEVICE);
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        for (Fragment fragment : getChildFragmentManager().getFragments()) {
+            fragment.onActivityResult(requestCode, resultCode, data);
+        }
     }
 }
