@@ -166,8 +166,17 @@ public class BluetoothFragment extends Fragment {
         int DOWN_LIMIT_COLOR = ContextCompat.getColor(getContext(),R.color.sunshine_dark_blue);
 
         int lastDataIndex = 0;
-        float highGlucose = 160f;
-        float lowGlucose = 80f;
+
+        Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_Hyperglycemia_key),"120"));
+
+        float highGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_Hyperglycemia_key),"120"));
+        float lowGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_Hypotension_key),"80"));
 
         long currentMilliseconds = System.currentTimeMillis();
         long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
@@ -229,7 +238,6 @@ public class BluetoothFragment extends Fragment {
             entries.add(new Entry(myEntry.getValue(), myEntry.getIndex()));
             colors.add(myEntry.getColor());
         }
-
 
 
         // 리미트 라인 설정하는 곳
