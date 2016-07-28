@@ -19,6 +19,7 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class Utility {
+
+    final String TAG = "UTILLITY";
 
     private static final int rateINC_MORE = 2;
     private static final int rateINC_LESS = 1;
@@ -105,16 +108,33 @@ public class Utility {
         return inputList;
     }
 
-    static String formatDate(long dateInMilliseconds) {
+    public static String formatDate(long dateInMilliseconds) {
         Date date = new Date(dateInMilliseconds);
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.KOREA).format(date);
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).format(date);
     }
 
 
+    public static long cursorDateToLong(String date) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+        Date d = null;
+        try {
+            d = sdf.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return d.getTime();
+    }
 
 
     public static long getCurrentDate(){
-        return System.currentTimeMillis();
+
+
+        long currentMilli = System.currentTimeMillis();
+        Date date = new Date(currentMilli);
+        date.setSeconds(0);
+        return date.getTime();
     }
 
 

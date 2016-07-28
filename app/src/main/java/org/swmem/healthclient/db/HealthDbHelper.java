@@ -25,15 +25,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class HealthDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 17;
 
     static final String DATABASE_NAME = "glucare.db";
 
     public HealthDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-
-
-
     }
 
 
@@ -48,7 +45,7 @@ public class HealthDbHelper extends SQLiteOpenHelper {
                 HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE + " REAL NOT NULL, " +
                 HealthContract.GlucoseEntry.COLUMN_DEVICE_ID + " TEXT NOT NULL, " +
                 HealthContract.GlucoseEntry.COLUMN_TYPE + " TEXT NOT NULL, " +
-                HealthContract.GlucoseEntry.COLUMN_TIME + " INTEGER NOT NULL " +
+                HealthContract.GlucoseEntry.COLUMN_TIME + " TEXT NOT NULL UNIQUE " +
                 " );";
 
         sqLiteDatabase.execSQL(SQL_CREATE_INSULIN_TABLE);

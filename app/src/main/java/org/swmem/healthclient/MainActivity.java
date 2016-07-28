@@ -3,6 +3,7 @@ package org.swmem.healthclient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -12,11 +13,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
 import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.db.HealthDbHelper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -74,9 +77,6 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-
-//        insertDummies();
-
     }
 
 
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,Utility.getCurrentDate());
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,Utility.formatDate(Utility.getCurrentDate()));
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,value);
@@ -97,13 +97,19 @@ public class MainActivity extends AppCompatActivity
 
     public void insertDummies(){
 
-        long currentMilli = System.currentTimeMillis();
+
+
+        long currentMilli = Utility.getCurrentDate();
         double prevValue = 92;
-        ContentValues contentValues[] = new ContentValues[1440];
-        for(int i=0;i<1440;i++){
+        ContentValues contentValues[] = new ContentValues[100];
+        for(int i=0;i<100;i++){
 
             double rand = Math.random();
             long time =  currentMilli - 1000*60* i;
+            String convertedTime = Utility.formatDate(time);
+
+            Log.v("time : " , convertedTime);
+
             contentValues[i] = new ContentValues();
             if(rand < 0.5){
                 contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
@@ -112,7 +118,7 @@ public class MainActivity extends AppCompatActivity
                 contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.NFC);
             }
 
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TIME,time);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TIME,convertedTime);
             contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,prevValue);
             contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,prevValue);
             contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,prevValue);
@@ -124,7 +130,7 @@ public class MainActivity extends AppCompatActivity
 
             }else{
 
-                prevValue += rand;
+                prevValue -= rand;
 
             }
 
@@ -162,17 +168,10 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
 
-        //noinspection SimplifiableIfStatement
-
         switch (id){
-//            case R.id.bluetooth_menu:
-//                insertDummyData(11.11);
-//                Snackbar.make(getCurrentFocus()," Bluetooth icon selected",Snackbar.LENGTH_SHORT).show();
-//                break;
-//            case R.id.nfc_menu:
-//
-//                Snackbar.make(getCurrentFocus()," NFC icon selected",Snackbar.LENGTH_SHORT).show();
-//                break;
+            case R.id.plus :
+                insertDummies();
+                break;
 
         }
 

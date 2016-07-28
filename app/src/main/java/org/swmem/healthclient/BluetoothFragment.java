@@ -1,6 +1,5 @@
 package org.swmem.healthclient;
 
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -26,11 +25,15 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.graph.MyEntry;
 import org.swmem.healthclient.graph.MyMarkerView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.sql.Date;
 
 
 public class BluetoothFragment extends Fragment {
@@ -39,6 +42,8 @@ public class BluetoothFragment extends Fragment {
     TextView lastValueText;
     LineChart chart;
     long limitDays;
+
+    private final String TAG = "BluetoothFragment";
 
     private final int SECONDS = 1000;
     private final int MINUTES = 60 * SECONDS;
@@ -90,8 +95,9 @@ public class BluetoothFragment extends Fragment {
                              Bundle savedInstanceState) {
 
 
-        String limitday = PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString(getString(R.string.pref_limit_day_key),"1");
-        limitDays = Long.parseLong(limitday);
+        limitDays = Long.parseLong(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_limit_day_key),"1"));
 
         View rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
 
@@ -113,7 +119,8 @@ public class BluetoothFragment extends Fragment {
         updateChart(rootView);
 
         // 모든 데이터를 불러오게 된다.
-        Cursor cursor = getActivity().getContentResolver().query(HealthContract.GlucoseEntry.CONTENT_URI,
+        Cursor cursor = getActivity().getContentResolver().query(
+                HealthContract.GlucoseEntry.CONTENT_URI,
                 DETAIL_COLUMNS,
                 null,
                 null,
@@ -140,15 +147,18 @@ public class BluetoothFragment extends Fragment {
     private void updateChart(View rootView){
 
         // 모든 데이터를 불러오게 된다.
-        Cursor cursor = getActivity().getContentResolver().query(HealthContract.GlucoseEntry.CONTENT_URI,
+        Cursor cursor = getActivity().getContentResolver().query(
+                HealthContract.GlucoseEntry.CONTENT_URI,
                 DETAIL_COLUMNS,
                 null,
                 null,
                 null);
 
-        final int BLUETOOTH = 1;
-        final int NFC = 2;
+        if(cursor == null || cursor.getCount() == 0){
 
+            Log.v(TAG,"Cursor has null or no data");
+            return ;
+        }
 
         int BLUETOOTH_COLOR = ContextCompat.getColor(getContext(),R.color.deep_blue);
         int NFC_COLOR = ContextCompat.getColor(getContext(),R.color.deep_orange);
@@ -162,23 +172,18 @@ public class BluetoothFragment extends Fragment {
         long currentMilliseconds = System.currentTimeMillis();
         long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
 
-        ArrayList<Entry> entries = new ArrayList<Entry>();
-        ArrayList<Integer> colors = new ArrayList<Integer>();
+
+        ArrayList<MyEntry> myEntries = new ArrayList<>();
+        ArrayList<Entry> entries = new ArrayList<>();
+        ArrayList<Integer> colors = new ArrayList<>();
         ArrayList<String> xAxisValues = getXAxisValues(currentMilliseconds);
 
 
         chart = (LineChart) rootView.findViewById(R.id.chart);
 
-        // bluetooth or NFC 구별하는 배열
-        int bluetoothOrNFC[];
-        bluetoothOrNFC = new int[xAxisValues.size()];
-        for(int i=0;i<bluetoothOrNFC.length;i++){
-            bluetoothOrNFC[i] = 0;
-        }
-
-
         while (cursor.moveToNext()) {
-            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
+
+            long currentDate = Utility.cursorDateToLong(cursor.getString(COL_GLUCOSE_TIME));
 
             if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
 
@@ -186,11 +191,11 @@ public class BluetoothFragment extends Fragment {
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
 
-//                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
-//                Log.v ("cursor" ,"type : " +  cursor.getString(COL_GLUCOSE_TYPE));
-//                Log.v("cursor",  "RAW VALUE :  " +rawValue);
-//                Log.v ("cursor" ,"index : " +  index );
-//                Log.v ("cursor" ,"______________________");
+                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
+                Log.v ("cursor" ,"type : " +  type);
+                Log.v("cursor",  "RAW VALUE :  " +rawValue);
+                Log.v ("cursor" ,"index : " +  index );
+                Log.v ("cursor" ,"______________________");
 
                 if(index < 0){
                     continue;
@@ -199,23 +204,20 @@ public class BluetoothFragment extends Fragment {
                     lastDataIndex = index;
                 }
 
-                entries.add(new Entry(rawValue, index));
-
                 if(type.equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
-                    bluetoothOrNFC[index] = BLUETOOTH;
+                    myEntries.add(new MyEntry(index,rawValue,BLUETOOTH_COLOR));
                 }else{
-                    bluetoothOrNFC[index] = NFC;
+                    myEntries.add(new MyEntry(index,rawValue,NFC_COLOR));
                 }
-
 
             }
         }
 
         // sort the entries ascending order by index.
-        Collections.sort(entries, new Comparator<Entry>() {
+        Collections.sort(myEntries, new Comparator<MyEntry>() {
             @Override
-            public int compare(Entry t1, Entry t2) {
-                if(t1.getXIndex() > t2.getXIndex())
+            public int compare(MyEntry t1, MyEntry t2) {
+                if(t1.getIndex() > t2.getIndex())
                     return 0;
                 else
                     return -1;
@@ -223,34 +225,12 @@ public class BluetoothFragment extends Fragment {
         });
 
 
-        // Color 결정하는 부분.
-        int current = BLUETOOTH;
-        for(int i=0;i<bluetoothOrNFC.length;i++){
-
-            // 만약 데이터가 처음부터 없으면 블루투스 컬러로 설정한다.
-            if(i  == 0){
-                if(bluetoothOrNFC[i] != NFC && bluetoothOrNFC[i] != BLUETOOTH){
-                    colors.add(BLUETOOTH_COLOR);
-                    current = BLUETOOTH;
-                    continue;
-                }
-            }
-            if(bluetoothOrNFC[i] == 0){
-                if(current == BLUETOOTH){
-                    colors.add(BLUETOOTH_COLOR);
-                }else{
-                    colors.add(NFC_COLOR);
-                }
-            }else if(bluetoothOrNFC[i] == BLUETOOTH){
-
-                colors.add(BLUETOOTH_COLOR);
-                current = BLUETOOTH;
-            }else{
-                colors.add(NFC_COLOR);
-                current = NFC;
-            }
-
+        for(MyEntry myEntry : myEntries){
+            entries.add(new Entry(myEntry.getValue(), myEntry.getIndex()));
+            colors.add(myEntry.getColor());
         }
+
+
 
         // 리미트 라인 설정하는 곳
         LimitLine ll1 = new LimitLine(highGlucose, getString(R.string.upper_limit));
