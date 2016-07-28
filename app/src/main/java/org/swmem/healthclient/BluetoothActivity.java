@@ -36,17 +36,12 @@ import org.swmem.healthclient.utils.RecycleUtils;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity
+public class BluetoothActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final java.lang.String TAG = "Main";
     private final String BLEUTOOTH_FRAGMENT_TAG = "BluetoothFragment";
 
-    private final String TYPE = "type";
-    private final String BLEUTOOTH = "bluetooth";
-    private final String NFC = "nfc";
-
-    private Context mContext;
     private BTCTemplateService mService;
     private Timer mRefreshTimer = null;
     private ActivityHandler mActivityHandler;
@@ -55,9 +50,8 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mContext = this;	//.getApplicationContext();
         mActivityHandler = new ActivityHandler();
-        AppSettings.initializeAppSettings(mContext);
+        AppSettings.initializeAppSettings(getApplicationContext());
 
         setContentView(R.layout.activity_draw);
 
@@ -79,21 +73,8 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        // type 에 따라서 Bluetooth 나 NFC Service 소환
-        String type = getIntent().getStringExtra(TYPE);
-
-        if(type.equals(BLEUTOOTH)){
-
-            navigationView.getMenu().getItem(0).setChecked(true);
-
-
-
-        }else if(type.equals(NFC)){
-
-            navigationView.getMenu().getItem(1).setChecked(true);
-
-        }
-
+        // check BlueTooth  navigator
+        navigationView.getMenu().getItem(0).setChecked(true);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -336,6 +317,7 @@ public class MainActivity extends AppCompatActivity
         if(!AppSettings.getBgService()) {
             doStopService();
         } else {
+
         }
 
         // Clean used resources
@@ -343,26 +325,26 @@ public class MainActivity extends AppCompatActivity
         System.gc();
     }
 
-    private void ensureDiscoverable() {
-        if (mService.getBluetoothScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            startActivity(intent);
-        }
-    }
-
-    private class RefreshTimerTask extends TimerTask {
-        public RefreshTimerTask() {}
-
-        public void run() {
-            mActivityHandler.post(new Runnable() {
-                public void run() {
-                    // TODO:
-                    mRefreshTimer = null;
-                }
-            });
-        }
-    }
+//    private void ensureDiscoverable() {
+//        if (mService.getBluetoothScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+//            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+//            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+//            startActivity(intent);
+//        }
+//    }
+//
+//    private class RefreshTimerTask extends TimerTask {
+//        public RefreshTimerTask() {}
+//
+//        public void run() {
+//            mActivityHandler.post(new Runnable() {
+//                public void run() {
+//                    // TODO:
+//                    mRefreshTimer = null;
+//                }
+//            });
+//        }
+//    }
 
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -393,6 +375,6 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(this, R.string.bt_not_enabled_leaving, Toast.LENGTH_SHORT).show();
                 }
                 break;
-        }	// End of switch(requestCode)
+        }
     }
 }

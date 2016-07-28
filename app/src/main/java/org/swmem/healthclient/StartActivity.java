@@ -32,7 +32,7 @@ public class StartActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(getBaseContext(),MainActivity.class);
+                Intent intent = new Intent(getBaseContext(),BluetoothActivity.class);
                 intent.putExtra(TYPE, BLEUTOOTH);
                 startActivity(intent);
                 finish();
@@ -43,7 +43,7 @@ public class StartActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(getBaseContext(),MainActivity.class);
+                Intent intent = new Intent(getBaseContext(),BluetoothActivity.class);
                 intent.putExtra(TYPE, NFC);
                 startActivity(intent);
                 finish();
