@@ -1,20 +1,10 @@
 package org.swmem.healthclient;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.bluetooth.BluetoothAdapter;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -28,14 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.swmem.healthclient.db.HealthContract;
-import org.swmem.healthclient.utils.AppSettings;
-import org.swmem.healthclient.utils.Constants;
-import org.swmem.healthclient.service.BTCTemplateService;
-import org.swmem.healthclient.utils.Logs;
-import org.swmem.healthclient.utils.RecycleUtils;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -95,6 +77,7 @@ public class MainActivity extends AppCompatActivity
 
         }
 
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
@@ -141,13 +124,61 @@ public class MainActivity extends AppCompatActivity
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,Utility.getCurrentDate());
+        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,Utility.formatDate(Utility.getCurrentDate()));
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,value);
         contentValues.put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
         ContentResolver contentResolver = getContentResolver();
         contentResolver.insert(HealthContract.GlucoseEntry.CONTENT_URI,contentValues);
+
+    }
+
+    public void insertDummies(){
+
+
+
+        long currentMilli = Utility.getCurrentDate();
+        double prevValue = 92;
+        ContentValues contentValues[] = new ContentValues[100];
+        for(int i=0;i<100;i++){
+
+            double rand = Math.random();
+            long time =  currentMilli - 1000*60* i;
+            String convertedTime = Utility.formatDate(time);
+
+            Log.v("time : " , convertedTime);
+
+            contentValues[i] = new ContentValues();
+            if(rand < 0.5){
+                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
+            }else{
+
+                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.NFC);
+            }
+
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TIME,convertedTime);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,prevValue);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,prevValue);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,prevValue);
+            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
+
+            if(Math.random() > 0.5){
+
+                prevValue += rand;
+
+            }else{
+
+                prevValue -= rand;
+
+            }
+
+        }
+
+        ContentResolver contentResolver = getContentResolver();
+
+        contentResolver.bulkInsert(HealthContract.GlucoseEntry.CONTENT_URI, contentValues);
+
 
     }
 
@@ -176,17 +207,10 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
 
-        //noinspection SimplifiableIfStatement
-
         switch (id){
-//            case R.id.bluetooth_menu:
-//                insertDummyData(11.11);
-//                Snackbar.make(getCurrentFocus()," Bluetooth icon selected",Snackbar.LENGTH_SHORT).show();
-//                break;
-//            case R.id.nfc_menu:
-//
-//                Snackbar.make(getCurrentFocus()," NFC icon selected",Snackbar.LENGTH_SHORT).show();
-//                break;
+            case R.id.plus :
+                insertDummies();
+                break;
 
         }
 

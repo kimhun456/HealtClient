@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -28,8 +31,15 @@ import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.service.BTCTemplateService;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
+import org.swmem.healthclient.graph.MyEntry;
+import org.swmem.healthclient.graph.MyMarkerView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.sql.Date;
 
 
 public class BluetoothFragment extends Fragment {
@@ -92,11 +102,9 @@ public class BluetoothFragment extends Fragment {
                              Bundle savedInstanceState) {
 
 
-        String limitday = PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString(getString(R.string.pref_limit_day_key),"1");
-        limitDays = Long.parseLong(limitday);
-
-
-        Log.v("cursor", "asdfasfsd");
+        limitDays = Long.parseLong(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_limit_day_key),"1"));
 
         View rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
 
@@ -114,103 +122,197 @@ public class BluetoothFragment extends Fragment {
 
     private void updateData(View rootView){
 
-
-
-        ContentResolver contentResolver = getActivity().getContentResolver();
+        updateChart(rootView);
 
         // 모든 데이터를 불러오게 된다.
-        Cursor cursor = contentResolver.query(HealthContract.GlucoseEntry.CONTENT_URI,
+        Cursor cursor = getActivity().getContentResolver().query(
+                HealthContract.GlucoseEntry.CONTENT_URI,
                 DETAIL_COLUMNS,
                 null,
                 null,
                 null);
 
 
-        updateChart(rootView,cursor);
-
-        if (cursor != null) {
-            try{
-
-                if(cursor.moveToLast()){
-                    lastValueText.setText(Double.toString(cursor.getDouble(COL_GLUCOSE_RAW_VALUE)));
-                }
-
-            } finally {
-                cursor.close();
+        long lastDate = 0;
+        double lastValue = 0;
+        while (cursor.moveToNext()) {
+            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
+            if(currentDate > lastDate){
+                lastDate = currentDate;
+                lastValue = cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
             }
 
         }
 
+        if(lastValue != 0){
+            lastValueText.setText(""+lastValue);
+        }
+        cursor.close();
     }
 
-    private void updateChart(View rootView,Cursor cursor){
+    private void updateChart(View rootView){
 
-        chart = (LineChart) rootView.findViewById(R.id.chart);
+        // 모든 데이터를 불러오게 된다.
+        Cursor cursor = getActivity().getContentResolver().query(
+                HealthContract.GlucoseEntry.CONTENT_URI,
+                DETAIL_COLUMNS,
+                null,
+                null,
+                null);
 
-//        chart.setDescription("asdf");
-        chart.setTouchEnabled(true);
-        chart.setDoubleTapToZoomEnabled(false);
-        chart.setScaleYEnabled(false);
+        if(cursor == null || cursor.getCount() == 0){
 
+            Log.v(TAG,"Cursor has null or no data");
+            return ;
+        }
+
+        int BLUETOOTH_COLOR = ContextCompat.getColor(getContext(),R.color.deep_blue);
+        int NFC_COLOR = ContextCompat.getColor(getContext(),R.color.deep_orange);
+        int UPPER_LIMIT_COLOR = ContextCompat.getColor(getContext(),R.color.deep_red);
+        int DOWN_LIMIT_COLOR = ContextCompat.getColor(getContext(),R.color.sunshine_dark_blue);
+
+        int lastDataIndex = 0;
+
+        Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_Hyperglycemia_key),"120"));
+
+        float highGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_Hyperglycemia_key),"120"));
+        float lowGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getBaseContext())
+                .getString(getString(R.string.pref_Hypotension_key),"80"));
 
         long currentMilliseconds = System.currentTimeMillis();
-        long pastMilliseconds = currentMilliseconds - limitDays * DAYS;
+        long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
 
         ArrayList<String> xaxisValues = getXaxisValues(currentMilliseconds);
 
-        ArrayList<Entry> entries = new ArrayList<Entry>();
+        ArrayList<MyEntry> myEntries = new ArrayList<>();
+        ArrayList<Entry> entries = new ArrayList<>();
+        ArrayList<Integer> colors = new ArrayList<>();
+        ArrayList<String> xAxisValues = getXAxisValues(currentMilliseconds);
 
 
-        cursor.moveToFirst();
+        chart = (LineChart) rootView.findViewById(R.id.chart);
 
-//        while (cursor.moveToNext()) {
-//
-//            Log.v("cursor",  "ID = " + cursor.getInt(COL_GLUCOSE_ID) + " RAW VALUE =  " + cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
-//            Log.v ("cursor" ,"date : " +  Utility.formatDate(cursor.getLong(COL_GLUCOSE_TIME)));
-//
-//
-//            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
-//
-//            if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
-//
-//
-//                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
-//
-//                Log.v("cursor", "value : " + rawValue+ "index : " + Utility.getIndexOfEntry(currentDate,currentMilliseconds));
-//
-//
-//                entries.add(new Entry(rawValue, Utility.getIndexOfEntry(currentDate,currentMilliseconds)));
-//
-//
-//            }
-//        }
+        while (cursor.moveToNext()) {
+
+            long currentDate = Utility.cursorDateToLong(cursor.getString(COL_GLUCOSE_TIME));
+
+            if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
+
+                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
+                String type = cursor.getString(COL_GLUCOSE_TYPE);
+                int index = getIndexOfEntries(currentDate,currentMilliseconds);
+
+                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
+                Log.v ("cursor" ,"type : " +  type);
+                Log.v("cursor",  "RAW VALUE :  " +rawValue);
+                Log.v ("cursor" ,"index : " +  index );
+                Log.v ("cursor" ,"______________________");
+
+                if(index < 0){
+                    continue;
+                }
+                if(index > lastDataIndex){
+                    lastDataIndex = index;
+                }
+
+                if(type.equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
+                    myEntries.add(new MyEntry(index,rawValue,BLUETOOTH_COLOR));
+                }else{
+                    myEntries.add(new MyEntry(index,rawValue,NFC_COLOR));
+                }
+
+            }
+        }
+
+        // sort the entries ascending order by index.
+        Collections.sort(myEntries, new Comparator<MyEntry>() {
+            @Override
+            public int compare(MyEntry t1, MyEntry t2) {
+                if(t1.getIndex() > t2.getIndex())
+                    return 0;
+                else
+                    return -1;
+            }
+        });
 
 
-
-        for(long i=pastMilliseconds ; i<=currentMilliseconds; i+=MINUTES){
-
-            float rawValue = (float) (Math.random()*40 + 60);
-
-            entries.add(new Entry(rawValue, getIndexOfEntry(i,currentMilliseconds)));
-
+        for(MyEntry myEntry : myEntries){
+            entries.add(new Entry(myEntry.getValue(), myEntry.getIndex()));
+            colors.add(myEntry.getColor());
         }
 
 
+        // 리미트 라인 설정하는 곳
+        LimitLine ll1 = new LimitLine(highGlucose, getString(R.string.upper_limit));
+        ll1.setLineWidth(4f);
+        ll1.enableDashedLine(10f, 5f, 0f);
+        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        ll1.setTextSize(14f);
+        ll1.setTextColor(UPPER_LIMIT_COLOR);
+        ll1.setLineColor(UPPER_LIMIT_COLOR);
+
+        LimitLine ll2 = new LimitLine(lowGlucose, getString(R.string.down_limit));
+        ll2.setLineWidth(4f);
+        ll2.enableDashedLine(10f, 5f, 0f);
+        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        ll2.setTextSize(14f);
+        ll2.setTextColor(DOWN_LIMIT_COLOR);
+        ll2.setLineColor(DOWN_LIMIT_COLOR);
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.removeAllLimitLines();
+        leftAxis.addLimitLine(ll1);
+        leftAxis.addLimitLine(ll2);
+
+
+        // 데이터 세트 설정
         LineDataSet lineDataSet = new LineDataSet(entries, "RAW VALUE");
         lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        lineDataSet.setValueTextSize(0f);
+        lineDataSet.setCircleColors(colors);
+        lineDataSet.setColors(colors);
+        lineDataSet.setHighLightColor(ContextCompat.getColor(getContext(),R.color.black));
+        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet);
-        LineData data = new LineData(xaxisValues, dataSets);
+        LineData data = new LineData(xAxisValues, dataSets);
 
 
+        // 레헨드 셋팅
+        Legend legend = chart.getLegend();
+        legend.setCustom(new int[]{BLUETOOTH_COLOR,NFC_COLOR}, new String[] { "BlueTooth", "NFC" });
+
+
+        // 차트 설정들
+        chart.setDescription(getString(R.string.chart_description));
+        chart.setTouchEnabled(true);
+        chart.setDoubleTapToZoomEnabled(false);
+        chart.setScaleYEnabled(false);
         chart.setData(data);
-        chart.zoom(22f,1f,1f,1f);
-        chart.moveViewToX(xaxisValues.size()-1);
+        chart.zoom(30f,1f,1f,1f);
 
+        if(lastDataIndex - 40 > 0){
+            chart.moveViewToX(lastDataIndex-40);
+        }else if(lastDataIndex - 20 > 0){
+            chart.moveViewToX(lastDataIndex-20);
+        }else if(lastDataIndex - 10 > 0){
+            chart.moveViewToX(lastDataIndex-10);
+        }else{
+            chart.moveViewToX(lastDataIndex);
+        }
+
+        chart.setKeepPositionOnRotation(true);
+        chart.setMarkerView(new MyMarkerView(getContext(), R.layout.marker_view));
         chart.invalidate(); // refresh
+
+        cursor.close();
     }
 
-    private ArrayList<String> getXaxisValues(long currentTimeMillis){
+    private ArrayList<String> getXAxisValues(long currentTimeMillis){
 
         ArrayList<String> xValues = new ArrayList<String>();
 
@@ -224,15 +326,13 @@ public class BluetoothFragment extends Fragment {
 
         for(long i = 0; i<= limitDays * DAYS; i+=MINUTES ){
 
-
             xValues.add(Utility.getGraphDateFormat(currentTimeMillis + i));
-
         }
 
         return xValues;
     }
 
-    private int getIndexOfEntry(long findMiiliSeconds , long currentTimeMillis){
+    private int getIndexOfEntries(long findMiiliSeconds , long currentTimeMillis){
 
         long pastMilliseconds = currentTimeMillis - limitDays * DAYS;
 
@@ -240,11 +340,12 @@ public class BluetoothFragment extends Fragment {
         long diff = findMiiliSeconds - pastMilliseconds;
 
 
-        int index  = (int) (diff /=MINUTES) + 1;
+        int index  = (int) (diff /=MINUTES);
 
         return index;
 
     }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
