@@ -38,7 +38,6 @@ import org.swmem.healthclient.bluetooth.BleManager;
 import org.swmem.healthclient.bluetooth.ConnectionInfo;
 import org.swmem.healthclient.bluetooth.TransactionBuilder;
 import org.swmem.healthclient.bluetooth.TransactionReceiver;
-import org.swmem.healthclient.contents.CommandParser;
 import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
@@ -46,7 +45,7 @@ import org.swmem.healthclient.utils.Logs;
 
 
 public class BTCTemplateService extends Service {
-	private static final String TAG = "LLService";
+	private static final String TAG = "BTCTemplateService";
 
 	// Context, System
 	private Context mContext = null;
@@ -60,16 +59,13 @@ public class BTCTemplateService extends Service {
 	private BleManager mBleManager = null;
 	private boolean mIsBleSupported = true;
 	private ConnectionInfo mConnectionInfo = null;		// Remembers connection info when BT connection is made
-	private CommandParser mCommandParser = null;
+	private TransactionReceiver.CommandParser mCommandParser = null;
 	
 	private TransactionBuilder mTransactionBuilder = null;
 	private TransactionReceiver mTransactionReceiver = null;
 	
    
-	
-	/*****************************************************
-	 *	Overrided methods
-	 ******************************************************/
+
 	@Override
 	public void onCreate() {
 		Logs.d(TAG, "# Service - onCreate() starts here");
@@ -137,7 +133,7 @@ public class BTCTemplateService extends Service {
 		
 		// Make instances
 		mConnectionInfo = ConnectionInfo.getInstance(mContext);
-		mCommandParser = new CommandParser();
+		mCommandParser = new TransactionReceiver.CommandParser();
 		
 		// Get local Bluetooth adapter
 		if(mBluetoothAdapter == null)
@@ -173,11 +169,7 @@ public class BTCTemplateService extends Service {
 		transaction.settingFinished();
 		transaction.sendTransaction();
 	}
-	
-	/**
-	 * 
-	 */
-	
+
 	
 	/*****************************************************
 	 *	Public methods
@@ -261,10 +253,7 @@ public class BTCTemplateService extends Service {
      * @param address  The BluetoothDevice to connect
      */
 	public void connectDevice(String address) {
-		Log.d("창욱", "1231231");
 		if(address != null && mBleManager != null) {
-			//mBleManager.disconnect();
-			Log.d("창욱", "123123");
 			if(mBleManager.connectGatt(mContext, true, address)) {
 				BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 				mConnectionInfo.setDeviceAddress(address);
@@ -379,7 +368,7 @@ public class BTCTemplateService extends Service {
 					mActivityHandler.obtainMessage(Constants.MESSAGE_READ_CHAT_DATA, strMsg)
 							.sendToTarget();
 					int command = mCommandParser.setString(strMsg);
-					if(command == CommandParser.COMMAND_THINGSPEAK) {
+					if(command == TransactionReceiver.CommandParser.COMMAND_THINGSPEAK) {
 						String parameters = mCommandParser.getParameterString();
 						StringBuilder requestUrl = new StringBuilder("http://184.106.153.149/update?");
 						if(parameters != null && parameters.length() > 0)

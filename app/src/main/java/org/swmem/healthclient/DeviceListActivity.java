@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -50,7 +51,6 @@ import java.util.Set;
 public class DeviceListActivity extends Activity {
     // Debugging
     private static final String TAG = "DeviceListActivity";
-    private static final boolean D = true;
     
     // Constants
 	public static final long SCAN_PERIOD = 8*1000;	// Stops scanning after a pre-defined scan period.
@@ -70,7 +70,7 @@ public class DeviceListActivity extends Activity {
     // UI stuff
     Button mScanButton = null;
     
-    
+    TextView titleView = null;
     
     
     @Override
@@ -78,12 +78,14 @@ public class DeviceListActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // Setup the window
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+//        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_device_list);
 
         // Set result CANCELED incase the user backs out
         setResult(Activity.RESULT_CANCELED);
 
+        titleView = (TextView)findViewById(R.id.title_device_list);
+        titleView.setText(getString(R.string.bt_title));
         mActivityHandler = new ActivityHandler();
         
         // Initialize the button to perform device discovery
@@ -98,8 +100,8 @@ public class DeviceListActivity extends Activity {
 
         // Initialize array adapters. One for already paired devices and
         // one for newly discovered devices
-        mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.adapter_device_name);
-        mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.adapter_device_name);
+        mPairedDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.adapter_device_name);
+        mNewDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.adapter_device_name);
 
         // Find and set up the ListView for paired devices
         ListView pairedListView = (ListView) findViewById(R.id.paired_devices);
@@ -147,11 +149,13 @@ public class DeviceListActivity extends Activity {
      * Start device discover with the BluetoothAdapter
      */
     private void doDiscovery() {
-        if(D) Log.d(TAG, "doDiscovery()");
+        Log.d(TAG, "doDiscovery()");
 
         // Indicate scanning in the title
-        setProgressBarIndeterminateVisibility(true);
-        setTitle(R.string.scanning);
+//        setProgressBarIndeterminateVisibility(true);
+
+
+        titleView.setText(getString(R.string.scanning));
 
         // Turn on sub-title for new devices
         findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
@@ -182,7 +186,9 @@ public class DeviceListActivity extends Activity {
     private void stopDiscovery() {
     	// Indicate scanning in the title
     	setProgressBarIndeterminateVisibility(false);
-    	setTitle(R.string.bt_title);
+
+
+        titleView.setText(getString(R.string.bt_title));
     	// Show scan button
     	mScanButton.setVisibility(View.VISIBLE);
     	mBleManager.scanLeDevice(false);

@@ -73,10 +73,10 @@ public class BleManager {
 	 * @param context  The UI Activity Context
 	 * @param handler  A Listener to receive messages back to the UI Activity
 	 */
-	private BleManager(Context context, Handler h) {
+	private BleManager(Context context, Handler handler) {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		mState = STATE_NONE;
-		mHandler = h;
+		mHandler = handler;
 		mContext = context;
 		
 		if(mContext == null)

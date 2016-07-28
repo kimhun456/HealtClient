@@ -53,8 +53,8 @@
 
     <string name="action_settings" translatable="false">Settings</string>
     <string name="chart_description">Glucose Chart</string>
-    <string name="upper_limit">HIGH GLUCOSE</string>
-    <string name="down_limit">LOW GLUCOSE</string>
+    <string name="upper_limit">Hyperglycemia</string>
+    <string name="down_limit">Hypotension</string>
 
     <!-- Settings -->
     <string name="settings_background_service">Run in background</string>

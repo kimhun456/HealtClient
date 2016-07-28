@@ -35,8 +35,6 @@
             android:summary="@string/pref_Hypotension_summary"
             android:inputType="numberDecimal"
             android:singleLine="true" />
-
     </PreferenceCategory>
-
 
 </PreferenceScreen>

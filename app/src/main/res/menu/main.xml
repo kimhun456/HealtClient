@@ -5,6 +5,6 @@
         android:id="@+id/plus"
         android:orderInCategory="100"
         android:icon="@drawable/up_arrow"
-        android:title="@string/NFC_settings"
-        app:showAsAction="always" />
+        android:title="plus data"
+        app:showAsAction="never" />
 </menu>
