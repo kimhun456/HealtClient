@@ -111,11 +111,8 @@ public class BluetoothFragment extends Fragment {
 
         lastValueText = (TextView)rootView.findViewById(R.id.lastValueText);
 
-
         updateData(rootView);
 
-
-        // Inflate the layout for this fragment
         return rootView;
     }
 
@@ -187,7 +184,6 @@ public class BluetoothFragment extends Fragment {
         long currentMilliseconds = System.currentTimeMillis();
         long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
 
-        ArrayList<String> xaxisValues = getXaxisValues(currentMilliseconds);
 
         ArrayList<MyEntry> myEntries = new ArrayList<>();
         ArrayList<Entry> entries = new ArrayList<>();

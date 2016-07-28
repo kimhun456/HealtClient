@@ -1,10 +1,19 @@
 package org.swmem.healthclient;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -18,6 +27,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.service.BTCTemplateService;
+import org.swmem.healthclient.utils.AppSettings;
+import org.swmem.healthclient.utils.Constants;
+import org.swmem.healthclient.utils.Logs;
+import org.swmem.healthclient.utils.RecycleUtils;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -135,8 +152,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void insertDummies(){
-
-
 
         long currentMilli = Utility.getCurrentDate();
         double prevValue = 92;
