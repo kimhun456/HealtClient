@@ -2,10 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-    android:id="@+id/scan"
+    android:id="@+id/scan_menu"
     android:orderInCategory="100"
-    android:icon="@drawable/scan"
-    android:title="@string/NFC_settings"
+    android:icon="@drawable/ic_menu_bluetooth_white"
+    android:title="@string/bluetooth_settings"
     app:showAsAction="always" />
+
+    <item
+        android:id="@+id/nfc_menu"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_menu_nfc_white"
+        android:title="@string/NFC_settings"
+        app:showAsAction="always" />
 
 </menu>

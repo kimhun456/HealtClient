@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
@@ -108,8 +109,12 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
         int id = item.getItemId();
 
         switch (id){
-            case R.id.scan:
+            case R.id.scan_menu:
                 doScan();
+                break;
+
+            case R.id.nfc_menu:
+                Snackbar.make(rootView,"NFC is clicked",Snackbar.LENGTH_LONG).show();
                 break;
         }
 

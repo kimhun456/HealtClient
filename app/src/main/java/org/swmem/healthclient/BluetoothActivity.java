@@ -34,7 +34,6 @@ import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.RecycleUtils;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class BluetoothActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -118,19 +117,6 @@ public class BluetoothActivity extends AppCompatActivity
         finalizeActivity();
     }
 
-    public void insertDummyData(double value){
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME,Utility.formatDate(Utility.getCurrentDate()));
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,value);
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,value);
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,value);
-        contentValues.put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
-        ContentResolver contentResolver = getContentResolver();
-        contentResolver.insert(HealthContract.GlucoseEntry.CONTENT_URI,contentValues);
-
-    }
 
     public void insertDummies(){
 
