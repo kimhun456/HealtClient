@@ -38,6 +38,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     private final int DAYS = 24 * HOURS;
     private long limitDays;
     private View rootView;
+    private Cursor prevCursor;
 
     private static final String[] DETAIL_COLUMNS = {
             HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
@@ -74,6 +75,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+
         limitDays = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(getContext())
                 .getString(getContext().getString(R.string.pref_limit_day_key),"1"));
@@ -82,15 +84,13 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
         LineChart chart = (LineChart) rootView.findViewById(R.id.chart);
         setUpChart(chart);
 
-//        updateData(rootView);
-
         return rootView;
     }
 
 
 
-    private void updateData(Cursor cursor){
-        new GraphLoadTask(getContext(), rootView).execute(cursor);
+    private void updateData(){
+        new GraphLoadTask(getContext(), rootView).execute();
     }
 
 
@@ -206,7 +206,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
         Log.v(TAG , "onLoadFinished");
-        updateData(data);
+
+        updateData();
 
     }
 
@@ -214,6 +215,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     public void onLoaderReset(Loader<Cursor> loader) {
 
         Log.v(TAG , "onLoaderReset");
+
 
     }
 

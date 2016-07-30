@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -26,7 +27,7 @@ import java.util.Comparator;
 /**
  * Created by hyunjae on 16. 7. 29.
  */
-public class GraphLoadTask extends AsyncTask<Cursor,Void,LineData>{
+public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private final String TAG = "GraphLoadTask";
 
@@ -85,6 +86,8 @@ public class GraphLoadTask extends AsyncTask<Cursor,Void,LineData>{
         super.onPostExecute(lineData);
 
 
+        Log.v(TAG , " set the graph and text ");
+
         if(lastValue != 0){
             lastValueText.setText(""+lastValue);
         }
@@ -104,14 +107,22 @@ public class GraphLoadTask extends AsyncTask<Cursor,Void,LineData>{
     }
 
     @Override
-    protected LineData doInBackground(Cursor... cursors) {
-
-        Cursor cursor = cursors[0];
+    protected LineData doInBackground(Void... voids) {
 
 
         long currentMilliseconds = System.currentTimeMillis();
         long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
+        String[] selectionArgs = {""};
+        selectionArgs[0] =  Utility.formatDate(pastMilliseconds);
+        String WHERE_DATE_BY_LIMIT_DAYS = HealthContract.GlucoseEntry.COLUMN_TIME + " > ?" ;
 
+        Cursor cursor = context.getContentResolver().query(
+                HealthContract.GlucoseEntry.CONTENT_URI,
+                DETAIL_COLUMNS,
+                WHERE_DATE_BY_LIMIT_DAYS,
+                selectionArgs,
+                null
+        );
 
         // select * from glucose_table where time > date('now', '-3 days');
         // 모든 데이터를 불러오게 된다.
@@ -125,9 +136,6 @@ public class GraphLoadTask extends AsyncTask<Cursor,Void,LineData>{
 
         int BLUETOOTH_COLOR = ContextCompat.getColor(context,R.color.deep_blue);
         int NFC_COLOR = ContextCompat.getColor(context,R.color.deep_orange);
-
-
-
 
         ArrayList<MyEntry> myEntries = new ArrayList<>();
         ArrayList<Entry> entries = new ArrayList<>();
@@ -199,8 +207,6 @@ public class GraphLoadTask extends AsyncTask<Cursor,Void,LineData>{
         dataSets.add(lineDataSet);
         LineData data = new LineData(xAxisValues, dataSets);
 
-        //cursor 닫기
-        cursor.close();
 
         return data;
 

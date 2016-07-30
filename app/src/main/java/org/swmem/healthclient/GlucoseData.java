@@ -15,8 +15,12 @@ public class GlucoseData {
     // 컨버팅이 되어있는지 확인하는 불리언값
     private boolean convert;
 
+    // 데이터베이스에 존재하는지 확인하는 값.
+    private boolean inDataBase;
+
 
     GlucoseData(){
+
         convert = false;
     }
 
@@ -24,7 +28,6 @@ public class GlucoseData {
         setRawData(rawData);
         setTemperature(temperature);
         convert = false;
-
     }
 
     GlucoseData(double rawData, double convertedData, double temperature){
@@ -33,6 +36,15 @@ public class GlucoseData {
         setTemperature(temperature);
 
     }
+
+    public boolean isInDataBase() {
+        return inDataBase;
+    }
+
+    public void setInDataBase(boolean inDataBase) {
+        this.inDataBase = inDataBase;
+    }
+
 
     public boolean isConverted() {
         return convert;
