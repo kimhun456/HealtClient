@@ -5,7 +5,10 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,7 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -26,8 +28,28 @@ import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.graph.MyMarkerView;
 
 
-public class BluetoothFragment extends Fragment {
+public class BluetoothFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
+
+
+    private final int SECONDS = 1000;
+    private final int MINUTES = 60 * SECONDS;
+    private final int HOURS = 60 * MINUTES;
+    private final int DAYS = 24 * HOURS;
+    private long limitDays;
+    private View rootView;
+
+    private static final String[] DETAIL_COLUMNS = {
+            HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
+            HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,
+            HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,
+            HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,
+            HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,
+            HealthContract.GlucoseEntry.COLUMN_TIME,
+            HealthContract.GlucoseEntry.COLUMN_TYPE
+    };
+
+    public static final int GRAPH_LODAER_ID = 0;
 
     private static final java.lang.String TAG = "BluetoothFragment";
 
@@ -52,20 +74,23 @@ public class BluetoothFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
+        limitDays = Long.parseLong(PreferenceManager
+                .getDefaultSharedPreferences(getContext())
+                .getString(getContext().getString(R.string.pref_limit_day_key),"1"));
+        getLoaderManager().initLoader(GRAPH_LODAER_ID,null,this);
+        rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
         LineChart chart = (LineChart) rootView.findViewById(R.id.chart);
         setUpChart(chart);
-        updateData(rootView);
+
+//        updateData(rootView);
 
         return rootView;
     }
 
 
 
-    private void updateData(View rootView){
-
-        new GraphLoadTask(getContext(), rootView).execute();
-
+    private void updateData(Cursor cursor){
+        new GraphLoadTask(getContext(), rootView).execute(cursor);
     }
 
 
@@ -156,4 +181,40 @@ public class BluetoothFragment extends Fragment {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
     }
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+
+        long pastMilliseconds = System.currentTimeMillis() - (limitDays * DAYS);
+        String[] selectionArgs = {""};
+        selectionArgs[0] =  Utility.formatDate(pastMilliseconds);
+        String WHERE_DATE_BY_LIMIT_DAYS = HealthContract.GlucoseEntry.COLUMN_TIME + " > ?" ;
+
+        return new CursorLoader(getActivity(),
+                HealthContract.GlucoseEntry.CONTENT_URI,
+                DETAIL_COLUMNS,
+                WHERE_DATE_BY_LIMIT_DAYS,
+                selectionArgs,
+                null
+        );
+
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        Log.v(TAG , "onLoadFinished");
+        updateData(data);
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+        Log.v(TAG , "onLoaderReset");
+
+    }
+
 }

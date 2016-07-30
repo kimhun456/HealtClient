@@ -26,7 +26,7 @@ import java.util.Comparator;
 /**
  * Created by hyunjae on 16. 7. 29.
  */
-public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
+public class GraphLoadTask extends AsyncTask<Cursor,Void,LineData>{
 
     private final String TAG = "GraphLoadTask";
 
@@ -104,7 +104,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     }
 
     @Override
-    protected LineData doInBackground(Void... voids) {
+    protected LineData doInBackground(Cursor... cursors) {
+
+        Cursor cursor = cursors[0];
 
 
         long currentMilliseconds = System.currentTimeMillis();
@@ -113,19 +115,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         // select * from glucose_table where time > date('now', '-3 days');
         // 모든 데이터를 불러오게 된다.
-
-
-        String[] selectionArgs = {""};
-        selectionArgs[0] =  Utility.formatDate(pastMilliseconds);
-        String WHERE_DATE_BY_LIMIT_DAYS = HealthContract.GlucoseEntry.COLUMN_TIME + " > ?" ;
-
-
-        Cursor cursor = context.getContentResolver().query(
-                HealthContract.GlucoseEntry.CONTENT_URI,
-                DETAIL_COLUMNS,
-                WHERE_DATE_BY_LIMIT_DAYS,
-                selectionArgs,
-                null);
 
 
         if(cursor == null || cursor.getCount() == 0){
