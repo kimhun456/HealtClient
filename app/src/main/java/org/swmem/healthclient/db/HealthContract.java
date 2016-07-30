@@ -78,6 +78,7 @@ public class HealthContract {
         public static final String COLUMN_TIME = "time";
         public static final String COLUMN_TYPE = "type";
 
+
         public static Uri buildLocationUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }

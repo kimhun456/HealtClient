@@ -6,6 +6,8 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.YAxis;
@@ -24,7 +26,7 @@ import java.util.Comparator;
 /**
  * Created by hyunjae on 16. 7. 29.
  */
-public class GraphLoadTask extends AsyncTask<LineChart,Void,LineData>{
+public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private final String TAG = "GraphLoadTask";
 
@@ -35,6 +37,7 @@ public class GraphLoadTask extends AsyncTask<LineChart,Void,LineData>{
     private final int DAYS = 24 * HOURS;
 
     private LineChart chart;
+    private TextView lastValueText;
 
 
     private static final String[] DETAIL_COLUMNS = {
@@ -60,20 +63,31 @@ public class GraphLoadTask extends AsyncTask<LineChart,Void,LineData>{
     private Context context;
     private long limitDays;
     private int lastDataIndex = 0;
+    private long lastDate = 0;
+    private double lastValue = 0;
 
 
-    public GraphLoadTask(Context context){
+    public GraphLoadTask(Context context, View rootView){
         this.context =  context;
         lastDataIndex = 0;
+        lastDate = 0;
+        lastValue = 0;
         limitDays = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(context)
                 .getString(context.getString(R.string.pref_limit_day_key),"1"));
+        chart = (LineChart) rootView.findViewById(R.id.chart);
+        lastValueText = (TextView) rootView.findViewById(R.id.lastValueText);
     }
 
 
     @Override
     protected void onPostExecute(LineData lineData) {
         super.onPostExecute(lineData);
+
+
+        if(lastValue != 0){
+            lastValueText.setText(""+lastValue);
+        }
 
         if(lastDataIndex - 40 > 0){
             chart.moveViewToX(lastDataIndex-40);
@@ -90,18 +104,29 @@ public class GraphLoadTask extends AsyncTask<LineChart,Void,LineData>{
     }
 
     @Override
-    protected LineData doInBackground(LineChart... charts) {
+    protected LineData doInBackground(Void... voids) {
 
 
-        chart = charts[0];
+        long currentMilliseconds = System.currentTimeMillis();
+        long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
 
+
+        // select * from glucose_table where time > date('now', '-3 days');
         // 모든 데이터를 불러오게 된다.
+
+
+        String[] selectionArgs = {""};
+        selectionArgs[0] =  Utility.formatDate(pastMilliseconds);
+        String WHERE_DATE_BY_LIMIT_DAYS = HealthContract.GlucoseEntry.COLUMN_TIME + " > ?" ;
+
+
         Cursor cursor = context.getContentResolver().query(
                 HealthContract.GlucoseEntry.CONTENT_URI,
                 DETAIL_COLUMNS,
-                null,
-                null,
+                WHERE_DATE_BY_LIMIT_DAYS,
+                selectionArgs,
                 null);
+
 
         if(cursor == null || cursor.getCount() == 0){
 
@@ -113,8 +138,6 @@ public class GraphLoadTask extends AsyncTask<LineChart,Void,LineData>{
         int NFC_COLOR = ContextCompat.getColor(context,R.color.deep_orange);
 
 
-        long currentMilliseconds = System.currentTimeMillis();
-        long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
 
 
         ArrayList<MyEntry> myEntries = new ArrayList<>();
@@ -151,6 +174,11 @@ public class GraphLoadTask extends AsyncTask<LineChart,Void,LineData>{
                     myEntries.add(new MyEntry(index,rawValue,NFC_COLOR));
                 }
 
+                if(currentDate > lastDate){
+                    lastDate = currentDate;
+                    lastValue = cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
+                }
+
             }
         }
 
@@ -181,6 +209,8 @@ public class GraphLoadTask extends AsyncTask<LineChart,Void,LineData>{
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet);
         LineData data = new LineData(xAxisValues, dataSets);
+
+        //cursor 닫기
         cursor.close();
 
         return data;

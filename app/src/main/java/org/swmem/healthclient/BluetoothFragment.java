@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,29 +30,6 @@ public class BluetoothFragment extends Fragment {
 
 
     private static final java.lang.String TAG = "BluetoothFragment";
-    TextView lastValueText;
-    LineChart chart;
-
-    private static final String[] DETAIL_COLUMNS = {
-            HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
-            HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,
-            HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,
-            HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,
-            HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,
-            HealthContract.GlucoseEntry.COLUMN_TIME,
-            HealthContract.GlucoseEntry.COLUMN_TYPE
-    };
-
-    // These indices are tied to DETAIL_COLUMNS.  If DETAIL_COLUMNS changes, these
-    // must change.
-    public static final int COL_GLUCOSE_ID = 0;
-    public static final int COL_GLUCOSE_GLUCOSE_VALUE = 1;
-    public static final int COL_GLUCOSE_TEMPEATURE_VALUE = 2;
-    public static final int COL_GLUCOSE_RAW_VALUE = 3;
-    public static final int COL_GLUCOSE_DEVICE_ID = 4;
-    public static final int COL_GLUCOSE_TIME = 5;
-    public static final int COL_GLUCOSE_TYPE = 6;
-
 
 
     public BluetoothFragment() {
@@ -62,7 +40,6 @@ public class BluetoothFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        updateData();
     }
 
     @Override
@@ -76,51 +53,18 @@ public class BluetoothFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
-        lastValueText = (TextView)rootView.findViewById(R.id.lastValueText);
-        chart = (LineChart) rootView.findViewById(R.id.chart);
-
-        setUpChart();
-
-        updateData();
+        LineChart chart = (LineChart) rootView.findViewById(R.id.chart);
+        setUpChart(chart);
+        updateData(rootView);
 
         return rootView;
     }
 
 
 
-    public void updateData(){
+    private void updateData(View rootView){
 
-        updateChart();
-
-        // 모든 데이터를 불러오게 된다.
-        Cursor cursor = getActivity().getContentResolver().query(
-                HealthContract.GlucoseEntry.CONTENT_URI,
-                DETAIL_COLUMNS,
-                null,
-                null,
-                null);
-
-
-        long lastDate = 0;
-        double lastValue = 0;
-        while (cursor.moveToNext()) {
-            long currentDate = cursor.getLong(COL_GLUCOSE_TIME);
-            if(currentDate > lastDate){
-                lastDate = currentDate;
-                lastValue = cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
-            }
-
-        }
-
-        if(lastValue != 0){
-            lastValueText.setText(""+lastValue);
-        }
-        cursor.close();
-    }
-
-    private void updateChart(){
-
-        new GraphLoadTask(getContext()).execute(chart);
+        new GraphLoadTask(getContext(), rootView).execute();
 
     }
 
@@ -148,7 +92,7 @@ public class BluetoothFragment extends Fragment {
     }
 
 
-    private void setUpChart(){
+    private void setUpChart(LineChart chart){
 
 
         int BLUETOOTH_COLOR = ContextCompat.getColor(getContext(),R.color.deep_blue);
