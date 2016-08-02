@@ -60,14 +60,26 @@
     <string name="pref_Hypoglycemia_summary">Set the Hypoglycemia</string>
     <string name="pref_Hypoglycemia_default">80</string>
 
-    
-    
-    
-
     <string name="action_settings" translatable="false">Settings</string>
     <string name="chart_description">Glucose Chart</string>
     <string name="upper_limit">Hyperglycemia</string>
     <string name="down_limit">Hypotension</string>
+
+
+
+    <!-- Sessiong keys and values-->
+
+    <string name="pref_session_exist_key">session</string>
+    <string name="pref_session_date_key">session_date</string>
+    <string name="pref_session_device_key">session_device</string>
+    <string name="not_connect">Expired</string>
+
+
+    <!--NAV BAR-->
+
+    <string name="device_title">Device id : </string>
+    <string name="start_title">Start Time : </string>
+    <string name="remain_title">Remain Time : </string>
 
     <!-- Settings -->
     <string name="settings_background_service">Run in background</string>

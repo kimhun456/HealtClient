@@ -8,12 +8,14 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,6 +25,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +49,7 @@ public class BluetoothActivity extends AppCompatActivity
     private BTCTemplateService mService;
     private Timer mRefreshTimer = null;
     private ActivityHandler mActivityHandler;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +57,6 @@ public class BluetoothActivity extends AppCompatActivity
 
         mActivityHandler = new ActivityHandler();
         AppSettings.initializeAppSettings(getApplicationContext());
-
         setContentView(R.layout.activity_draw);
 
          // Toolbar Setting
@@ -62,7 +67,15 @@ public class BluetoothActivity extends AppCompatActivity
         // Drawer Setting
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                sessionManager = new SessionManager(getApplicationContext());
+                sessionManage(sessionManager);
+            }
+        };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -71,13 +84,72 @@ public class BluetoothActivity extends AppCompatActivity
         // check BlueTooth  navigator
         navigationView.getMenu().getItem(0).setChecked(true);
 
+        // load Session Manager
+//        sessionManager = new SessionManager(getApplicationContext());
+//        sessionManage(sessionManager);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
                     .commit();
         }
 
+
+
+
         doStartService();
+    }
+
+    public void sessionManage(SessionManager sessionManager){
+
+        // input
+        sessionManager.setExist(true);
+        sessionManager.setDeviceConnectTime(System.currentTimeMillis() - 1000*60*10);
+        sessionManager.setDeviceID("123");
+
+        // 여기부터 셋팅
+        sessionManager.sync();
+
+        Log.v(TAG,"Session Manage");
+
+
+        if(sessionManager.getExist()){
+
+            LinearLayout linearLayout1 = (LinearLayout)findViewById(R.id.device_id_layout);
+            linearLayout1.setVisibility(View.VISIBLE);
+            LinearLayout linearLayout2 = (LinearLayout)findViewById(R.id.remain_time_layout);
+            linearLayout2.setVisibility(View.VISIBLE);
+            LinearLayout linearLayout3 = (LinearLayout)findViewById(R.id.start_time_layout);
+            linearLayout3.setVisibility(View.VISIBLE);
+
+            TextView deviceIDtext = (TextView)findViewById(R.id.device_id);
+            deviceIDtext.setText(sessionManager.getDeviceID());
+
+            String deviceConnectTimeStr = sessionManager.formatDate(sessionManager.getDeviceConnectTime());
+            TextView startTimeText = (TextView)findViewById(R.id.start_time);
+            startTimeText.setText(deviceConnectTimeStr);
+
+            String diffStr = sessionManager.getRemainTime(System.currentTimeMillis(),sessionManager.getDeviceConnectTime());
+            TextView remain_time = (TextView)findViewById(R.id.remain_time);
+            remain_time.setText(diffStr);
+        }else{
+
+            LinearLayout linearLayout1 = (LinearLayout)findViewById(R.id.device_id_layout);
+            linearLayout1.setVisibility(View.GONE);
+            LinearLayout linearLayout2 = (LinearLayout)findViewById(R.id.remain_time_layout);
+            linearLayout2.setVisibility(View.GONE);
+            LinearLayout linearLayout3 = (LinearLayout)findViewById(R.id.start_time_layout);
+            linearLayout3.setVisibility(View.GONE);
+
+        }
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+//        sessionManage(sessionManager);
     }
 
     @Override

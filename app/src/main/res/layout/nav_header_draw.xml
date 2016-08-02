@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nav_header_linear_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/side_nav_bar"
@@ -27,8 +28,73 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/user_email" />
+        android:text="@string/user_email"
+        android:paddingBottom="10dp"/>
 
+    <LinearLayout
+        android:id="@+id/device_id_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text= "@string/device_title"
+            android:textColor="@android:color/white"
+            android:id="@+id/device_title"/>
+
+        <TextView
+            android:textAlignment="viewEnd"
+            android:layout_marginRight="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text = "@string/not_connect"
+            android:id="@+id/device_id"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/start_time_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_title"
+            android:textColor="@android:color/white"
+            android:id="@+id/start_time_title"/>
+        <TextView
+            android:textAlignment="viewEnd"
+            android:layout_marginRight="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text =  "@string/not_connect"
+            android:id="@+id/start_time"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/remain_time_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/start_title"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/remain_title"
+            android:textColor="@android:color/white"
+            android:id="@+id/remain_time_title"/>
+        <TextView
+            android:textAlignment="viewEnd"
+            android:layout_marginRight="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text = "@string/not_connect"
+            android:id="@+id/remain_time"/>
+
+    </LinearLayout>
 
 
 </LinearLayout>
