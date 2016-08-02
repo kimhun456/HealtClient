@@ -11,6 +11,9 @@ public class GlucoseData {
     private double rawData;
     private double convertedData;
     private double temperature;
+    private String sensorID;
+    private String date;
+
 
     // 컨버팅이 되어있는지 확인하는 불리언값
     private boolean convert;
@@ -24,6 +27,8 @@ public class GlucoseData {
         convert = false;
     }
 
+
+
     GlucoseData(double rawData, double temperature){
         setRawData(rawData);
         setTemperature(temperature);
@@ -36,6 +41,8 @@ public class GlucoseData {
         setTemperature(temperature);
 
     }
+
+
 
     public boolean isInDataBase() {
         return inDataBase;
@@ -78,5 +85,22 @@ public class GlucoseData {
 
     public void setTemperature(double temperature) {
         this.temperature = temperature;
+    }
+
+
+    public String getSensorID() {
+        return sensorID;
+    }
+
+    public void setSensorID(String sensorID) {
+        this.sensorID = sensorID;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }
