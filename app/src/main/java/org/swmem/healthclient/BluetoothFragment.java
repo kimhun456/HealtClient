@@ -2,6 +2,8 @@ package org.swmem.healthclient;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.nfc.NfcAdapter;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
@@ -17,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -41,6 +44,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     private long limitDays;
     private View rootView;
     private Cursor prevCursor;
+
+    public static NfcAdapter nfcAdapter;
 
     private static final String[] DETAIL_COLUMNS = {
             HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
@@ -76,7 +81,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
 
         limitDays = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(getContext())
@@ -115,7 +119,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
                 break;
 
             case R.id.nfc_menu:
-                Snackbar.make(rootView,"NFC is clicked",Snackbar.LENGTH_LONG).show();
+                //Snackbar.make(rootView,"NFC is clicked",Snackbar.LENGTH_LONG).show();
+                doNfc();
                 break;
         }
 
@@ -174,6 +179,28 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     private void doScan() {
         Intent intent = new Intent(getActivity(), DeviceListActivity.class);
         getActivity().startActivityForResult(intent, Constants.REQUEST_CONNECT_DEVICE);
+    }
+
+    private void doNfc(){
+        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext()); //NFC기능이 없거나 사용불가일 경우 null반환.
+
+        if(nfcAdapter.isEnabled()){
+
+            Intent intent =new Intent(getActivity(), NfcActivity.class);
+
+            startActivity(intent);
+        }
+        else{
+            Snackbar.make(rootView,"NFC를 활성화 해주세요",Snackbar.LENGTH_LONG).show();
+            // 4.2.2 (API 17) 부터 NFC 설정 환경이 변경됨.
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
+                Log.e("NFC", "nfc_setting");
+                startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
+            } else {
+                Log.e("NFC", "wireless_setting");
+                startActivity(new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS));
+            }
+        }
     }
 
     @Override
