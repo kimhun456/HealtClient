@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 
 import org.swmem.healthclient.db.HealthContract;
@@ -132,33 +133,28 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
         float highGlucose = Float.parseFloat(PreferenceManager
                 .getDefaultSharedPreferences(getActivity().getBaseContext())
-                .getString(getString(R.string.pref_Hyperglycemia_key),"120"));
+                .getString(getString(R.string.pref_Hyperglycemia_key),"200"));
         float lowGlucose = Float.parseFloat(PreferenceManager
                 .getDefaultSharedPreferences(getActivity().getBaseContext())
-                .getString(getString(R.string.pref_Hypotension_key),"80"));
+                .getString(getString(R.string.pref_Hypoglycemia_key),"80"));
 
 
         // 리미트 라인 설정하는 곳
-        LimitLine ll1 = new LimitLine(highGlucose, getString(R.string.upper_limit));
-        ll1.setLineWidth(4f);
-        ll1.enableDashedLine(10f, 5f, 0f);
-        ll1.setLabelPosition(LimitLine.LimitLabelPosition.LEFT_TOP);
-        ll1.setTextSize(14f);
-        ll1.setTextColor(UPPER_LIMIT_COLOR);
+        LimitLine ll1 = new LimitLine(highGlucose);
+        ll1.setLineWidth(1.5f);
         ll1.setLineColor(UPPER_LIMIT_COLOR);
 
-        LimitLine ll2 = new LimitLine(lowGlucose, getString(R.string.down_limit));
-        ll2.setLineWidth(4f);
-        ll2.enableDashedLine(10f, 5f, 0f);
-        ll2.setLabelPosition(LimitLine.LimitLabelPosition.LEFT_BOTTOM);
-        ll2.setTextSize(14f);
-        ll2.setTextColor(DOWN_LIMIT_COLOR);
+        LimitLine ll2 = new LimitLine(lowGlucose);
+        ll2.setLineWidth(1.5f);
         ll2.setLineColor(DOWN_LIMIT_COLOR);
 
+        chart.getAxisRight().setEnabled(false);
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.removeAllLimitLines();
         leftAxis.addLimitLine(ll1);
         leftAxis.addLimitLine(ll2);
+        leftAxis.setAxisMinValue(40f);
+        leftAxis.setAxisMaxValue(400f);
 
         // 레헨드 셋팅
         Legend legend = chart.getLegend();
@@ -170,7 +166,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
         chart.setTouchEnabled(true);
         chart.setDoubleTapToZoomEnabled(false);
         chart.setScaleYEnabled(false);
-        chart.zoom(30f,1f,1f,1f);
+        chart.zoom(8f,1f,1f,1f);
         chart.setKeepPositionOnRotation(true);
         chart.setMarkerView(new MyMarkerView(getContext(), R.layout.marker_view));
     }

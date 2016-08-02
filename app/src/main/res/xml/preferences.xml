@@ -2,7 +2,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="@string/pref_graph_title">
+        android:title="@string/pref_graph_title"
+        android:icon="@drawable/ic_graph">
 
 
         <ListPreference
@@ -13,13 +14,6 @@
             android:entries="@array/pref_limit_day_options"
             android:summary="@string/pref_limit_day_summary"/>
 
-        <CheckBoxPreference
-            android:title="@string/pref_enable_notifications_label"
-            android:key="@string/pref_enable_notifications_key"
-            android:summaryOff="@string/pref_enable_notifications_false"
-            android:summaryOn="@string/pref_enable_notifications_true"
-            android:defaultValue="@string/pref_enable_notifications_default" />
-
         <EditTextPreference
             android:title="@string/pref_Hyperglycemia_label"
             android:key="@string/pref_Hyperglycemia_key"
@@ -29,12 +23,29 @@
             android:singleLine="true" />
 
         <EditTextPreference
-            android:title="@string/pref_Hypotension_label"
-            android:key="@string/pref_Hypotension_key"
-            android:defaultValue="@string/pref_Hypotension_default"
-            android:summary="@string/pref_Hypotension_summary"
+            android:title="@string/pref_Hypoglycemia_label"
+            android:key="@string/pref_Hypoglycemia_key"
+            android:defaultValue="@string/pref_Hypoglycemia_default"
+            android:summary="@string/pref_Hypoglycemia_summary"
             android:inputType="numberDecimal"
             android:singleLine="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_noti_title">
+        <CheckBoxPreference
+            android:title="@string/pref_enable_Hyperglycemia_notifications_label"
+            android:key="@string/pref_enable_Hyperglycemia_notifications_key"
+            android:summaryOff="@string/pref_enable_Hyperglycemia_notifications_false"
+            android:summaryOn="@string/pref_enable_Hyperglycemia_notifications_true"
+            android:defaultValue="@string/pref_enable_Hyperglycemia_notifications_default" />
+
+        <CheckBoxPreference
+            android:title="@string/pref_enable_Hypoglycemia_notifications_label"
+            android:key="@string/pref_enable_Hypoglycemia_notifications_key"
+            android:summaryOff="@string/pref_enable_Hypoglycemia_notifications_false"
+            android:summaryOn="@string/pref_enable_Hypoglycemia_notifications_true"
+            android:defaultValue="@string/pref_enable_Hypoglycemia_notifications_default" />
     </PreferenceCategory>
 
 </PreferenceScreen>

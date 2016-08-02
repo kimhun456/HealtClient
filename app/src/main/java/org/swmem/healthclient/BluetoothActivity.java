@@ -38,7 +38,7 @@ import java.util.Timer;
 public class BluetoothActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final java.lang.String TAG = "Main";
+    private static final java.lang.String TAG = "BluetoothActivity";
     private final String BLEUTOOTH_FRAGMENT_TAG = "BluetoothFragment";
 
     private BTCTemplateService mService;
@@ -58,9 +58,6 @@ public class BluetoothActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        TextView title = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        Typeface font = Typeface.createFromAsset(this.getAssets(), "Galada.ttf");
-        title.setTypeface(font);
 
         // Drawer Setting
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -70,7 +67,6 @@ public class BluetoothActivity extends AppCompatActivity
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
 
         // check BlueTooth  navigator
         navigationView.getMenu().getItem(0).setChecked(true);
@@ -205,12 +201,7 @@ public class BluetoothActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_bluetooth) {
-
-
-        } else if (id == R.id.nav_info) {
-
-        } else if (id == R.id.nav_nfc) {
+        if (id == R.id.nav_graph) {
 
         } else if (id == R.id.nav_setting) {
 
@@ -218,10 +209,9 @@ public class BluetoothActivity extends AppCompatActivity
             startActivity(intent);
 
 
-        } else if (id == R.id.nav_view) {
+        }else if (id == R.id.nav_info) {
 
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
