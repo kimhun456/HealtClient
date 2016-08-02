@@ -207,6 +207,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         dataSets.add(lineDataSet);
         LineData data = new LineData(xAxisValues, dataSets);
 
+        cursor.close();
 
         return data;
 

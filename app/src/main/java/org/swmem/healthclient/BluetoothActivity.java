@@ -114,6 +114,9 @@ public class BluetoothActivity extends AppCompatActivity
 
         if(sessionManager.getExist()){
 
+            View view = findViewById(R.id.divider);
+            view.setVisibility(View.VISIBLE);
+
             LinearLayout linearLayout1 = (LinearLayout)findViewById(R.id.device_id_layout);
             linearLayout1.setVisibility(View.VISIBLE);
             LinearLayout linearLayout2 = (LinearLayout)findViewById(R.id.remain_time_layout);
@@ -133,6 +136,8 @@ public class BluetoothActivity extends AppCompatActivity
             remain_time.setText(diffStr);
         }else{
 
+            View view = findViewById(R.id.divider);
+            view.setVisibility(View.VISIBLE);
             LinearLayout linearLayout1 = (LinearLayout)findViewById(R.id.device_id_layout);
             linearLayout1.setVisibility(View.GONE);
             LinearLayout linearLayout2 = (LinearLayout)findViewById(R.id.remain_time_layout);

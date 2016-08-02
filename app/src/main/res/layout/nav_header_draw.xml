@@ -28,10 +28,19 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/user_email"
-        android:paddingBottom="10dp"/>
+        android:text="@string/user_email"/>
+
+    <View
+        android:visibility="gone"
+        android:id="@+id/divider"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/white" />
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/device_id_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -55,6 +64,7 @@
 
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/start_time_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -75,6 +85,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/remain_time_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
