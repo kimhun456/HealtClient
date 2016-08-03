@@ -11,8 +11,9 @@ public class GlucoseData {
     private double rawData;
     private double convertedData;
     private double temperature;
-    private String sensorID;
+    private String deviceID;
     private String date;
+    private String type;
 
 
     // 컨버팅이 되어있는지 확인하는 불리언값
@@ -22,12 +23,36 @@ public class GlucoseData {
     private boolean inDataBase;
 
 
+    public boolean isModifed() {
+        return isModifed;
+    }
+
+    public void setModifed(boolean modifed) {
+        isModifed = modifed;
+    }
+
+    // 값이 바뀌었는지 확인하는 값.
+    private boolean isModifed;
+
+
     GlucoseData(){
 
         convert = false;
     }
 
-
+    public GlucoseData(double rawData, double convertedData, double temperature,
+                       String deviceID, String date, String type,
+                       boolean convert, boolean inDataBase, boolean isModifed) {
+        this.rawData = rawData;
+        this.convertedData = convertedData;
+        this.temperature = temperature;
+        this.deviceID = deviceID;
+        this.date = date;
+        this.type = type;
+        this.convert = convert;
+        this.inDataBase = inDataBase;
+        this.isModifed = isModifed;
+    }
 
     GlucoseData(double rawData, double temperature){
         setRawData(rawData);
@@ -42,6 +67,14 @@ public class GlucoseData {
 
     }
 
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
     public boolean isInDataBase() {
@@ -88,12 +121,12 @@ public class GlucoseData {
     }
 
 
-    public String getSensorID() {
-        return sensorID;
+    public String getDeviceID() {
+        return deviceID;
     }
 
-    public void setSensorID(String sensorID) {
-        this.sensorID = sensorID;
+    public void setDeviceID(String deviceID) {
+        this.deviceID = deviceID;
     }
 
     public String getDate() {

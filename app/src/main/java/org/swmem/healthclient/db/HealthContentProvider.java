@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import java.util.ArrayList;
+
 public class HealthContentProvider extends ContentProvider {
 
     private HealthDbHelper mOpenHelper;
@@ -167,6 +169,41 @@ public class HealthContentProvider extends ContentProvider {
 
     @Override
     public int bulkInsert(Uri uri, ContentValues[] values) {
+
+        int numberInserted = 0;
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+
+        switch (match) {
+
+            case GLUCOSE: {
+
+                db.beginTransaction();
+
+                for(ContentValues contentValues : values){
+
+                    long _id = db.insert(HealthContract.GlucoseEntry.TABLE_NAME, null, contentValues);
+                    if(_id <=0)
+                        throw new android.database.SQLException("Failed to insert row into " + uri);
+
+                }
+
+                db.setTransactionSuccessful();
+                break;
+
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+
+
+        db.endTransaction();
+        return numberInserted;
+    }
+
+
+    public int bulkInsert(Uri uri, ArrayList<ContentValues> values) {
 
         int numberInserted = 0;
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();

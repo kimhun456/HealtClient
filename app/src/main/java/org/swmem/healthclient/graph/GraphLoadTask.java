@@ -148,16 +148,19 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
             if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
 
-                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
+                float convertedData = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
-
+//
 //                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
 //                Log.v ("cursor" ,"type : " +  type);
-//                Log.v("cursor",  "RAW VALUE :  " +rawValue);
+//                Log.v("cursor",  "RAW VALUE :  " +convertedData);
 //                Log.v ("cursor" ,"index : " +  index );
 //                Log.v ("cursor" ,"______________________");
 
+                if(convertedData ==0.0){
+                    continue;
+                }
                 if(index < 0){
                     continue;
                 }
@@ -166,9 +169,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                 }
 
                 if(type.equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
-                    myEntries.add(new MyEntry(index,rawValue,BLUETOOTH_COLOR));
+                    myEntries.add(new MyEntry(index,convertedData,BLUETOOTH_COLOR));
                 }else{
-                    myEntries.add(new MyEntry(index,rawValue,NFC_COLOR));
+                    myEntries.add(new MyEntry(index,convertedData,NFC_COLOR));
                 }
 
                 if(currentDate > lastDate){

@@ -7,4 +7,11 @@
         android:icon="@drawable/up_arrow"
         android:title="plus data"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/delete_menu"
+        android:orderInCategory="100"
+        android:icon="@drawable/up_arrow"
+        android:title="delete all data"
+        app:showAsAction="never" />
 </menu>

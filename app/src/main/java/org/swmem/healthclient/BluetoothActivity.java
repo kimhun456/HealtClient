@@ -84,19 +84,13 @@ public class BluetoothActivity extends AppCompatActivity
         // check BlueTooth  navigator
         navigationView.getMenu().getItem(0).setChecked(true);
 
-        // load Session Manager
-//        sessionManager = new SessionManager(getApplicationContext());
-//        sessionManage(sessionManager);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
                     .commit();
         }
 
-
-
-
-        doStartService();
+//        doStartService();
     }
 
     public void sessionManage(SessionManager sessionManager){
@@ -180,61 +174,20 @@ public class BluetoothActivity extends AppCompatActivity
     @Override
     public void onDestroy() {
         super.onDestroy();
-        finalizeActivity();
+//        finalizeActivity();
     }
 
     @Override
     public void onLowMemory (){
         super.onLowMemory();
         // onDestroy is not always called when applications are finished by Android system.
-        finalizeActivity();
+//        finalizeActivity();
     }
 
 
     public void insertDummies(){
-
-        long currentMilli = Utility.getCurrentDate();
-        double prevValue = 92;
-        ContentValues contentValues[] = new ContentValues[100];
-        for(int i=0;i<100;i++){
-
-            double rand = Math.random();
-            long time =  currentMilli - 1000*60* i;
-            String convertedTime = Utility.formatDate(time);
-
-            Log.v("time : " , convertedTime);
-
-            contentValues[i] = new ContentValues();
-            if(rand < 0.5){
-                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-            }else{
-
-                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.NFC);
-            }
-
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TIME,convertedTime);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,prevValue);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,prevValue);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,prevValue);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
-
-            if(Math.random() > 0.5){
-
-                prevValue += rand;
-
-            }else{
-
-                prevValue -= rand;
-
-            }
-
-        }
-
-        ContentResolver contentResolver = getContentResolver();
-
-        contentResolver.bulkInsert(HealthContract.GlucoseEntry.CONTENT_URI, contentValues);
-
-
+        Intent intent = new Intent(getApplicationContext(),InsertService.class);
+        startService(intent);
     }
 
     @Override
@@ -267,10 +220,23 @@ public class BluetoothActivity extends AppCompatActivity
                 insertDummies();
                 break;
 
+            case R.id.delete_menu:
+
+                deleteAllData();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    public void deleteAllData(){
+
+        getApplicationContext().getContentResolver().delete(HealthContract.GlucoseEntry.CONTENT_URI, HealthContract.GlucoseEntry._ID +" >= 0",null);
+
+
+    }
+
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
