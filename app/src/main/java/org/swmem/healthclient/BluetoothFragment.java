@@ -43,7 +43,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     private final int DAYS = 24 * HOURS;
     private long limitDays;
     private View rootView;
-    private Cursor prevCursor;
 
     public static NfcAdapter nfcAdapter;
 
@@ -214,7 +213,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-
         long pastMilliseconds = System.currentTimeMillis() - (limitDays * DAYS);
         String[] selectionArgs = {""};
         selectionArgs[0] =  Utility.formatDate(pastMilliseconds);
@@ -232,18 +230,14 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
         Log.v(TAG , "onLoadFinished");
-
         updateData();
 
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
         Log.v(TAG , "onLoaderReset");
-
 
     }
 
