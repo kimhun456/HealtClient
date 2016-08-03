@@ -35,7 +35,7 @@ public class GlucoseData {
     private boolean isModifed;
 
 
-    GlucoseData(){
+    public GlucoseData(){
 
         convert = false;
     }
@@ -52,19 +52,6 @@ public class GlucoseData {
         this.convert = convert;
         this.inDataBase = inDataBase;
         this.isModifed = isModifed;
-    }
-
-    GlucoseData(double rawData, double temperature){
-        setRawData(rawData);
-        setTemperature(temperature);
-        convert = false;
-    }
-
-    GlucoseData(double rawData, double convertedData, double temperature){
-        setRawData(rawData);
-        setConvertedData(convertedData);
-        setTemperature(temperature);
-
     }
 
 

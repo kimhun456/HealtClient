@@ -3,22 +3,20 @@ package org.swmem.healthclient;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 /**
+ * SessionManager를 통해 Session을 관리한다.
+ *
  * Created by hyunjae on 16. 8. 2.
  */
 public class SessionManager {
 
     private final String TAG = "SessionManager";
+
     private final int EXPIRED_DAY = 3;
 
     private final int SECONDS = 1000;
@@ -32,7 +30,7 @@ public class SessionManager {
     private long deviceConnectTime;
     private String deviceID;
 
-    SessionManager(Context context){
+    public SessionManager(Context context){
         this.mContext = context;
         sharedPreferences =  PreferenceManager
                 .getDefaultSharedPreferences(context);
@@ -78,10 +76,17 @@ public class SessionManager {
 
         String result;
 
-        long diff = currentTime - deviceConnectTime;
-        result = (diff/DAYS) + "일 "
-                + (diff/HOURS)  +"시간 "
-                + (diff/MINUTES) + "분";
+        long diff =  EXPIRED_DAY * DAYS - ( currentTime - deviceConnectTime );
+
+        String day = (diff/DAYS) + "일 ";
+        diff -= (diff/DAYS) *DAYS;
+
+        String hours = (diff/HOURS) + "시간 ";
+        diff -= (diff/HOURS) * HOURS;
+
+        String minutes = (diff/MINUTES) + "분";
+
+        result = day + hours + minutes;
 
         return result;
     }

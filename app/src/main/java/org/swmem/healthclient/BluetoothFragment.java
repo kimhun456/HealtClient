@@ -33,7 +33,7 @@ import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.graph.MyMarkerView;
 
 
-public class BluetoothFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class BluetoothFragment extends Fragment implements LoaderManager .LoaderCallbacks<Cursor>{
 
 
 
@@ -62,7 +62,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
 
     public BluetoothFragment() {
-        // Required empty public constructor
 
     }
 

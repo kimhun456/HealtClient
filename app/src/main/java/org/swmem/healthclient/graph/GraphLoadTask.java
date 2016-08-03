@@ -89,7 +89,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         Log.v(TAG , " set the graph and text ");
 
         if(lastValue != 0){
-            lastValueText.setText(""+lastValue);
+            lastValueText.setText(String.format("%.2f",lastValue));
         }
 
         if(lastDataIndex - 40 > 0){

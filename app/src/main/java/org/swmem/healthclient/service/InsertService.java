@@ -1,4 +1,4 @@
-package org.swmem.healthclient;
+package org.swmem.healthclient.service;
 
 import android.app.IntentService;
 import android.content.ContentProviderOperation;
@@ -10,6 +10,9 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.swmem.healthclient.GlucoseData;
+import org.swmem.healthclient.SessionManager;
+import org.swmem.healthclient.Utility;
 import org.swmem.healthclient.db.HealthContract;
 
 import java.util.ArrayList;
@@ -58,6 +61,14 @@ public class InsertService extends IntentService {
 
         if (intent != null) {
 
+            // TODO: intent에서 byte[]를 받아서 insertMap을 만들기
+
+            SessionManager sessionManager = new SessionManager(getApplicationContext());
+            sessionManager.setExist(true);
+            sessionManager.setDeviceConnectTime(System.currentTimeMillis());
+            sessionManager.setDeviceID("deviceID");
+
+
             HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
@@ -100,7 +111,7 @@ public class InsertService extends IntentService {
             }else{
                 data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
             }
-            
+
             data.setDate(convertedTime);
             data.setRawData(prevValue);
             data.setTemperature(prevValue);

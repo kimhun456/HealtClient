@@ -67,7 +67,7 @@
         <receiver android:name=".service.ServiceMonitoring$ServiceMonitoringBR" />
 
         <service
-            android:name=".InsertService"
+            android:name=".service.InsertService"
             android:exported="false"></service>
     </application>
 
