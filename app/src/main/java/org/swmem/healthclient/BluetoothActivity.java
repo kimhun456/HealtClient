@@ -218,10 +218,16 @@ public class BluetoothActivity extends AppCompatActivity
 
                 deleteAllData();
                 break;
+
+            case R.id.noti_menu:
+                new MyNotificationManager(getApplicationContext()).makeNotification("title" , "contents");
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+
 
 
     public void deleteAllData(){

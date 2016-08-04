@@ -15,7 +15,7 @@
     <string name="graph_nav">Graph</string>
     <string name="information_setting">Information</string>
     <string name="NFC_settings">NFC</string>
-    <string name="insulin_value">No data</string>
+    <string name="no_data">No data</string>
     <string name="setting">Settings</string>
 
     <!-- PREFENCE-->
@@ -64,6 +64,9 @@
     <string name="chart_description">Glucose Chart</string>
     <string name="upper_limit">Hyperglycemia</string>
     <string name="down_limit">Hypotension</string>
+
+
+    <string name="mgdl" translatable="false">mg/dL</string>
 
 
 

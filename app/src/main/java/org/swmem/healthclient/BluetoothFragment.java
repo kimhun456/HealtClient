@@ -117,7 +117,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
                 break;
 
             case R.id.nfc_menu:
-                //Snackbar.make(rootView,"NFC is clicked",Snackbar.LENGTH_LONG).show();
                 doNfc();
                 break;
         }
@@ -156,8 +155,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         leftAxis.removeAllLimitLines();
         leftAxis.addLimitLine(ll1);
         leftAxis.addLimitLine(ll2);
-        leftAxis.setAxisMinValue(40f);
-        leftAxis.setAxisMaxValue(400f);
+//        leftAxis.setAxisMinValue(40f);
+//        leftAxis.setAxisMaxValue(400f);
 
         // 레헨드 셋팅
         Legend legend = chart.getLegend();
@@ -172,6 +171,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         chart.zoom(8f,1f,1f,1f);
         chart.setKeepPositionOnRotation(true);
         chart.setMarkerView(new MyMarkerView(getContext(), R.layout.marker_view));
+
+        Log.v(TAG,"Setup Graph");
     }
 
     private void doScan() {
@@ -180,7 +181,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
     }
 
     private void doNfc(){
-        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext()); //NFC기능이 없거나 사용불가일 경우 null반환.
+        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext());
 
         if(nfcAdapter.isEnabled()){
 
