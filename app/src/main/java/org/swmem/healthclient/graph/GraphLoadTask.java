@@ -150,9 +150,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
 
                 if(convertedData ==0.0){
-                    continue;
+                    convertedData = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
+                    Log.v ("cursor" ,"rawdata is insert : " + (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
                 }
-
 
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);

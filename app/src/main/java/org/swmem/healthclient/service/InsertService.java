@@ -68,8 +68,20 @@ public class InsertService extends IntentService {
             sessionManager.setDeviceConnectTime(System.currentTimeMillis());
             sessionManager.setDeviceID("deviceID");
 
+            byte[] test = {
+                    0x01, 0x00,0x32, 0x00, 0x00, 0x08, 0x00, 0x64,
+                    0x5C, 0x00, 0x00, 0x24, 0x00,
+                    0x5C, 0x01, 0x21, 0x24, 0x00,
+                    0x5C, 0x01, 0x42, 0x25, 0x00,
+                    0x5D, 0x00, 0x00, 0x24, 0x00,
+                    0x5D, 0x01, 0x21, 0x24, 0x00,
+                    0x5D, 0x01, 0x42, 0x25, 0x00,
+                    0x5E, 0x00, 0x00, 0x24, 0x00,
+                    0x5E, 0x01, 0x21, 0x24, 0x00
+            };
 
-            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
+
+            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 
@@ -88,6 +100,95 @@ public class InsertService extends IntentService {
 
         Toast.makeText(this, "Insert Service END" , Toast.LENGTH_SHORT).show();
         super.onDestroy();
+
+
+    }
+
+
+    public HashMap<String , GlucoseData> byteDecoding(byte[] buf){
+
+
+        HashMap<String,GlucoseData> map = new HashMap<>();
+
+        String type = "";
+        String deviceID ="";
+        int numbering;
+        int battery;
+        double rawData=0;
+        double temperature=0;
+
+        int count = 0;
+
+        for(int i=0; i<buf.length; i++){
+
+            //type
+            if(i==0){
+                type = String.valueOf(buf[0]);
+                System.out.println("type : " + type);
+            }
+            //deviceID
+            else if(i==1){
+                deviceID = String.valueOf(buf[1]<<8 | buf[2]);
+                System.out.println("deviceID : "+ deviceID);
+            }
+            //nubmering
+            else if(i==3){
+                numbering = buf[3]<<16  | buf[4]<<8 | buf[5];
+                System.out.println("numbering : "+ numbering);
+            }
+            //battery
+            else if(i==6){
+                battery = buf[6]<<8 | buf[7];
+                System.out.println("battery : "+ battery);
+            }
+
+            //gluecoseData & temperature;
+            else{
+                //정수
+                if((i-8)%5 == 0){
+                    rawData = buf[i];
+                }
+                //소수점 확인.
+                else if((i-9)%5 == 0 && buf[i] != 0){
+                    rawData += (buf[i+1])*0.01;
+                }
+                else if((i-11)%5 == 0){
+                    temperature = buf[i];
+                }
+                else if((i>=12) && (i-12)%5 == 0){
+                    //insert
+                    System.out.print("rawData : "+ rawData);
+                    System.out.println("  temperature : "+ temperature);
+
+
+                    GlucoseData data = new GlucoseData();
+
+                    if(type.equals(HealthContract.GlucoseEntry.NFC)){
+                        data.setType(HealthContract.GlucoseEntry.NFC);
+                    }else{
+                        data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+                    }
+
+                    String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
+                    data.setDate(date);
+                    data.setRawData(rawData);
+                    data.setTemperature(temperature);
+                    data.setDeviceID(deviceID);
+                    data.setModifed(false);
+                    data.setConvert(false);
+                    data.setInDataBase(false);
+                    map.put(date,data);
+                    count++;
+
+                }
+
+
+            }
+
+        }
+
+
+        return map;
     }
 
 
