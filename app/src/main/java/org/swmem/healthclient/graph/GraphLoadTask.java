@@ -39,6 +39,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private LineChart chart;
     private TextView lastValueText;
+    private TextView minutesText;
 
 
     private static final String[] DETAIL_COLUMNS = {
@@ -78,6 +79,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                 .getString(context.getString(R.string.pref_limit_day_key),"1"));
         chart = (LineChart) rootView.findViewById(R.id.chart);
         lastValueText = (TextView) rootView.findViewById(R.id.lastValueText);
+        minutesText = (TextView) rootView.findViewById(R.id.data_minute_text);
     }
 
 
@@ -85,11 +87,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     protected void onPostExecute(LineData lineData) {
         super.onPostExecute(lineData);
 
-
-        Log.v(TAG , " set the graph and text ");
-
         if(lastValue != 0){
             lastValueText.setText(String.format("%.2f",lastValue));
+            minutesText.setText(Utility.getGraphDateFormat(lastDate));
         }
 
         if(lastDataIndex - 40 > 0){
@@ -103,6 +103,8 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         }
         chart.setData(lineData);
         chart.invalidate();
+
+        Log.v(TAG,"Load Graph Data");
 
     }
 
@@ -123,10 +125,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                 selectionArgs,
                 null
         );
-
-        // select * from glucose_table where time > date('now', '-3 days');
-        // 모든 데이터를 불러오게 된다.
-
 
         if(cursor == null || cursor.getCount() == 0){
 
@@ -149,18 +147,22 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
             if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
 
                 float convertedData = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
-                String type = cursor.getString(COL_GLUCOSE_TYPE);
-                int index = getIndexOfEntries(currentDate,currentMilliseconds);
-//
-//                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
-//                Log.v ("cursor" ,"type : " +  type);
-//                Log.v("cursor",  "RAW VALUE :  " +convertedData);
-//                Log.v ("cursor" ,"index : " +  index );
-//                Log.v ("cursor" ,"______________________");
+
 
                 if(convertedData ==0.0){
                     continue;
                 }
+
+
+                String type = cursor.getString(COL_GLUCOSE_TYPE);
+                int index = getIndexOfEntries(currentDate,currentMilliseconds);
+
+//                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
+//                Log.v ("cursor" ,"type : " +  type);
+//                Log.v("cursor",  "Converted VALUE :  " +convertedData);
+//                Log.v ("cursor" ,"index : " +  index );
+//                Log.v ("cursor" ,"______________________");
+
                 if(index < 0){
                     continue;
                 }
@@ -223,11 +225,11 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         ArrayList<String> xValues = new ArrayList<String>();
 
 
-        Log.v("current TIme" , Utility.formatDate(currentTimeMillis));
+//        Log.v("current TIme" , Utility.formatDate(currentTimeMillis));
 
         currentTimeMillis -= limitDays * DAYS;
 
-        Log.v("past TIme" , Utility.formatDate(currentTimeMillis));
+//        Log.v("past TIme" , Utility.formatDate(currentTimeMillis));
 
 
         for(long i = 0; i<= limitDays * DAYS; i+=MINUTES ){
@@ -246,7 +248,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         long diff = findMiiliSeconds - pastMilliseconds;
 
 
-        int index  = (int) (diff /=MINUTES);
+        int index  = (int) (diff / MINUTES) + 1;
 
         return index;
 

@@ -260,13 +260,16 @@ public class InsertService extends IntentService {
 
             if(insertMap.get(threeDayAgoKey) == null ||  insertMap.get(sixDayAgoKey) == null){
                 glucoseData.setConvert(false);
-//                Log.v(TAG, " date : " + glucoseData.getDate() + "  3 or 6 day ago is not possible");
+                Log.v(TAG, " date : " + glucoseData.getDate() + "  3 or 6 day ago is not possible");
                 continue;
             }
 
             double currentData = glucoseData.getRawData();
             double threeMinPastData = insertMap.get(threeDayAgoKey).getRawData();
             double sixMinPastData = insertMap.get(sixDayAgoKey).getRawData();
+
+
+
             double Diff_F = currentData - threeMinPastData;
             double Diff_S = threeMinPastData - sixMinPastData;
             double Diff_Diff = Diff_F - Diff_S;
