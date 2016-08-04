@@ -9,6 +9,7 @@ import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+import android.view.ViewDebug;
 import android.widget.TextView;
 
 import java.util.Arrays;
@@ -17,6 +18,8 @@ import java.util.Arrays;
  * Created by Woo on 2016-08-02.
  */
 public class NfcTextActivity extends Activity {
+
+    private static final String TAG = "NfcText";
 
     TextView mTextView;
     NfcAdapter nfcAdapter = BluetoothFragment.nfcAdapter;
@@ -100,10 +103,23 @@ public class NfcTextActivity extends Activity {
 
             NdefRecord record = recs[i];
             byte[] payload = record.getPayload();
+            byte[] test = {
+                    0x01, 0x00,0x32, 0x00, 0x00, 0x08, 0x00, 0x64,
+                    0x5C, 0x00, 0x00, 0x24, 0x00,
+                    0x5C, 0x00, 0x00, 0x24, 0x00,
+                    0x5C, 0x00, 0x00, 0x25, 0x00,
+                    0x5D, 0x00, 0x00, 0x24, 0x00,
+                    0x5D, 0x00, 0x00, 0x24, 0x00,
+                    0x5D, 0x00, 0x00, 0x25, 0x00,
+                    0x5E, 0x00, 0x00, 0x24, 0x00,
+                    0x5E, 0x00, 0x00, 0x24, 0x00
+            };
 
             if(Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)){
-                strRec = byteDecoding(payload);
-                strRec = "Text: " + strRec;
+               byteDecoding(test);
+
+                /*strRec = byteDecoding(payload);
+                strRec = "Text: " + strRec;*/
 
             }
             else if(Arrays.equals(record.getType(), NdefRecord.RTD_URI)){
@@ -116,10 +132,16 @@ public class NfcTextActivity extends Activity {
         mTextView.append(strMsg);
     }
 
-    public String byteDecoding(byte[] buf){
+   /* public String byteDecoding(byte[] buf){
         String strText="";
         String textEncoding = ((buf[0]) & 0200)==0  ? "UTF-8" : "UTF-16";
         int langCodeLen = buf[0]&0077;
+
+        for(int i=0; i<buf.length; i++){
+            System.out.println("index : " + i + "/ value :" + buf[i]);
+        }
+
+        System.out.println(langCodeLen+1 + " / " + (buf.length - langCodeLen - 1));
 
         try{
             strText = new String(buf, langCodeLen+1, buf.length - langCodeLen -1, textEncoding);
@@ -127,5 +149,56 @@ public class NfcTextActivity extends Activity {
             Log.d("tag1", e.toString());
         }
         return strText;
+    }*/
+
+    public void byteDecoding(byte[] buf){
+        GlucoseData glucoseData = new GlucoseData();
+
+        int type;
+        String sensorID;
+        int numbering;
+        int battery;
+        int rawData=0;
+        double temperature=0;
+
+        for(int i=0; i<buf.length; i++){
+            //type
+            if(i==0){
+                type = buf[0];
+                System.out.println("type: " + type);
+            }
+            //sensorID
+            else if(i==1){
+                sensorID = String.valueOf(buf[1]<<8 | buf[2]);
+                System.out.println("sensorId: " + sensorID);
+            }
+            //numbering
+            else if(i==3){
+                numbering = buf[3]<<16 | buf[4]<<8 | buf[5];
+                System.out.println("numbering: " + numbering);
+            }
+            //battery
+            else if(i==6){
+                battery = buf[6]<<8 | buf[7];
+                System.out.println("battery: " + battery);
+            }
+
+            //index 8 부터 gluecose & temp data;
+            else{
+                //gluecose Data;
+                if((i-8)%5 == 0 ){
+                    rawData = buf[i];
+                    System.out.print("rawData: " + rawData);
+                }
+                //temp Data;
+                else if((i-11)%5==0){
+                    temperature = buf[i];
+                    System.out.println("  temp: " + temperature);
+                }
+                else if((i-12)%5 ==0){
+                }
+            }
+        }
+
     }
 }
