@@ -33,6 +33,14 @@
 
     <PreferenceCategory
         android:title="@string/pref_noti_title">
+
+        <CheckBoxPreference
+            android:title="@string/pref_enable_real_time_notifications_label"
+            android:key="@string/pref_enable_real_time_notifications_key"
+            android:summary="@string/pref_enable_real_time_notifications_summary"
+            android:defaultValue="@string/pref_enable_real_time_notifications_default" />
+
+
         <CheckBoxPreference
             android:title="@string/pref_enable_Hyperglycemia_notifications_label"
             android:key="@string/pref_enable_Hyperglycemia_notifications_key"
@@ -46,6 +54,8 @@
             android:summaryOff="@string/pref_enable_Hypoglycemia_notifications_false"
             android:summaryOn="@string/pref_enable_Hypoglycemia_notifications_true"
             android:defaultValue="@string/pref_enable_Hypoglycemia_notifications_default" />
+
+
     </PreferenceCategory>
 
 </PreferenceScreen>

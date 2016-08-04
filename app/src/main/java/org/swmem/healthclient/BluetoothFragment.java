@@ -155,8 +155,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         leftAxis.removeAllLimitLines();
         leftAxis.addLimitLine(ll1);
         leftAxis.addLimitLine(ll2);
-//        leftAxis.setAxisMinValue(40f);
-//        leftAxis.setAxisMaxValue(400f);
+        leftAxis.setAxisMinValue(40f);
+        leftAxis.setAxisMaxValue(400f);
 
         // 레헨드 셋팅
         Legend legend = chart.getLegend();

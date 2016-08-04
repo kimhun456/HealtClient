@@ -50,6 +50,15 @@
     <string name="pref_enable_Hypoglycemia_notifications_default" translatable="false">true</string>
 
 
+    <!-- Strings related to Hyperglycemia Notification Enabled preference -->
+    <string name="pref_enable_real_time_notifications_key" translatable="false">enable_RealTime_notifications</string>
+    <string name="pref_enable_real_time_notifications_label">RealTime Notification</string>
+    <string name="pref_enable_real_time_notifications_summary">실시간으로 혈당량을 알람 받습니다.</string>
+    <string name="pref_enable_real_time_notifications_true">Enabled</string>
+    <string name="pref_enable_real_time_notifications_false">Not Enabled</string>
+    <string name="pref_enable_real_time_notifications_default" translatable="false">true</string>
+
+
     <string name="pref_Hyperglycemia_key" translatable="false">hyper</string>
     <string name="pref_Hyperglycemia_label">Hyperglycemia</string>
     <string name="pref_Hyperglycemia_summary">Set the Hyperglycemia</string>

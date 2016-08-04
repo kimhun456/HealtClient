@@ -7,10 +7,13 @@ import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.GlucoseData;
+import org.swmem.healthclient.MyNotificationManager;
+import org.swmem.healthclient.R;
 import org.swmem.healthclient.SessionManager;
 import org.swmem.healthclient.Utility;
 import org.swmem.healthclient.db.HealthContract;
@@ -81,7 +84,8 @@ public class InsertService extends IntentService {
             };
 
 
-            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
+//            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
+            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 
@@ -91,7 +95,103 @@ public class InsertService extends IntentService {
 
             insertDataBase(dbMap);
 
+
+            doNotification(dbMap);
+
+
         }
+    }
+
+    public boolean doNotification(HashMap<String , GlucoseData> insertMap){
+
+        long currentmiili = Utility.getCurrentDate();
+        long min = 5 *DAYS;
+        String lastKey = null;
+        for(String key : insertMap.keySet()){
+
+            long date = Utility.cursorDateToLong(key);
+
+
+            long diff = (currentmiili - date);
+
+            if(diff < min){
+                min = diff;
+                lastKey = key;
+            }
+        }
+
+        if(lastKey == null){
+
+            Log.v(TAG, "do not found last date");
+            return false;
+        }
+
+        boolean realTimeNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean(getString(R.string.pref_enable_real_time_notifications_key),false);
+
+        boolean hyperNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean(getString(R.string.pref_enable_Hyperglycemia_notifications_key),false);
+
+        boolean hypoNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean(getString(R.string.pref_enable_Hypoglycemia_notifications_key),false);
+
+        float highGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.pref_Hyperglycemia_key),"200"));
+        float lowGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.pref_Hypoglycemia_key),"80"));
+
+        GlucoseData glucoseData = insertMap.get(lastKey);
+
+
+        Log.v(TAG, lastKey + "");
+
+        if(realTimeNotiEnable){
+            double data;
+            if(glucoseData.isConverted()){
+                data = glucoseData.getConvertedData();
+
+            }else{
+                data = glucoseData.getRawData();
+            }
+            new MyNotificationManager(getApplicationContext()).makeNotification("현재 혈당량",  String.format("%.2f",data) );
+
+        }
+
+
+        if(hyperNotiEnable){
+
+            double data;
+            if(glucoseData.isConverted()){
+                data = glucoseData.getConvertedData();
+
+            }else{
+                data = glucoseData.getRawData();
+            }
+
+            if(data > highGlucose){
+                new MyNotificationManager(getApplicationContext()).makeNotification("고혈당 위험! ", "현재 혈당 :  " +  String.format("%.2f",data) );
+            }
+        }
+
+
+        if(hypoNotiEnable){
+
+            double data;
+            if(glucoseData.isConverted()){
+                data = glucoseData.getConvertedData();
+
+            }else{
+                data = glucoseData.getRawData();
+            }
+
+            if(data < lowGlucose){
+                new MyNotificationManager(getApplicationContext()).makeNotification("저혈당 위험! ", "현재 혈당 : " +  String.format("%.2f",data));
+            }
+        }
+
+        return true;
     }
 
 
@@ -223,11 +323,11 @@ public class InsertService extends IntentService {
 
             if(Math.random() > 0.5){
 
-                prevValue += rand;
+                prevValue += rand*3;
 
             }else{
 
-                prevValue -= rand;
+                prevValue -= rand*3;
 
             }
 
