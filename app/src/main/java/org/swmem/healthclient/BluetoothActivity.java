@@ -34,6 +34,7 @@ import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.utils.RecycleUtils;
 import org.swmem.healthclient.utils.SessionManager;
+import org.swmem.healthclient.utils.ShareDataBaseTask;
 
 import java.util.Timer;
 
@@ -226,10 +227,15 @@ public class BluetoothActivity extends AppCompatActivity
 
         if (id == R.id.nav_graph) {
 
-        } else if (id == R.id.nav_setting) {
+        }else if (id == R.id.nav_setting) {
 
             Intent intent = new Intent(getBaseContext(), SettingActivity.class);
             startActivity(intent);
+
+
+        }else if (id == R.id.nav_share) {
+
+            new ShareDataBaseTask(this).execute();
 
 
         }else if (id == R.id.nav_info) {
