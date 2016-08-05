@@ -74,6 +74,7 @@ public class BleManager {
 	 * @param handler  A Listener to receive messages back to the UI Activity
 	 */
 	private BleManager(Context context, Handler handler) {
+		Logs.d(TAG, " #1 BleManager ");
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		mState = STATE_NONE;
 		mHandler = handler;
@@ -84,6 +85,7 @@ public class BleManager {
 	}
 	
 	public synchronized static BleManager getInstance(Context c, Handler h) {
+		Logs.d(TAG, " #2 getlnstance ");
 		if(mBleManager == null)
 			mBleManager = new BleManager(c, h);
 		
@@ -91,6 +93,7 @@ public class BleManager {
 	}
 
 	public synchronized void finalize() {
+		Logs.d(TAG, " #3 finalize ");
 		// Make sure we're not doing discovery anymore
 		if (mBluetoothAdapter != null) {
 			mState = STATE_IDLE;
@@ -126,6 +129,7 @@ public class BleManager {
 	 */
 	
 	private void stopScanning() {
+		Logs.d(TAG, " #4 stopScanning ");
 		if(mState < STATE_CONNECTING) {
 			mState = STATE_IDLE;
 			mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_IDLE, 0).sendToTarget();
@@ -137,10 +141,11 @@ public class BleManager {
 	 * Check services and looking for writable characteristics
 	 */
 	private int checkGattServices(List<BluetoothGattService> gattServices) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Logs.d("# BluetoothAdapter not initialized");
-            return -1;
-        }
+		Logs.d(TAG, " #5 checkGattServices ");
+          if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+              Logs.d("# BluetoothAdapter not initialized");
+              return -1;
+          }
         
 		for (BluetoothGattService gattService : gattServices) {
 			// Default service info
@@ -206,6 +211,7 @@ public class BleManager {
 	}
 	
 	private boolean isNotificationCharacteristic(BluetoothGattCharacteristic chr) {
+		Logs.d(TAG, " #6 isNotificion ");
 		if(chr == null) return false;
 		
 		final int charaProp = chr.getProperties();
@@ -241,6 +247,7 @@ public class BleManager {
      */
     public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                               boolean enabled) {
+		Logs.d(TAG, " #7 setCharacter ");
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
             Logs.d("# BluetoothAdapter not initialized");
             return;
@@ -254,14 +261,17 @@ public class BleManager {
 	 ******************************************************/
 	
 	public void setScanCallback(BluetoothAdapter.LeScanCallback cb) {
+		Logs.d(TAG, " #8 setScanCallback ");
 		mLeScanCallback = cb;
 	}
 	
 	public int getState() {
+		Logs.d(TAG, " #9 getState ");
 		return mState;
 	}
 	
 	public boolean scanLeDevice(final boolean enable) {
+		Logs.d(TAG, " #10 scanLeDevice ");
 		boolean isScanStarted = false;
 		if (enable) {
 			if(mState == STATE_SCANNING)
@@ -334,6 +344,7 @@ public class BleManager {
 	}
 	
 	public boolean connectGatt(Context c, boolean bAutoReconnect, BluetoothDevice device) {
+		Logs.d(TAG, " #11 connectGatt ");
 		if(c == null || device == null)
 			return false;
 
@@ -350,6 +361,7 @@ public class BleManager {
 	}
 	
 	public boolean connectGatt(Context c, boolean bAutoReconnect, String address) {
+		Logs.d(TAG, " #12 connectGatt ");
 		if(c == null || address == null)
 			return false;
 		
@@ -387,7 +399,8 @@ public class BleManager {
      * callback.
      */
     public void disconnect() {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+		Logs.d(TAG, " #13 disconnect ");
+		if (mBluetoothAdapter == null || mBluetoothGatt == null) {
             Logs.d("# BluetoothAdapter not initialized");
             return;
         }
@@ -445,6 +458,7 @@ public class BleManager {
 	}
 	
 	public ArrayList<BluetoothGattService> getServices() {
+		Logs.d(TAG, " #14 getServices ");
 		return mGattServices;
 	}
 	
@@ -465,6 +479,7 @@ public class BleManager {
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+			Logs.d(TAG, " #15 onConnectionStateChange ");
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 mState = STATE_CONNECTED;
                 Logs.d(TAG, "# Connected to GATT server.");
@@ -489,6 +504,7 @@ public class BleManager {
         @Override
         // New services discovered
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+			Logs.d(TAG, " #16 onServicesDiscovered ");
             if (status == BluetoothGatt.GATT_SUCCESS) {
             	Logs.d(TAG, "# New GATT service discovered.");
             	checkGattServices(gatt.getServices());

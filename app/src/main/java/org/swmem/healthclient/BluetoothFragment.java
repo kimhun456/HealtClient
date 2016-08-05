@@ -221,7 +221,5 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
         Log.v(TAG , "onLoaderReset");
 
-
     }
-
 }

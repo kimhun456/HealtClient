@@ -40,7 +40,7 @@ public class AppSettings {
 		
 		// Load setting values from preference
 		mUseBackgroundService = loadBgService();
-		
+
 		mIsInitialized = true;
 	} 
 	

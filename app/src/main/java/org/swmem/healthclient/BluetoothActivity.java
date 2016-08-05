@@ -1,7 +1,10 @@
 package org.swmem.healthclient;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -28,11 +31,14 @@ import android.widget.Toast;
 
 import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.service.BTCTemplateService;
+import org.swmem.healthclient.service.BTCTemplateService2;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.RecycleUtils;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 
 public class BluetoothActivity extends AppCompatActivity
@@ -44,6 +50,7 @@ public class BluetoothActivity extends AppCompatActivity
     private BTCTemplateService mService;
     private Timer mRefreshTimer = null;
     private ActivityHandler mActivityHandler;
+    static  private Intent Blecon = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +87,6 @@ public class BluetoothActivity extends AppCompatActivity
                     .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
                     .commit();
         }
-
         doStartService();
     }
 
@@ -96,7 +102,9 @@ public class BluetoothActivity extends AppCompatActivity
 
     @Override
     public void onStop() {
+        Log.d(TAG, "# stop");
         // Stop the timer
+
         if(mRefreshTimer != null) {
             mRefreshTimer.cancel();
             mRefreshTimer = null;
@@ -108,11 +116,13 @@ public class BluetoothActivity extends AppCompatActivity
     public void onDestroy() {
         super.onDestroy();
         finalizeActivity();
+        Log.d(TAG, "# Destroy");
     }
 
     @Override
     public void onLowMemory (){
         super.onLowMemory();
+        Log.d(TAG, "# Memory");
         // onDestroy is not always called when applications are finished by Android system.
         finalizeActivity();
     }
@@ -217,7 +227,6 @@ public class BluetoothActivity extends AppCompatActivity
             Intent intent = new Intent(getBaseContext(), SettingActivity.class);
             startActivity(intent);
 
-
         } else if (id == R.id.nav_view) {
 
         }
@@ -256,14 +265,13 @@ public class BluetoothActivity extends AppCompatActivity
      */
     private void doStartService() {
         Log.d(TAG, "# Activity - doStartService()");
-        startService(new Intent(this, BTCTemplateService.class));
+        //startService(new Intent(this, BTCTemplateService.class));
         bindService(new Intent(this, BTCTemplateService.class), mServiceConn, Context.BIND_AUTO_CREATE);
     }
 
     private void doStopService() {
         Log.d(TAG, "# Activity - doStopService()");
-        mService.finalizeService();
-        stopService(new Intent(this, BTCTemplateService.class));
+        //stopService(new Intent(this, BTCTemplateService.class));
     }
 
     /**
@@ -286,7 +294,7 @@ public class BluetoothActivity extends AppCompatActivity
         if(!mService.isBluetoothEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
-        }
+    }
 
         // Load activity reports and display
         if(mRefreshTimer != null) {
@@ -301,37 +309,15 @@ public class BluetoothActivity extends AppCompatActivity
     private void finalizeActivity() {
         Logs.d(TAG, "# Activity - finalizeActivity()");
         if(!AppSettings.getBgService()) {
+            Logs.d(TAG, "# Stop Service");
             doStopService();
         } else {
-
         }
 
         // Clean used resources
-        RecycleUtils.recursiveRecycle(getWindow().getDecorView());
-        System.gc();
-    }
-
-//    private void ensureDiscoverable() {
-//        if (mService.getBluetoothScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-//            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-//            startActivity(intent);
-//        }
-//    }
-//
-//    private class RefreshTimerTask extends TimerTask {
-//        public RefreshTimerTask() {}
-//
-//        public void run() {
-//            mActivityHandler.post(new Runnable() {
-//                public void run() {
-//                    // TODO:
-//                    mRefreshTimer = null;
-//                }
-//            });
-//        }
-//    }
-
+    //RecycleUtils.recursiveRecycle(getWindow().getDecorView());
+    System.gc();
+}
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode,resultCode,data);
@@ -342,10 +328,27 @@ public class BluetoothActivity extends AppCompatActivity
                 // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
                     // Get the device MAC address
+
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     // Attempt to connect to the device
-                    if(address != null && mService != null) {
-                        mService.connectDevice(address);
+                    //if(address != null && mService != null) {
+                    //    mService.connectDevice(address);
+                    //}
+                    if(address != null) {
+                        if(mService != null){
+                            unbindService(mServiceConn);
+                            mService.finalizeService();
+                            mService = null;
+                            Logs.d(TAG, "Unbind");
+                        }
+
+                        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                        am.restartPackage(getPackageName());
+
+                        Blecon = new Intent(this, BTCTemplateService2.class);
+                        Blecon.putExtra("address", address);
+                        Logs.d(TAG, address + "보냄!!");
+                        startService(Blecon);
                     }
                 }
                 break;
