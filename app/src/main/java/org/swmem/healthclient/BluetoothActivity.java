@@ -52,8 +52,6 @@ public class BluetoothActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.v(TAG,"onCreate()");
-
         mActivityHandler = new ActivityHandler();
         AppSettings.initializeAppSettings(getApplicationContext());
         setContentView(R.layout.activity_draw);
@@ -68,7 +66,6 @@ public class BluetoothActivity extends AppCompatActivity
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
 
-            /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 sessionManager = new SessionManager(getApplicationContext());
@@ -125,7 +122,7 @@ public class BluetoothActivity extends AppCompatActivity
         }else{
 
             View view = findViewById(R.id.divider);
-            view.setVisibility(View.VISIBLE);
+            view.setVisibility(View.GONE);
             LinearLayout linearLayout1 = (LinearLayout)findViewById(R.id.device_id_layout);
             linearLayout1.setVisibility(View.GONE);
             LinearLayout linearLayout2 = (LinearLayout)findViewById(R.id.remain_time_layout);
@@ -326,27 +323,6 @@ public class BluetoothActivity extends AppCompatActivity
         RecycleUtils.recursiveRecycle(getWindow().getDecorView());
         System.gc();
     }
-
-//    private void ensureDiscoverable() {
-//        if (mService.getBluetoothScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-//            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-//            startActivity(intent);
-//        }
-//    }
-//
-//    private class RefreshTimerTask extends TimerTask {
-//        public RefreshTimerTask() {}
-//
-//        public void run() {
-//            mActivityHandler.post(new Runnable() {
-//                public void run() {
-//                    // TODO:
-//                    mRefreshTimer = null;
-//                }
-//            });
-//        }
-//    }
 
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

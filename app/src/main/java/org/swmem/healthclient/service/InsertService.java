@@ -459,8 +459,6 @@ public class InsertService extends IntentService {
             double threeMinPastData = insertMap.get(threeDayAgoKey).getRawData();
             double sixMinPastData = insertMap.get(sixDayAgoKey).getRawData();
 
-
-
             double Diff_F = currentData - threeMinPastData;
             double Diff_S = threeMinPastData - sixMinPastData;
             double Diff_Diff = Diff_F - Diff_S;
