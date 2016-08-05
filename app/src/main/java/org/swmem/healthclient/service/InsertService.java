@@ -11,11 +11,11 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.swmem.healthclient.GlucoseData;
-import org.swmem.healthclient.MyNotificationManager;
+import org.swmem.healthclient.db.GlucoseData;
+import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.SessionManager;
-import org.swmem.healthclient.Utility;
+import org.swmem.healthclient.utils.SessionManager;
+import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.db.HealthContract;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class InsertService extends IntentService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Toast.makeText(this, "Insert Service Start" , Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Inserting..." , Toast.LENGTH_SHORT).show();
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -155,7 +155,7 @@ public class InsertService extends IntentService {
             }else{
                 data = glucoseData.getRawData();
             }
-            new MyNotificationManager(getApplicationContext()).makeNotification("현재 혈당량",  String.format("%.2f",data) );
+            new MyNotificationManager(getApplicationContext()).makeNotification("현재 혈당량",  String.format("%.2f",data) + " " + getString(R.string.mgdl) );
 
         }
 
@@ -171,7 +171,7 @@ public class InsertService extends IntentService {
             }
 
             if(data > highGlucose){
-                new MyNotificationManager(getApplicationContext()).makeNotification("고혈당 위험! ", "현재 혈당 :  " +  String.format("%.2f",data) );
+                new MyNotificationManager(getApplicationContext()).makeNotification("고혈당 위험! ", "현재 혈당 :  " +  String.format("%.2f",data)+ " " + getString(R.string.mgdl)  );
             }
         }
 
@@ -187,7 +187,7 @@ public class InsertService extends IntentService {
             }
 
             if(data < lowGlucose){
-                new MyNotificationManager(getApplicationContext()).makeNotification("저혈당 위험! ", "현재 혈당 : " +  String.format("%.2f",data));
+                new MyNotificationManager(getApplicationContext()).makeNotification("저혈당 위험! ", "현재 혈당 : " +  String.format("%.2f",data)+ " " + getString(R.string.mgdl) );
             }
         }
 
@@ -198,10 +198,8 @@ public class InsertService extends IntentService {
     @Override
     public void onDestroy() {
 
-        Toast.makeText(this, "Insert Service END" , Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Inserting... END!" , Toast.LENGTH_SHORT).show();
         super.onDestroy();
-
-
     }
 
 
@@ -302,8 +300,7 @@ public class InsertService extends IntentService {
             double rand = Math.random();
             long time =  currentMilli - 1000*60* i;
             String convertedTime = Utility.formatDate(time);
-            Log.v("time : " , convertedTime);
-
+//            Log.v("time : " , convertedTime);
 
             GlucoseData data = new GlucoseData();
 
@@ -402,6 +399,8 @@ public class InsertService extends IntentService {
             GlucoseData data = new GlucoseData(rawData,convertedData,temperature,sesorID, date ,type, isConverted, true , false );
             glucoseDataHashMap.put(date,data);
 
+//            Log.v(TAG , " DB 안에 있던 데이터들 : " + date);
+
         }
 
         cursor.close();
@@ -417,18 +416,9 @@ public class InsertService extends IntentService {
             //데이터 베이스에 없으면 넣는다.
             if(dbMap.get(key) == null){
                 dbMap.put(key, insertMap.get(key));
+//                Log.v(TAG , " DB XXXXXX 데이터들 : " + key);
             }
 
-            // 디비에 값이 있으면
-            else{
-
-                GlucoseData dataBaseData = dbMap.get(key);
-                // 디비가 convert 되어있지 않으면 덮어쓴다.
-                if(!dataBaseData.isConverted()){
-                    insertMap.get(key).setInDataBase(false);
-                    dbMap.put(key,insertMap.get(key));
-                }
-            }
         }
         return dbMap;
     }
@@ -461,7 +451,7 @@ public class InsertService extends IntentService {
 
             if(insertMap.get(threeDayAgoKey) == null ||  insertMap.get(sixDayAgoKey) == null){
                 glucoseData.setConvert(false);
-                Log.v(TAG, " date : " + glucoseData.getDate() + "  3 or 6 day ago is not possible");
+//                Log.v(TAG, " date : " + glucoseData.getDate() + "  3 or 6 day ago is not possible");
                 continue;
             }
 
@@ -547,6 +537,7 @@ public class InsertService extends IntentService {
             if(data.isInDataBase()){
                 if(data.isModifed()){
 
+//                    Log.v(TAG , " DB에 있지만 수정된 데이터들 : " + key);
                     operations.add(ContentProviderOperation
                             .newUpdate(HealthContract.GlucoseEntry.CONTENT_URI)
                             .withSelection(HealthContract.GlucoseEntry.COLUMN_TIME+" = ?",new String[]{data.getDate()})
@@ -556,7 +547,8 @@ public class InsertService extends IntentService {
                 }
             }else{
 
-//                Log.v(TAG , " date : " + data.getDate() + " is in the db " + data.isInDataBase() );
+
+//                Log.v(TAG , " insert db 에서 DB XXXXXX 데이터들 : " + key);
 
                 if(data.getType().equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
                     contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE,

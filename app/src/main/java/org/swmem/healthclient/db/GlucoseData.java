@@ -1,4 +1,4 @@
-package org.swmem.healthclient;
+package org.swmem.healthclient.db;
 
 /**
  *

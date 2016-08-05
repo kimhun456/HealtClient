@@ -33,7 +33,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.Utility;
+import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.bluetooth.BleManager;
 import org.swmem.healthclient.bluetooth.ConnectionInfo;
 import org.swmem.healthclient.bluetooth.TransactionBuilder;

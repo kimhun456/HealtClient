@@ -19,18 +19,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 
 import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.graph.GraphLoadTask;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.graph.MyMarkerView;
+import org.swmem.healthclient.utils.Utility;
 
 
 public class BluetoothFragment extends Fragment implements LoaderManager .LoaderCallbacks<Cursor>{

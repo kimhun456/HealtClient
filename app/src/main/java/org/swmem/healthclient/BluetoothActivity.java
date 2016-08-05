@@ -31,7 +31,9 @@ import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
+import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.utils.RecycleUtils;
+import org.swmem.healthclient.utils.SessionManager;
 
 import java.util.Timer;
 
@@ -49,7 +51,6 @@ public class BluetoothActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         Log.v(TAG,"onCreate()");
 
@@ -88,7 +89,7 @@ public class BluetoothActivity extends AppCompatActivity
                     .commit();
         }
 
-//        doStartService();
+        doStartService();
     }
 
     public void sessionManage(SessionManager sessionManager){
@@ -138,24 +139,6 @@ public class BluetoothActivity extends AppCompatActivity
 
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.v(TAG,"onResume()");
-
-//        sessionManage(sessionManager);
-    }
-
-    @Override
-    public synchronized void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public synchronized void onPause() {
-        super.onPause();
-    }
-
-    @Override
     public void onStop() {
         // Stop the timer
         if(mRefreshTimer != null) {
@@ -174,7 +157,7 @@ public class BluetoothActivity extends AppCompatActivity
     @Override
     public void onLowMemory (){
         super.onLowMemory();
-        // onDestroy is not always called when applications are finished by Android system.
+
 //        finalizeActivity();
     }
 

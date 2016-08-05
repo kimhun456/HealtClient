@@ -12,16 +12,12 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.db.GlucoseData;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by Woo on 2016-08-02.
@@ -47,16 +43,6 @@ public class NfcActivity extends Activity {
 
         onNewIntent(getIntent());
 
-
-        Button back_button = (Button)findViewById(R.id.back);
-
-        back_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(getApplicationContext(),"이전 액티비티로.", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        });
     }
 
     public void onWindowFocusChanged(boolean hasFocus){

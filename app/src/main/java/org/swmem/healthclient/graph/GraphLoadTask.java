@@ -5,11 +5,9 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -20,7 +18,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.Utility;
+import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.db.HealthContract;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -107,25 +105,32 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
             switch (arrowState){
 
                 case DOUBLE_UP_ARROW :
+                    arrowImage2.setVisibility(View.VISIBLE);
                     arrowImage1.setImageResource(R.drawable.up_arrow_2);
                     arrowImage2.setImageResource(R.drawable.up_arrow_2);
                     break;
                 case UP_ARROW :
                     arrowImage1.setImageResource(R.drawable.up_arrow_1);
+
+                    arrowImage2.setVisibility(View.GONE);
                     break;
                 case CURRENT_ARROW :
                     arrowImage1.setImageResource(R.drawable.current_arrow_1);
+                    arrowImage2.setVisibility(View.GONE);
                     break;
                 case DOWN_ARROW :
                     arrowImage1.setImageResource(R.drawable.down_arrow_1);
+                    arrowImage2.setVisibility(View.GONE);
                     break;
                 case DOUBLE_DOWN_ARROW :
+                    arrowImage2.setVisibility(View.VISIBLE);
                     arrowImage1.setImageResource(R.drawable.down_arrow_2);
                     arrowImage2.setImageResource(R.drawable.down_arrow_2);
                     break;
 
                 default:
                     arrowImage1.setImageResource(R.drawable.current_arrow_1);
+                    arrowImage2.setVisibility(View.GONE);
                     break;
 
             }

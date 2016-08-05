@@ -8,9 +8,9 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
-import android.view.ViewDebug;
 import android.widget.TextView;
+
+import org.swmem.healthclient.db.GlucoseData;
 
 import java.util.Arrays;
 

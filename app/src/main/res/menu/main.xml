@@ -5,7 +5,7 @@
         android:id="@+id/plus"
         android:orderInCategory="100"
         android:icon="@drawable/up_arrow_1"
-        android:title="plus data"
+        android:title="plus random data"
         app:showAsAction="never" />
 
     <item

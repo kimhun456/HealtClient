@@ -1,4 +1,4 @@
-package org.swmem.healthclient;
+package org.swmem.healthclient.utils;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.app.NotificationCompat;
+
+import org.swmem.healthclient.BluetoothActivity;
+import org.swmem.healthclient.R;
 
 /**
  * Created by hyunjae on 16. 8. 4.

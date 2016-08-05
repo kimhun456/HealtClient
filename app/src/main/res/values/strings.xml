@@ -78,6 +78,10 @@
     <string name="mgdl" translatable="false">mg/dL</string>
 
 
+    <!-- NFC activity-->
+
+    <string name="title_nfc_activity">Tap the NFC device</string>
+
 
     <!-- Sessiong keys and values-->
 

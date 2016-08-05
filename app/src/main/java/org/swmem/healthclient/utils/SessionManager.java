@@ -1,8 +1,10 @@
-package org.swmem.healthclient;
+package org.swmem.healthclient.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+
+import org.swmem.healthclient.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
