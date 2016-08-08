@@ -6,7 +6,6 @@
     android:gravity="center"
     android:orientation="vertical"
     android:padding="30dp"
-    android:background="@drawable/background"
     tools:context="org.swmem.healthclient.StartActivity">
 
     <LinearLayout
@@ -16,11 +15,12 @@
         android:layout_weight="7">
 
         <TextView
+            android:drawableLeft="@drawable/blood_drop"
             android:layout_gravity="center"
             android:typeface="sans"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
-            android:textColor="@color/white"
+            android:textColor="@color/deep_red"
             android:id="@+id/title_text"
             android:textSize="40sp"
             android:text="@string/app_name"/>
@@ -31,31 +31,26 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="1"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/start_bluetooth_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/bluetooth"
-            android:background="@color/deep_blue"
-            android:paddingLeft="10dp"
-            android:textColor="@color/white"
-            android:text="@string/bluetooth_settings"/>
 
-        <Button
-            android:id="@+id/start_nfc_button"
-            android:layout_marginTop="15dp"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/nfc"
-            android:paddingLeft="10dp"
-            android:background="@color/deep_orange"
-            android:textColor="@color/white"
-            android:text="@string/NFC_settings"/>
+            android:text="@string/information_company"
+            android:textColor="@color/deep_blue"
+            android:textAlignment="center"/>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/information_developer"
+            android:textColor="@color/deep_blue"
+            android:textAlignment="center"/>
 
 
     </LinearLayout>

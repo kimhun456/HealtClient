@@ -3,19 +3,14 @@ package org.swmem.healthclient;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 public class StartActivity extends AppCompatActivity {
+    private static int SPLASH_TIME_OUT = 1000;
 
-    private final String TYPE = "type";
-    private final String BLEUTOOTH = "bluetooth";
-    private final String NFC = "nfc";
 
-    private Button mBluetoothButton;
-    private Button mNFCButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,32 +19,24 @@ public class StartActivity extends AppCompatActivity {
         Typeface font = Typeface.createFromAsset(this.getAssets(), "Galada.ttf");
         txt.setTypeface(font);
 
+        new Handler().postDelayed(new Runnable() {
 
-        mBluetoothButton = (Button) findViewById(R.id.start_bluetooth_button);
-        mNFCButton = (Button) findViewById(R.id.start_nfc_button);
+            /*
+             * Showing splash screen with a timer. This will be useful when you
+             * want to show case your app logo / company
+             */
 
-        mBluetoothButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void run() {
+                // This method will be executed once the timer is over
+                // Start your app main activity
+                Intent i = new Intent(StartActivity.this, BluetoothActivity.class);
+                startActivity(i);
 
-                Intent intent = new Intent(getBaseContext(),BluetoothActivity.class);
-                intent.putExtra(TYPE, BLEUTOOTH);
-                startActivity(intent);
+                // close this activity
                 finish();
             }
-        });
-
-        mNFCButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(getBaseContext(),BluetoothActivity.class);
-                intent.putExtra(TYPE, NFC);
-                startActivity(intent);
-                finish();
-            }
-        });
-
+        }, SPLASH_TIME_OUT);
 
     }
 }

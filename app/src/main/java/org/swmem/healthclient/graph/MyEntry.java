@@ -8,11 +8,15 @@ public class MyEntry {
     private int index;
     private float value;
     private int color;
+    private String date;
 
-    public MyEntry(int index, float value, int color) {
+
+    public MyEntry(int index, float value, int color, String date) {
         this.index = index;
         this.value = value;
         this.color = color;
+        this.date = date;
+
     }
 
     public int getIndex() {
@@ -37,5 +41,13 @@ public class MyEntry {
 
     public void setColor(int color) {
         this.color = color;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }

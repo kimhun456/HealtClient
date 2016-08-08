@@ -25,7 +25,7 @@ public class SettingActivity extends PreferenceActivity implements Preference.On
         // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
         // updated when the preference changes.
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hyperglycemia_key)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hypotension_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hypoglycemia_key)));
 
     }
 
@@ -69,7 +69,7 @@ public class SettingActivity extends PreferenceActivity implements Preference.On
             }
         } else {
             // For other preferences, set the summary to the value's simple string representation.
-            preference.setSummary(stringValue);
+            preference.setSummary(stringValue + " mg/dL");
         }
         return true;
     }

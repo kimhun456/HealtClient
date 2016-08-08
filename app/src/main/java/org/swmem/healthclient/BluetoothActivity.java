@@ -26,16 +26,22 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.service.BTCTemplateService;
 import org.swmem.healthclient.service.BTCTemplateService2;
+import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
+import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.utils.RecycleUtils;
+import org.swmem.healthclient.utils.SessionManager;
+import org.swmem.healthclient.utils.ShareDataBaseTask;
 
 import java.util.Iterator;
 import java.util.List;
@@ -44,12 +50,13 @@ import java.util.Timer;
 public class BluetoothActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final java.lang.String TAG = "Main";
+    private static final java.lang.String TAG = "BluetoothActivity";
     private final String BLEUTOOTH_FRAGMENT_TAG = "BluetoothFragment";
 
     private BTCTemplateService mService;
     private Timer mRefreshTimer = null;
     private ActivityHandler mActivityHandler;
+    private SessionManager sessionManager;
     static  private Intent Blecon = null;
 
     @Override
@@ -58,26 +65,28 @@ public class BluetoothActivity extends AppCompatActivity
 
         mActivityHandler = new ActivityHandler();
         AppSettings.initializeAppSettings(getApplicationContext());
-
         setContentView(R.layout.activity_draw);
 
          // Toolbar Setting
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        TextView title = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        Typeface font = Typeface.createFromAsset(this.getAssets(), "Galada.ttf");
-        title.setTypeface(font);
 
         // Drawer Setting
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                sessionManager = new SessionManager(getApplicationContext());
+                sessionManage(sessionManager);
+            }
+        };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
 
         // check BlueTooth  navigator
         navigationView.getMenu().getItem(0).setChecked(true);
@@ -90,15 +99,51 @@ public class BluetoothActivity extends AppCompatActivity
         doStartService();
     }
 
-    @Override
-    public synchronized void onStart() {
-        super.onStart();
+    public void sessionManage(SessionManager sessionManager){
+
+        // 여기부터 셋팅
+        sessionManager.sync();
+
+        Log.v(TAG,"Session Manage");
+
+
+        if(sessionManager.getExist()){
+
+            View view = findViewById(R.id.divider);
+            view.setVisibility(View.VISIBLE);
+
+            LinearLayout linearLayout1 = (LinearLayout)findViewById(R.id.device_id_layout);
+            linearLayout1.setVisibility(View.VISIBLE);
+            LinearLayout linearLayout2 = (LinearLayout)findViewById(R.id.remain_time_layout);
+            linearLayout2.setVisibility(View.VISIBLE);
+            LinearLayout linearLayout3 = (LinearLayout)findViewById(R.id.start_time_layout);
+            linearLayout3.setVisibility(View.VISIBLE);
+
+            TextView deviceIDtext = (TextView)findViewById(R.id.device_id);
+            deviceIDtext.setText(sessionManager.getDeviceID());
+
+            String deviceConnectTimeStr = sessionManager.formatDate(sessionManager.getDeviceConnectTime());
+            TextView startTimeText = (TextView)findViewById(R.id.start_time);
+            startTimeText.setText(deviceConnectTimeStr);
+
+            String diffStr = sessionManager.getRemainTime(System.currentTimeMillis(),sessionManager.getDeviceConnectTime());
+            TextView remain_time = (TextView)findViewById(R.id.remain_time);
+            remain_time.setText(diffStr);
+        }else{
+
+            View view = findViewById(R.id.divider);
+            view.setVisibility(View.GONE);
+            LinearLayout linearLayout1 = (LinearLayout)findViewById(R.id.device_id_layout);
+            linearLayout1.setVisibility(View.GONE);
+            LinearLayout linearLayout2 = (LinearLayout)findViewById(R.id.remain_time_layout);
+            linearLayout2.setVisibility(View.GONE);
+            LinearLayout linearLayout3 = (LinearLayout)findViewById(R.id.start_time_layout);
+            linearLayout3.setVisibility(View.GONE);
+
+        }
+
     }
 
-    @Override
-    public synchronized void onPause() {
-        super.onPause();
-    }
 
     @Override
     public void onStop() {
@@ -129,49 +174,8 @@ public class BluetoothActivity extends AppCompatActivity
 
 
     public void insertDummies(){
-
-        long currentMilli = Utility.getCurrentDate();
-        double prevValue = 92;
-        ContentValues contentValues[] = new ContentValues[100];
-        for(int i=0;i<100;i++){
-
-            double rand = Math.random();
-            long time =  currentMilli - 1000*60* i;
-            String convertedTime = Utility.formatDate(time);
-
-            Log.v("time : " , convertedTime);
-
-            contentValues[i] = new ContentValues();
-            if(rand < 0.5){
-                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-            }else{
-
-                contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.NFC);
-            }
-
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TIME,convertedTime);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,prevValue);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,prevValue);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,prevValue);
-            contentValues[i].put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
-
-            if(Math.random() > 0.5){
-
-                prevValue += rand;
-
-            }else{
-
-                prevValue -= rand;
-
-            }
-
-        }
-
-        ContentResolver contentResolver = getContentResolver();
-
-        contentResolver.bulkInsert(HealthContract.GlucoseEntry.CONTENT_URI, contentValues);
-
-
+        Intent intent = new Intent(getApplicationContext(),InsertService.class);
+        startService(intent);
     }
 
     @Override
@@ -204,10 +208,29 @@ public class BluetoothActivity extends AppCompatActivity
                 insertDummies();
                 break;
 
+            case R.id.delete_menu:
+
+                deleteAllData();
+                break;
+
+            case R.id.noti_menu:
+                new MyNotificationManager(getApplicationContext()).makeNotification("title" , "contents");
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+
+
+
+    public void deleteAllData(){
+
+        getApplicationContext().getContentResolver().delete(HealthContract.GlucoseEntry.CONTENT_URI, HealthContract.GlucoseEntry._ID +" >= 0",null);
+
+
+    }
+
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -215,22 +238,22 @@ public class BluetoothActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_bluetooth) {
+        if (id == R.id.nav_graph) {
 
-
-        } else if (id == R.id.nav_info) {
-
-        } else if (id == R.id.nav_nfc) {
-
-        } else if (id == R.id.nav_setting) {
+        }else if (id == R.id.nav_setting) {
 
             Intent intent = new Intent(getBaseContext(), SettingActivity.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_view) {
+
+        }else if (id == R.id.nav_share) {
+
+            new ShareDataBaseTask(this).execute();
+
+
+        }else if (id == R.id.nav_info) {
 
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -294,7 +317,7 @@ public class BluetoothActivity extends AppCompatActivity
         if(!mService.isBluetoothEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
-    }
+        }
 
         // Load activity reports and display
         if(mRefreshTimer != null) {
@@ -312,12 +335,14 @@ public class BluetoothActivity extends AppCompatActivity
             Logs.d(TAG, "# Stop Service");
             doStopService();
         } else {
+
         }
 
         // Clean used resources
     //RecycleUtils.recursiveRecycle(getWindow().getDecorView());
     System.gc();
 }
+
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode,resultCode,data);
@@ -328,7 +353,6 @@ public class BluetoothActivity extends AppCompatActivity
                 // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
                     // Get the device MAC address
-
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     // Attempt to connect to the device
                     //if(address != null && mService != null) {

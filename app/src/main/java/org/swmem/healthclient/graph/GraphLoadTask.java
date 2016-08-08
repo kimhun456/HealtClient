@@ -5,9 +5,9 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -18,7 +18,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.Utility;
+import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.db.HealthContract;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +31,12 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private final String TAG = "GraphLoadTask";
 
+    private final int DOUBLE_UP_ARROW = 0;
+    private final int UP_ARROW = 1;
+    private final int CURRENT_ARROW = 2;
+    private final int DOWN_ARROW = 3;
+    private final int DOUBLE_DOWN_ARROW = 4;
+
 
     private final int SECONDS = 1000;
     private final int MINUTES = 60 * SECONDS;
@@ -39,6 +45,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private LineChart chart;
     private TextView lastValueText;
+    private TextView minutesText;
+    private ImageView arrowImage1;
+    private ImageView arrowImage2;
 
 
     private static final String[] DETAIL_COLUMNS = {
@@ -66,6 +75,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     private int lastDataIndex = 0;
     private long lastDate = 0;
     private double lastValue = 0;
+    private int arrowState = 2;
 
 
     public GraphLoadTask(Context context, View rootView){
@@ -78,6 +88,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                 .getString(context.getString(R.string.pref_limit_day_key),"1"));
         chart = (LineChart) rootView.findViewById(R.id.chart);
         lastValueText = (TextView) rootView.findViewById(R.id.lastValueText);
+        minutesText = (TextView) rootView.findViewById(R.id.data_minute_text);
+        arrowImage1 = (ImageView) rootView.findViewById(R.id.current_data_image_1);
+        arrowImage2 = (ImageView) rootView.findViewById(R.id.current_data_image_2);
     }
 
 
@@ -85,11 +98,43 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     protected void onPostExecute(LineData lineData) {
         super.onPostExecute(lineData);
 
-
-        Log.v(TAG , " set the graph and text ");
-
         if(lastValue != 0){
-            lastValueText.setText(""+lastValue);
+            lastValueText.setText(String.format("%.2f",lastValue));
+            minutesText.setText(Utility.getGraphDateFormat(lastDate));
+
+            switch (arrowState){
+
+                case DOUBLE_UP_ARROW :
+                    arrowImage2.setVisibility(View.VISIBLE);
+                    arrowImage1.setImageResource(R.drawable.up_arrow_2);
+                    arrowImage2.setImageResource(R.drawable.up_arrow_2);
+                    break;
+                case UP_ARROW :
+                    arrowImage1.setImageResource(R.drawable.up_arrow_1);
+
+                    arrowImage2.setVisibility(View.GONE);
+                    break;
+                case CURRENT_ARROW :
+                    arrowImage1.setImageResource(R.drawable.current_arrow_1);
+                    arrowImage2.setVisibility(View.GONE);
+                    break;
+                case DOWN_ARROW :
+                    arrowImage1.setImageResource(R.drawable.down_arrow_1);
+                    arrowImage2.setVisibility(View.GONE);
+                    break;
+                case DOUBLE_DOWN_ARROW :
+                    arrowImage2.setVisibility(View.VISIBLE);
+                    arrowImage1.setImageResource(R.drawable.down_arrow_2);
+                    arrowImage2.setImageResource(R.drawable.down_arrow_2);
+                    break;
+
+                default:
+                    arrowImage1.setImageResource(R.drawable.current_arrow_1);
+                    arrowImage2.setVisibility(View.GONE);
+                    break;
+
+            }
+
         }
 
         if(lastDataIndex - 40 > 0){
@@ -103,6 +148,8 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         }
         chart.setData(lineData);
         chart.invalidate();
+
+        Log.v(TAG,"Load Graph Data");
 
     }
 
@@ -124,10 +171,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                 null
         );
 
-        // select * from glucose_table where time > date('now', '-3 days');
-        // 모든 데이터를 불러오게 된다.
-
-
         if(cursor == null || cursor.getCount() == 0){
 
             Log.v(TAG,"Cursor has null or no data");
@@ -148,13 +191,20 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
             if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
 
-                float rawValue = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
+                float convertedData = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
+
+
+                if(convertedData ==0.0){
+                    convertedData = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
+                    Log.v ("cursor" ,"rawdata is insert : " + (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
+                }
+
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
 
 //                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
 //                Log.v ("cursor" ,"type : " +  type);
-//                Log.v("cursor",  "RAW VALUE :  " +rawValue);
+//                Log.v("cursor",  "Converted VALUE :  " +convertedData);
 //                Log.v ("cursor" ,"index : " +  index );
 //                Log.v ("cursor" ,"______________________");
 
@@ -166,9 +216,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                 }
 
                 if(type.equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
-                    myEntries.add(new MyEntry(index,rawValue,BLUETOOTH_COLOR));
+                    myEntries.add(new MyEntry(index,convertedData,BLUETOOTH_COLOR,Utility.formatDate(currentDate)));
                 }else{
-                    myEntries.add(new MyEntry(index,rawValue,NFC_COLOR));
+                    myEntries.add(new MyEntry(index,convertedData,NFC_COLOR,Utility.formatDate(currentDate)));
                 }
 
                 if(currentDate > lastDate){
@@ -178,6 +228,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
             }
         }
+
 
         // sort the entries ascending order by index.
         Collections.sort(myEntries, new Comparator<MyEntry>() {
@@ -190,11 +241,41 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
             }
         });
 
-
         for(MyEntry myEntry : myEntries){
             entries.add(new Entry(myEntry.getValue(), myEntry.getIndex()));
             colors.add(myEntry.getColor());
         }
+
+
+        // 화살표 설정
+       if( myEntries.size() > 2){
+
+           MyEntry lastEntry = myEntries.get(myEntries.size()-1);
+           MyEntry prevEntry = myEntries.get(myEntries.size()-2);
+
+           double diff = lastEntry.getValue() - prevEntry.getValue();
+
+           Log.v(TAG , "lastEntry value : " +  lastEntry.getValue());
+           Log.v(TAG , "prevEntry value : " +  prevEntry.getValue());
+           Log.v(TAG , "diff value : " +  diff);
+
+           if(diff>= 3){
+               arrowState = DOUBLE_UP_ARROW;
+           }else if(diff >=1){
+               arrowState = UP_ARROW;
+           }else if(diff <=-1 && diff > -3){
+               arrowState = DOWN_ARROW;
+           }else if(diff <=-3){
+               arrowState = DOUBLE_DOWN_ARROW;
+           }else{
+               arrowState = CURRENT_ARROW;
+           }
+       }
+
+       else{
+           Log.v(TAG , " Entries is less than 2 ");
+       }
+
 
         // 데이터 세트 설정
         LineDataSet lineDataSet = new LineDataSet(entries, "RAW VALUE");
@@ -207,6 +288,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         dataSets.add(lineDataSet);
         LineData data = new LineData(xAxisValues, dataSets);
 
+        cursor.close();
 
         return data;
 
@@ -219,11 +301,11 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         ArrayList<String> xValues = new ArrayList<String>();
 
 
-        Log.v("current TIme" , Utility.formatDate(currentTimeMillis));
+//        Log.v("current TIme" , Utility.formatDate(currentTimeMillis));
 
         currentTimeMillis -= limitDays * DAYS;
 
-        Log.v("past TIme" , Utility.formatDate(currentTimeMillis));
+//        Log.v("past TIme" , Utility.formatDate(currentTimeMillis));
 
 
         for(long i = 0; i<= limitDays * DAYS; i+=MINUTES ){
@@ -242,7 +324,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         long diff = findMiiliSeconds - pastMilliseconds;
 
 
-        int index  = (int) (diff /=MINUTES);
+        int index  = (int) (diff / MINUTES) + 1;
 
         return index;
 

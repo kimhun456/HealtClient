@@ -3,13 +3,9 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_bluetooth"
-            android:icon="@drawable/ic_menu_bluetooth"
-            android:title="@string/bluetooth_settings" />
-        <item
-            android:id="@+id/nav_nfc"
-            android:icon="@drawable/ic_menu_nfc"
-            android:title="@string/NFC_settings" />
+            android:id="@+id/nav_graph"
+            android:icon="@drawable/ic_graph"
+            android:title="@string/graph_nav" />
     </group>
 
     <item android:title="@string/setting">
@@ -18,6 +14,10 @@
                 android:id="@+id/nav_setting"
                 android:icon="@drawable/ic_menu_setting"
                 android:title="@string/setting" />
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/share"
+                android:title="@string/share_setting" />
             <item
                 android:id="@+id/nav_info"
                 android:icon="@drawable/ic_menu_information"

@@ -2,6 +2,8 @@ package org.swmem.healthclient;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.nfc.NfcAdapter;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
@@ -27,9 +29,10 @@ import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.graph.GraphLoadTask;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.graph.MyMarkerView;
+import org.swmem.healthclient.utils.Utility;
 
 
-public class BluetoothFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class BluetoothFragment extends Fragment implements LoaderManager .LoaderCallbacks<Cursor>{
 
 
 
@@ -39,7 +42,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     private final int DAYS = 24 * HOURS;
     private long limitDays;
     private View rootView;
-    private Cursor prevCursor;
+
+    public static NfcAdapter nfcAdapter;
 
     private static final String[] DETAIL_COLUMNS = {
             HealthContract.GlucoseEntry.TABLE_NAME + "." + HealthContract.GlucoseEntry._ID,
@@ -57,7 +61,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
 
     public BluetoothFragment() {
-        // Required empty public constructor
 
     }
 
@@ -75,7 +78,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
 
         limitDays = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(getContext())
@@ -114,7 +116,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
                 break;
 
             case R.id.nfc_menu:
-                Snackbar.make(rootView,"NFC is clicked",Snackbar.LENGTH_LONG).show();
+                doNfc();
                 break;
         }
 
@@ -132,33 +134,28 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
         float highGlucose = Float.parseFloat(PreferenceManager
                 .getDefaultSharedPreferences(getActivity().getBaseContext())
-                .getString(getString(R.string.pref_Hyperglycemia_key),"120"));
+                .getString(getString(R.string.pref_Hyperglycemia_key),"200"));
         float lowGlucose = Float.parseFloat(PreferenceManager
                 .getDefaultSharedPreferences(getActivity().getBaseContext())
-                .getString(getString(R.string.pref_Hypotension_key),"80"));
+                .getString(getString(R.string.pref_Hypoglycemia_key),"80"));
 
 
         // 리미트 라인 설정하는 곳
-        LimitLine ll1 = new LimitLine(highGlucose, getString(R.string.upper_limit));
-        ll1.setLineWidth(4f);
-        ll1.enableDashedLine(10f, 5f, 0f);
-        ll1.setLabelPosition(LimitLine.LimitLabelPosition.LEFT_TOP);
-        ll1.setTextSize(14f);
-        ll1.setTextColor(UPPER_LIMIT_COLOR);
+        LimitLine ll1 = new LimitLine(highGlucose);
+        ll1.setLineWidth(1.5f);
         ll1.setLineColor(UPPER_LIMIT_COLOR);
 
-        LimitLine ll2 = new LimitLine(lowGlucose, getString(R.string.down_limit));
-        ll2.setLineWidth(4f);
-        ll2.enableDashedLine(10f, 5f, 0f);
-        ll2.setLabelPosition(LimitLine.LimitLabelPosition.LEFT_BOTTOM);
-        ll2.setTextSize(14f);
-        ll2.setTextColor(DOWN_LIMIT_COLOR);
+        LimitLine ll2 = new LimitLine(lowGlucose);
+        ll2.setLineWidth(1.5f);
         ll2.setLineColor(DOWN_LIMIT_COLOR);
 
+        chart.getAxisRight().setEnabled(false);
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.removeAllLimitLines();
         leftAxis.addLimitLine(ll1);
         leftAxis.addLimitLine(ll2);
+        leftAxis.setAxisMinValue(40f);
+        leftAxis.setAxisMaxValue(400f);
 
         // 레헨드 셋팅
         Legend legend = chart.getLegend();
@@ -170,14 +167,38 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
         chart.setTouchEnabled(true);
         chart.setDoubleTapToZoomEnabled(false);
         chart.setScaleYEnabled(false);
-        chart.zoom(30f,1f,1f,1f);
+        chart.zoom(8f,1f,1f,1f);
         chart.setKeepPositionOnRotation(true);
         chart.setMarkerView(new MyMarkerView(getContext(), R.layout.marker_view));
+
+        Log.v(TAG,"Setup Graph");
     }
 
     private void doScan() {
         Intent intent = new Intent(getActivity(), DeviceListActivity.class);
         getActivity().startActivityForResult(intent, Constants.REQUEST_CONNECT_DEVICE);
+    }
+
+    private void doNfc(){
+        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext());
+
+        if(nfcAdapter.isEnabled()){
+
+            Intent intent =new Intent(getActivity(), NfcActivity.class);
+
+            startActivity(intent);
+        }
+        else{
+            Snackbar.make(rootView,"NFC를 활성화 해주세요",Snackbar.LENGTH_LONG).show();
+            // 4.2.2 (API 17) 부터 NFC 설정 환경이 변경됨.
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
+                Log.e("NFC", "nfc_setting");
+                startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
+            } else {
+                Log.e("NFC", "wireless_setting");
+                startActivity(new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS));
+            }
+        }
     }
 
     @Override
@@ -190,7 +211,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
 
         long pastMilliseconds = System.currentTimeMillis() - (limitDays * DAYS);
         String[] selectionArgs = {""};
@@ -209,16 +229,13 @@ public class BluetoothFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
         Log.v(TAG , "onLoadFinished");
-
         updateData();
 
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
         Log.v(TAG , "onLoaderReset");
 
     }

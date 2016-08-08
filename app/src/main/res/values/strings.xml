@@ -2,21 +2,27 @@
 
     <string name="app_name">GluCare</string>
     <string name="title_activity_draw">Main</string>
+    <string name="start_activity">Start</string>
+    <string name="information_developer">Created By HyunJae, ChangWook, ChanWoo</string>
+    <string name="information_company">SAMSUNG</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="user_name">SAMSUNG</string>
-    <string name="user_email">asdf@samsung.com</string>
+    <string name="user_email">user@samsung.com</string>
 
     <string name="bluetooth_settings">Bluetooth</string>
+    <string name="graph_nav">Graph</string>
     <string name="information_setting">Information</string>
+    <string name="share_setting">Share</string>
     <string name="NFC_settings">NFC</string>
-    <string name="insulin_value">No data</string>
+    <string name="no_data">No data</string>
     <string name="setting">Settings</string>
 
     <!-- PREFENCE-->
     
-    <string name="pref_graph_title">Graph</string>
+    <string name="pref_graph_title">Graph Setting</string>
+    <string name="pref_noti_title">Notification Setting</string>
 
     <string name="pref_limit_day_key" translatable="false">limitDays</string>
     <string name="pref_limit_day_label" translatable="true">Limit days</string>
@@ -29,32 +35,68 @@
     <string name="pref_limit_day_label_three">3 day</string>
 
 
-    <!-- Strings related to Notification Enabled preference -->
-    <string name="pref_enable_notifications_key" translatable="false">enable_notifications</string>
-    <string name="pref_enable_notifications_label">Hyperglycemia Notifications</string>
-    <string name="pref_enable_notifications_true">Enabled</string>
-    <string name="pref_enable_notifications_false">Not Enabled</string>
-    <string name="pref_enable_notifications_default" translatable="false">true</string>
+    <!-- Strings related to Hyperglycemia Notification Enabled preference -->
+    <string name="pref_enable_Hyperglycemia_notifications_key" translatable="false">enable_Hyperglycemia_notifications</string>
+    <string name="pref_enable_Hyperglycemia_notifications_label">Hyperglycemia Notification</string>
+    <string name="pref_enable_Hyperglycemia_notifications_true">Enabled</string>
+    <string name="pref_enable_Hyperglycemia_notifications_false">Not Enabled</string>
+    <string name="pref_enable_Hyperglycemia_notifications_default" translatable="false">true</string>
+
+
+    <!-- Strings related to Hyperglycemia Notification Enabled preference -->
+    <string name="pref_enable_Hypoglycemia_notifications_key" translatable="false">enable_Hypoglycemia_notifications</string>
+    <string name="pref_enable_Hypoglycemia_notifications_label">Hypoglycemia Notification</string>
+    <string name="pref_enable_Hypoglycemia_notifications_true">Enabled</string>
+    <string name="pref_enable_Hypoglycemia_notifications_false">Not Enabled</string>
+    <string name="pref_enable_Hypoglycemia_notifications_default" translatable="false">true</string>
+
+
+    <!-- Strings related to Hyperglycemia Notification Enabled preference -->
+    <string name="pref_enable_real_time_notifications_key" translatable="false">enable_RealTime_notifications</string>
+    <string name="pref_enable_real_time_notifications_label">RealTime Notification</string>
+    <string name="pref_enable_real_time_notifications_summary">실시간으로 혈당량을 알람 받습니다.</string>
+    <string name="pref_enable_real_time_notifications_true">Enabled</string>
+    <string name="pref_enable_real_time_notifications_false">Not Enabled</string>
+    <string name="pref_enable_real_time_notifications_default" translatable="false">true</string>
 
 
     <string name="pref_Hyperglycemia_key" translatable="false">hyper</string>
     <string name="pref_Hyperglycemia_label">Hyperglycemia</string>
     <string name="pref_Hyperglycemia_summary">Set the Hyperglycemia</string>
-    <string name="pref_Hyperglycemia_default">150</string>
+    <string name="pref_Hyperglycemia_default">200</string>
 
-    <string name="pref_Hypotension_key" translatable="false">Hypotension</string>
-    <string name="pref_Hypotension_label">Hypotension</string>
-    <string name="pref_Hypotension_summary">Set the Hypotension</string>
-    <string name="pref_Hypotension_default">80</string>
-
-    
-    
-    
+    <string name="pref_Hypoglycemia_key" translatable="false">Hypoglycemia</string>
+    <string name="pref_Hypoglycemia_label">Hypoglycemia</string>
+    <string name="pref_Hypoglycemia_summary">Set the Hypoglycemia</string>
+    <string name="pref_Hypoglycemia_default">80</string>
 
     <string name="action_settings" translatable="false">Settings</string>
     <string name="chart_description">Glucose Chart</string>
     <string name="upper_limit">Hyperglycemia</string>
     <string name="down_limit">Hypotension</string>
+
+
+    <string name="mgdl" translatable="false">mg/dL</string>
+
+
+    <!-- NFC activity-->
+
+    <string name="title_nfc_activity">Tap the NFC device</string>
+
+
+    <!-- Sessiong keys and values-->
+
+    <string name="pref_session_exist_key">session</string>
+    <string name="pref_session_date_key">session_date</string>
+    <string name="pref_session_device_key">session_device</string>
+    <string name="not_connect">Expired</string>
+
+
+    <!--NAV BAR-->
+
+    <string name="device_title">Device id : </string>
+    <string name="start_title">Start Time : </string>
+    <string name="remain_title">Remain Time : </string>
 
     <!-- Settings -->
     <string name="settings_background_service">Run in background</string>

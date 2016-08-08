@@ -11,27 +11,59 @@
     tools:context=".BluetoothActivity">
 
     <LinearLayout
-        android:layout_weight="7"
-        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="center">
+        android:layout_weight="7"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal">
+
+
+        <TextView
+            android:id="@+id/data_minute_text"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/darker_gray"
+            android:text="@string/no_data"/>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+
+            <TextView
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="50sp"
+                android:textColor="@android:color/black"
+                android:text="@string/no_data"
+                android:id="@+id/lastValueText"/>
+
+            <ImageView
+                android:id="@+id/current_data_image_1"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/current_arrow_1"
+                />
+            <ImageView
+                android:id="@+id/current_data_image_2"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+        </LinearLayout>
 
         <TextView
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:text="@string/insulin_value"
-            android:id="@+id/lastValueText"/>
-
-        <ImageView
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/up_arrow"
-            />
-
+            android:textColor="@android:color/darker_gray"
+            android:text="@string/mgdl"/>
 
     </LinearLayout>
 
