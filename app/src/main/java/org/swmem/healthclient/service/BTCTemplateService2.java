@@ -34,7 +34,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.Utility;
 import org.swmem.healthclient.bluetooth.BleManager;
 import org.swmem.healthclient.bluetooth.ConnectionInfo;
 import org.swmem.healthclient.bluetooth.TransactionBuilder;
@@ -439,17 +438,5 @@ public class BTCTemplateService2 extends Service {
 			super.handleMessage(msg);
 		}
 	}	// End of class MainHandler
-	public void insertDummyData(double value){
 
-		ContentValues contentValues = new ContentValues();
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME, Utility.getCurrentDate());
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,value);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,value);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,value);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
-		ContentResolver contentResolver = getContentResolver();
-		contentResolver.insert(HealthContract.GlucoseEntry.CONTENT_URI,contentValues);
-
-	}
 }
