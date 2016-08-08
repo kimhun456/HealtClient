@@ -341,7 +341,6 @@ public class BluetoothActivity extends AppCompatActivity
                             mService = null;
                             Logs.d(TAG, "Unbind");
                         }
-
                         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                         am.restartPackage(getPackageName());
 

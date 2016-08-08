@@ -75,30 +75,13 @@ public class BTCTemplateService2 extends Service {
 		mContext = getApplicationContext();
 
 		initialize();
-
-		if (address != null) {
-			Logs.d(TAG, address + "연결!!");
-			connectDevice(address);
-		}
-		else
-		{
-			SharedPreferences pref = getSharedPreferences("Bledata", 0);
-			address = pref.getString("ADDRESS",null);
-
-			if (address != null) {
-				Logs.d(TAG, address + "연결!!");
-				connectDevice(address);
-
-				BluetoothDevice device =
-						BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
-			}
-		}
 	}
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Logs.d(TAG, "# Service - onStartCommand() starts here");
-		
+		initialize();
+
 		// If service returns START_STICKY, android restarts service automatically after forced close.
 		// At this time, onStartCommand() method in service must handle null intent.
 		if(intent != null) {
@@ -108,17 +91,8 @@ public class BTCTemplateService2 extends Service {
 			editor.putString("ADDRESS", address);
 			editor.commit();
 		}
-		else Logs.d(TAG, " intent = null !!! ");
+		else Logs.d(TAG, " intent = null !! ");
 
-
-		if (address != null) {
-			Logs.d(TAG, address + "연결!!");
-			connectDevice(address);
-
-			BluetoothDevice device =
-					BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
-		}
-		else
 		{
 			SharedPreferences pref = getSharedPreferences("Bledata", 0);
 			address = pref.getString("ADDRESS",null);
@@ -126,9 +100,6 @@ public class BTCTemplateService2 extends Service {
 			if (address != null) {
 				Logs.d(TAG, address + "연결!!");
 				connectDevice(address);
-
-				BluetoothDevice device =
-						BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
 			}
 		}
 

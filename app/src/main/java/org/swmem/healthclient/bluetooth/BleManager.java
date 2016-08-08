@@ -348,6 +348,7 @@ public class BleManager {
 		if(c == null || device == null)
 			return false;
 
+
 		mGattServices.clear();
 		mGattCharacteristics.clear();
 		mWritableCharacteristics.clear();
@@ -364,7 +365,7 @@ public class BleManager {
 		Logs.d(TAG, " #12 connectGatt ");
 		if(c == null || address == null)
 			return false;
-		
+
 		if(mBluetoothGatt != null && mDefaultDevice != null
 				&& address.equals(mDefaultDevice.getAddress())) {
 			 if (mBluetoothGatt.connect()) {
@@ -376,10 +377,11 @@ public class BleManager {
 		BluetoothDevice device =
 				BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
 		if (device == null) {
-			Logs.d("# Device not found.  Unable to connect.");
+			Logs.d("# Device not found.  Unable to connect..");
 			return false;
 		}
-		
+
+
 		mGattServices.clear();
 		mGattCharacteristics.clear();
 		mWritableCharacteristics.clear();
@@ -459,7 +461,7 @@ public class BleManager {
 	
 	public ArrayList<BluetoothGattService> getServices() {
 		Logs.d(TAG, " #14 getServices ");
-		return mGattServices;
+		return null;
 	}
 	
 	public ArrayList<BluetoothGattCharacteristic> getCharacteristics() {
@@ -485,7 +487,7 @@ public class BleManager {
                 Logs.d(TAG, "# Connected to GATT server.");
                 mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_CONNECTED, 0).sendToTarget();
                 
-                gatt.discoverServices();
+                //gatt.discoverServices();
                 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mState = STATE_IDLE;
