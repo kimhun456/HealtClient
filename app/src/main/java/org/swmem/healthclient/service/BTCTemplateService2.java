@@ -347,7 +347,6 @@ public class BTCTemplateService2 extends Service {
 	{
 		@Override
 		public void handleMessage(Message msg) {
-			Logs.d(TAG, "Service");
 			switch(msg.what) {
 			// Bluetooth state changed
 			case BleManager.MESSAGE_STATE_CHANGE:
@@ -386,26 +385,16 @@ public class BTCTemplateService2 extends Service {
 				Logs.d(TAG, "Service - MESSAGE_READ: ");
 
 				String strMsg = (String) msg.obj;
-				Logs.d("Main", address+" : "+strMsg);
+				Logs.d("Main", address +" : "+ strMsg);
 
 				int readCount = strMsg.length();
 				// send bytes in the buffer to activity
-				/*
-				if(strMsg != null && strMsg.length() > 0) {
-					mActivityHandler2.obtainMessage(Constants.MESSAGE_READ_CHAT_DATA, strMsg)
-							.sendToTarget();
-					int command = mCommandParser.setString(strMsg);
-					if(command == TransactionReceiver.CommandParser.COMMAND_THINGSPEAK) {
-						String parameters = mCommandParser.getParameterString();
-						StringBuilder requestUrl = new StringBuilder("http://184.106.153.149/update?");
-						if(parameters != null && parameters.length() > 0)
-							requestUrl.append(parameters);
-						
-						//Logs.d("# Find thingspeak command. URL = "+requestUrl);
 
-						mCommandParser.resetParser();
-					}
-				}*/
+				if(strMsg != null && strMsg.length()> 0) {
+
+
+				}
+
 				break;
 				
 			case BleManager.MESSAGE_DEVICE_NAME:
