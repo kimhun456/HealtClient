@@ -43,12 +43,9 @@ import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.MyNotificationManager;
-import org.swmem.healthclient.utils.RecycleUtils;
 import org.swmem.healthclient.utils.SessionManager;
 import org.swmem.healthclient.utils.ShareDataBaseTask;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Timer;
 
 public class BluetoothActivity extends AppCompatActivity
@@ -62,6 +59,9 @@ public class BluetoothActivity extends AppCompatActivity
     private ActivityHandler mActivityHandler;
     private SessionManager sessionManager;
     static  private Intent Blecon = null;
+
+    private ImageView mImageBT = null;
+    private TextView mTextStatus = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +101,8 @@ public class BluetoothActivity extends AppCompatActivity
                     .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
                     .commit();
         }
+//        mTextStatus = (TextView) findViewById(R.id.status_text);
+//        mTextStatus.setText(getResources().getString(R.string.bt_state_init));
         doStartService();
     }
 

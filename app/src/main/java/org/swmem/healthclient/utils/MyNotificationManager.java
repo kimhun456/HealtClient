@@ -23,15 +23,15 @@ public class MyNotificationManager {
 
     }
 
-
     public void makeNotification(String title, String contents){
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.blood_drop)
                         .setContentTitle(title)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(contents))
+                        .setOngoing(true)
                         .setContentText(contents);
-
 
 
         // Creates an explicit intent for an Activity in your app

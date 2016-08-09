@@ -75,6 +75,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         setHasOptionsMenu(true);
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

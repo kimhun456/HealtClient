@@ -1,10 +1,15 @@
 package org.swmem.healthclient.bluetooth;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import org.swmem.healthclient.R;
+import org.swmem.healthclient.db.GlucoseData;
+import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.utils.Logs;
+import org.swmem.healthclient.utils.MyNotificationManager;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -14,6 +19,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 
 
@@ -469,13 +475,16 @@ public class BleManager {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
 				mState = STATE_CONNECTED;
 				Logs.d(TAG, "# Connected to GATT server.");
+				// 현재의 DB정보를 표시할 방법 필요
 				mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_CONNECTED, 0).sendToTarget();
+
 
 				gatt.discoverServices();
 
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				mState = STATE_IDLE;
 				Logs.d(TAG, "# Disconnected from GATT server.");
+				new MyNotificationManager(mContext).makeNotification(" DisConnected ", "Bluetooth 연결 상태를 확인해주세요."  );
 				mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_IDLE, 0).sendToTarget();
 				mBluetoothGatt = null;
 				mGattServices.clear();
