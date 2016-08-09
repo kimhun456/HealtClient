@@ -1,5 +1,8 @@
 package org.swmem.healthclient.bluetooth;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -541,10 +544,23 @@ public class BleManager {
 			Logs.d(TAG, "# onCharacteristicChanged: "+characteristic.toString());
 
 			final byte[] data = characteristic.getValue();
+			byte[] Realdata = new byte[data.length];
+			int pos=0;
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
 			if (data != null && data.length > 0) {
 				final StringBuilder stringBuilder = new StringBuilder(data.length);
-				for(byte byteChar : data)
+				for(byte byteChar : data) {
 					stringBuilder.append(String.format("%02X ", byteChar));
+					baos.write(byteChar); pos++;
+				}
+				Logs.d(TAG, "길이 : "+ data.length);
+				Realdata = baos.toByteArray();
+
+				for(int i=0; i<pos; i++)
+					Logs.d(TAG, ""+ Realdata[i]);
+
+
 				//stringBuilder.append(data);
 				Logs.d(TAG, stringBuilder.toString());
 
@@ -554,7 +570,28 @@ public class BleManager {
 			if(mDefaultChar == null && isWritableCharacteristic(characteristic)) {
 				mDefaultChar = characteristic;
 			}
-		};
+		}
+		protected byte[] getByteString(String szData, int nSize) throws IOException {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] buff = null;
+			if (nSize <= 0) {
+				return buff;
+			}
+			int nLen = (szData == null ? 0 : szData.length());
+			if (nLen > nSize) {
+				nLen = nSize;
+				szData = szData.substring(0, nLen);
+			}
+			if (szData != null) {
+				baos.write(szData.getBytes());
+			}
+			for (; nLen < nSize; nLen++) {
+				baos.write(0);
+			}
+			buff = baos.toByteArray();
+			baos.close();
+			return buff;
+		}
 	};
 
 

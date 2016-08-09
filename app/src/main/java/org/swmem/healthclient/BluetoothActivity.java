@@ -3,24 +3,16 @@ package org.swmem.healthclient;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -221,6 +213,12 @@ public class BluetoothActivity extends AppCompatActivity
 
             case R.id.noti_menu:
                 new MyNotificationManager(getApplicationContext()).makeNotification("title" , "contents");
+
+                // 버튼을 누를시 블루투스 연결 해제 테스트
+                BluetoothAdapter.getDefaultAdapter().disable();
+                if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                    BluetoothAdapter.getDefaultAdapter().enable();
+                }
                 break;
         }
 

@@ -8,7 +8,7 @@ public class Constants {
 	public static final String SERVICE_HANDLER_MSG_KEY_TOAST = "toast";
     
     // Preference
-	public static final String PREFERENCE_NAME = "btchatPref";
+	public static final String PREFERENCE_NAME = "healtclient";
 	public static final String PREFERENCE_KEY_BG_SERVICE = "BackgroundService";
 	public static final String PREFERENCE_CONN_INFO_ADDRESS = "device_address";
 	public static final String PREFERENCE_CONN_INFO_NAME = "device_name";

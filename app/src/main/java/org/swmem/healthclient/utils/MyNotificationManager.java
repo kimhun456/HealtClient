@@ -36,7 +36,7 @@ public class MyNotificationManager {
 
         if(title == " Disconnected ") {
             //Log.d("chang", "진동");
-            mBuilder.setVibrate(new long[]{0,300});
+            mBuilder.setVibrate(new long[]{0,500}); // 0.5초
         }
 
         // Creates an explicit intent for an Activity in your app
