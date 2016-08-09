@@ -73,7 +73,7 @@ public class BleManager {
 
 	// Parameters
 	private int mState = -1;
-
+	static private int Myflag = 1;
 
 	/**
 	 * Constructor. Prepares a new Bluetooth session.
@@ -476,6 +476,10 @@ public class BleManager {
 				mState = STATE_CONNECTED;
 				Logs.d(TAG, "# Connected to GATT server.");
 				// 현재의 DB정보를 표시할 방법 필요
+				if(Myflag == 0) {
+					//new MyNotificationManager(mContext).makeNotification(" Connected ", "Bluetooth 대기 중 입니다. (최대 1분 소요)");
+					Myflag = 1;
+				}
 				mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_CONNECTED, 0).sendToTarget();
 
 
@@ -484,7 +488,8 @@ public class BleManager {
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				mState = STATE_IDLE;
 				Logs.d(TAG, "# Disconnected from GATT server.");
-				new MyNotificationManager(mContext).makeNotification(" DisConnected ", "Bluetooth 연결 상태를 확인해주세요."  );
+				//new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요."  );
+				Myflag = 0;
 				mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_IDLE, 0).sendToTarget();
 				mBluetoothGatt = null;
 				mGattServices.clear();

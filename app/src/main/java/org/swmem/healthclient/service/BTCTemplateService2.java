@@ -42,6 +42,7 @@ import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
+import org.swmem.healthclient.utils.MyNotificationManager;
 
 
 public class BTCTemplateService2 extends Service {
@@ -66,6 +67,7 @@ public class BTCTemplateService2 extends Service {
 
 	static String address = null;
 	private BluetoothDevice mDefaultDevice = null;
+	private int flag = 1;
 
 	@Override
 	public void onCreate() {
@@ -347,6 +349,7 @@ public class BTCTemplateService2 extends Service {
 	{
 		@Override
 		public void handleMessage(Message msg) {
+			SharedPreferences pref = getSharedPreferences("Connstat", 0);
 			switch(msg.what) {
 			// Bluetooth state changed
 			case BleManager.MESSAGE_STATE_CHANGE:
@@ -364,10 +367,25 @@ public class BTCTemplateService2 extends Service {
 
 				case BleManager.STATE_CONNECTED:
 					Logs.d(TAG, "Service Connected");
+					pref = getSharedPreferences("Connstat", 0);
+					flag = pref.getInt("stat",1);
+					if(flag == 1) {
+						new MyNotificationManager(mContext).makeNotification(" Connected ", "Bluetooth 대기 중 입니다. (최대 1분 소요)");
+
+						pref = getSharedPreferences("Connstat", 0);
+						SharedPreferences.Editor editor = pref.edit();
+						editor.putInt("stat", 0);
+						editor.commit();
+					}
 					break;
 
 				case BleManager.STATE_IDLE:
 					Logs.d(TAG, "Service Idle");
+					new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요."  );
+					pref = getSharedPreferences("Connstat", 0);
+					SharedPreferences.Editor editor = pref.edit();
+					editor.putInt("stat", 1);
+					editor.commit();
 					break;
 				}
 				break;

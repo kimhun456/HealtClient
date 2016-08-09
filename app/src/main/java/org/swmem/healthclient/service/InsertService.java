@@ -95,7 +95,6 @@ public class InsertService extends IntentService {
 
             insertDataBase(dbMap);
 
-
             doNotification(dbMap);
 
 

@@ -29,7 +29,6 @@ public class MyNotificationManager {
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.blood_drop)
                         .setContentTitle(title)
-                        .setStyle(new NotificationCompat.BigTextStyle().bigText(contents))
                         .setOngoing(true)
                         .setContentText(contents);
 
