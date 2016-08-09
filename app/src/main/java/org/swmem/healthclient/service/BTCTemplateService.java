@@ -236,82 +236,12 @@ public class BTCTemplateService extends Service {
      * Check bluetooth is enabled or not.
      */
 	public boolean isBluetoothEnabled() {
-		if(mBluetoothAdapter==null) {
+		if (mBluetoothAdapter == null) {
 			Log.e(TAG, "# Service - cannot find bluetooth adapter. Restart app.");
 			return false;
 		}
 		return mBluetoothAdapter.isEnabled();
 	}
-	
-	/**
-	 * Get scan mode
-	 */
-	public int getBluetoothScanMode() {
-		int scanMode = -1;
-		if(mBluetoothAdapter != null)
-			scanMode = mBluetoothAdapter.getScanMode();
-		
-		return scanMode;
-	}
-	
-
-    /**
-     * Connect to a remote device.
-     * @param address  The BluetoothDevice to connect
-     */
-	public void connectDevice(String address) {
-		if(address != null && mBleManager != null) {
-			if(mBleManager.connectGatt(mContext, true, address)) {
-				BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-				mConnectionInfo.setDeviceAddress(address);
-				mConnectionInfo.setDeviceName(device.getName());
-			}
-		}
-	}
-
-    /**
-     * Connect to a remote device.
-     * @param device  The BluetoothDevice to connect
-     */
-	public void connectDevice(BluetoothDevice device) {
-		if(device != null && mBleManager != null) {
-			//mBleManager.disconnect();
-
-			if(mBleManager.connectGatt(mContext, true, device)) {
-				mConnectionInfo.setDeviceAddress(device.getAddress());
-				mConnectionInfo.setDeviceName(device.getName());
-			}
-		}
-	}
-
-	/**
-	 * Get connected device name
-	 */
-	public String getDeviceName() {
-		return mConnectionInfo.getDeviceName();
-	}
-
-	/**
-	 * Send message to remote device using Bluetooth
-	 */
-	public void sendMessageToRemote(String message) {
-		sendMessageToDevice(message);
-	}
-	
-	/**
-	 * Start service monitoring. Service monitoring prevents
-	 * unintended close of service.
-	 */
-	public void startServiceMonitoring() {
-		if(AppSettings.getBgService()) {
-			Logs.d(TAG, "# Start Monitoring");
-			ServiceMonitoring.startMonitoring(mContext);
-		} else {
-			ServiceMonitoring.stopMonitoring(mContext);
-		}
-	}
-	
-	
 	
 	/*****************************************************
 	 *	Handler, Listener, Timer, Sub classes
@@ -419,17 +349,4 @@ public class BTCTemplateService extends Service {
 			super.handleMessage(msg);
 		}
 	}	// End of class MainHandler
-	public void insertDummyData(double value){
-
-		ContentValues contentValues = new ContentValues();
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE, HealthContract.GlucoseEntry.BLEUTOOTH);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME, Utility.getCurrentDate());
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE,value);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,value);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_TEMPERATURE_VALUE,value);
-		contentValues.put(HealthContract.GlucoseEntry.COLUMN_DEVICE_ID,"123");
-		ContentResolver contentResolver = getContentResolver();
-		contentResolver.insert(HealthContract.GlucoseEntry.CONTENT_URI,contentValues);
-
-	}
 }

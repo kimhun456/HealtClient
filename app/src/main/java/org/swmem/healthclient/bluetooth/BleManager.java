@@ -1,15 +1,10 @@
 package org.swmem.healthclient.bluetooth;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import org.swmem.healthclient.R;
-import org.swmem.healthclient.db.GlucoseData;
-import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.utils.Logs;
-import org.swmem.healthclient.utils.MyNotificationManager;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

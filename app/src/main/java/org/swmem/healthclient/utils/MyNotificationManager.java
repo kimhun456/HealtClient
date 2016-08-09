@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import org.swmem.healthclient.BluetoothActivity;
 import org.swmem.healthclient.R;
@@ -30,8 +31,13 @@ public class MyNotificationManager {
                         .setSmallIcon(R.drawable.blood_drop)
                         .setContentTitle(title)
                         .setOngoing(true)
+                        .setAutoCancel(true)
                         .setContentText(contents);
 
+        if(title == " Disconnected ") {
+            //Log.d("chang", "진동");
+            mBuilder.setVibrate(new long[]{0,300});
+        }
 
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(context, BluetoothActivity.class);

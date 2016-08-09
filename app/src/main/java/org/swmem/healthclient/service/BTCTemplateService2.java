@@ -409,8 +409,8 @@ public class BTCTemplateService2 extends Service {
 				// send bytes in the buffer to activity
 
 				if(strMsg != null && strMsg.length()> 0) {
-
-
+					Intent intent = new Intent(getApplicationContext(),InsertService.class);
+					startService(intent);
 				}
 
 				break;
