@@ -44,6 +44,8 @@ import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.MyNotificationManager;
 
+import java.io.ByteArrayOutputStream;
+
 
 public class BTCTemplateService2 extends Service {
 	private static final String TAG = "BTCTemplateService2";
@@ -402,17 +404,15 @@ public class BTCTemplateService2 extends Service {
 			case BleManager.MESSAGE_READ:
 				Logs.d(TAG, "Service - MESSAGE_READ: ");
 
-				String strMsg = (String) msg.obj;
-				Logs.d("Main", address +" : "+ strMsg);
+				byte[] data = (byte[]) msg.obj;
 
-				int readCount = strMsg.length();
+				for(int i=0; i<data.length; i++)
+					Logs.d(TAG, ""+ data[i]);
+
+				Intent intent = new Intent(getApplicationContext(),InsertService.class);
+				intent.putExtra("RealData",data);
+				startService(intent);
 				// send bytes in the buffer to activity
-
-				if(strMsg != null && strMsg.length()> 0) {
-					Intent intent = new Intent(getApplicationContext(),InsertService.class);
-					startService(intent);
-				}
-
 				break;
 				
 			case BleManager.MESSAGE_DEVICE_NAME:

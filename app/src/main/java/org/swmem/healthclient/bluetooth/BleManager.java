@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.utils.Logs;
 
 import android.bluetooth.BluetoothAdapter;
@@ -554,17 +555,13 @@ public class BleManager {
 					stringBuilder.append(String.format("%02X ", byteChar));
 					baos.write(byteChar); pos++;
 				}
-				Logs.d(TAG, "길이 : "+ data.length);
+				//Logs.d(TAG, "길이 : "+ data.length);
 				Realdata = baos.toByteArray();
 
-				for(int i=0; i<pos; i++)
-					Logs.d(TAG, ""+ Realdata[i]);
-
-
 				//stringBuilder.append(data);
-				Logs.d(TAG, stringBuilder.toString());
+				//Logs.d(TAG, stringBuilder.toString());
 
-				mHandler.obtainMessage(MESSAGE_READ, new String(data)).sendToTarget();
+				mHandler.obtainMessage(MESSAGE_READ, Realdata).sendToTarget();
 			}
 
 			if(mDefaultChar == null && isWritableCharacteristic(characteristic)) {

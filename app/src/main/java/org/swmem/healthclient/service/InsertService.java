@@ -12,6 +12,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.db.GlucoseData;
+import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.R;
 import org.swmem.healthclient.utils.SessionManager;
@@ -61,7 +62,6 @@ public class InsertService extends IntentService {
 
         // 현재시간
         long currentTimeMillis =  System.currentTimeMillis();
-
         if (intent != null) {
 
             // TODO: intent에서 byte[]를 받아서 insertMap을 만들기
@@ -70,7 +70,13 @@ public class InsertService extends IntentService {
             sessionManager.setExist(true);
             sessionManager.setDeviceConnectTime(System.currentTimeMillis());
             sessionManager.setDeviceID("deviceID");
+            byte[] test = null;
+            if(intent != null) test = intent.getByteArrayExtra("RealData");
 
+            for(int i=0; i<test.length; i++)
+                Logs.d(TAG, ""+ test[i]);
+
+            /*
             byte[] test = {
                     0x01, 0x00,0x32, 0x00, 0x00, 0x08, 0x00, 0x64,
                     0x5C, 0x00, 0x00, 0x24, 0x00,
@@ -81,11 +87,11 @@ public class InsertService extends IntentService {
                     0x5D, 0x01, 0x42, 0x25, 0x00,
                     0x5E, 0x00, 0x00, 0x24, 0x00,
                     0x5E, 0x01, 0x21, 0x24, 0x00
-            };
+            };*/
 
 
-//            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
-            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
+            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
+//            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 
