@@ -15,6 +15,7 @@
     <string name="graph_nav">Graph</string>
     <string name="information_setting">Information</string>
     <string name="share_setting">Share</string>
+    <string name="call_setting">Call</string>
     <string name="NFC_settings">NFC</string>
     <string name="no_data">No data</string>
     <string name="setting">Settings</string>
@@ -77,6 +78,20 @@
     <string name="pref_user_email_label">E-mail</string>
     <string name="pref_user_email_summary">Set E-mail</string>
     <string name="pref_user_email_default">samsung@samsung.com</string>
+
+
+    <!--Preference Doctor Setting-->
+
+    <string name="pref_doctor_name_key" translatable="false">doctor_name</string>
+    <string name="pref_doctor_name_label">Doctor Name</string>
+    <string name="pref_doctor_name_summary">Set doctor name</string>
+    <string name="pref_doctor_name_default">not inserted</string>
+
+
+    <string name="pref_doctor_phone_key" translatable="false">doctor_phone</string>
+    <string name="pref_doctor_phone_label">Doctor Phone</string>
+    <string name="pref_doctor_phone_summary">Set Doctor Phone</string>
+    <string name="pref_doctor_phone_default">not inserted</string>
 
 
     <!-- Strings related to Hyperglycemia Notification Enabled preference -->

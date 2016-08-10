@@ -13,7 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-public class SettingActivity extends PreferenceActivity implements Preference.OnPreferenceChangeListener {
+public class SettingActivity extends PreferenceActivity
+        implements Preference.OnPreferenceChangeListener {
 
 
     public void onCreate(Bundle savedInstanceState) {
@@ -28,6 +29,8 @@ public class SettingActivity extends PreferenceActivity implements Preference.On
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hypoglycemia_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_user_name_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_user_email_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_doctor_name_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_doctor_phone_key)));
 
     }
 
@@ -35,8 +38,10 @@ public class SettingActivity extends PreferenceActivity implements Preference.On
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
-        LinearLayout root = (LinearLayout)findViewById(android.R.id.list).getParent().getParent().getParent();
-        Toolbar bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.setting_toolbar, root, false);
+        LinearLayout root = (LinearLayout)findViewById(android.R.id.list)
+                .getParent().getParent().getParent();
+        Toolbar bar = (Toolbar) LayoutInflater.from(this)
+                .inflate(R.layout.setting_toolbar, root, false);
         root.addView(bar, 0); // insert at top
         bar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,12 +77,15 @@ public class SettingActivity extends PreferenceActivity implements Preference.On
         } else {
             // For other preferences, set the summary to the value's simple string representation.
 
-            if(preference.getKey().equals(preference.getContext().getString(R.string.pref_user_email_key))){
-                preference.setSummary(stringValue);
-            }else if(preference.getKey().equals(preference.getContext().getString(R.string.pref_user_name_key))){
-                preference.setSummary(stringValue);
-            }else{
+            if(preference.getKey().equals(
+                    preference.getContext()
+                            .getString(R.string.pref_Hyperglycemia_key))
+                    ||preference.getKey().equals(preference.getContext()
+                    .getString(R.string.pref_Hypoglycemia_key))  ){
                 preference.setSummary(stringValue + " mg/dL");
+
+            }else{
+                preference.setSummary(stringValue);
             }
 
         }

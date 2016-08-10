@@ -9,12 +9,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -269,6 +271,22 @@ public class BluetoothActivity extends AppCompatActivity
 
 
         }else if (id == R.id.nav_info) {
+
+        }else if (id == R.id.nav_call) {
+
+            SharedPreferences sharedPreferences = PreferenceManager
+                    .getDefaultSharedPreferences(getApplicationContext());
+            String doctorPhone = sharedPreferences.getString(getString(R.string.pref_doctor_phone_key), getString(R.string.pref_doctor_phone_default));
+
+            if(doctorPhone.equals(getString(R.string.pref_doctor_phone_default))){
+
+                Snackbar.make(getCurrentFocus(),"먼저 의사 정보를 입력하세요.",Snackbar.LENGTH_LONG).show();
+
+            }else{
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + doctorPhone));
+                startActivity(intent);
+            }
+
 
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
