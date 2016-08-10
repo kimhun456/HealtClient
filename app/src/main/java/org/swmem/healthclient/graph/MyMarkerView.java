@@ -25,7 +25,7 @@ public class MyMarkerView extends MarkerView {
     @Override
     public void refreshContent(Entry e, Highlight highlight) {
 
-        tvContent.setText(String.format("%.2f",e.getVal()));
+        tvContent.setText(String.format("%.0f",e.getVal()));
 
     }
 

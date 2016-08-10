@@ -17,15 +17,6 @@
         android:orientation="vertical"
         android:gravity="center"
         android:layout_gravity="center_horizontal">
-
-        <TextView
-            android:id="@+id/data_minute_text"
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/darker_gray"
-            android:text="@string/no_data"/>
-
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="wrap_content"
@@ -42,17 +33,11 @@
                 android:id="@+id/lastValueText"/>
 
             <ImageView
-                android:id="@+id/current_data_image_1"
+                android:id="@+id/current_data_image"
                 android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/current_arrow_1"
-                />
-            <ImageView
-                android:id="@+id/current_data_image_2"
-                android:layout_gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 />
 
         </LinearLayout>
@@ -68,7 +53,7 @@
 
 
     <com.github.mikephil.charting.charts.LineChart
-        android:layout_weight="3"
+        android:layout_weight="2"
         android:id="@+id/chart"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

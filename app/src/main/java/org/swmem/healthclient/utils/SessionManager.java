@@ -48,11 +48,9 @@ public class SessionManager {
     }
 
     public void setExist(boolean exist){
-
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(mContext.getString(R.string.pref_session_exist_key) , exist);
         editor.commit();
-
     }
 
     public boolean getExist(){
