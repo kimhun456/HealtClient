@@ -23,6 +23,8 @@ import org.swmem.healthclient.db.HealthContract;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by hyunjae on 16. 7. 29.
@@ -45,8 +47,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private LineChart chart;
     private TextView lastValueText;
-    private ImageView arrowImage1;
-    private ImageView arrowImage2;
+    private ImageView currentArrowImage;
 
 
     private static final String[] DETAIL_COLUMNS = {
@@ -71,6 +72,8 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private Context context;
     private long limitHours;
+    private long dataInterval;
+    private String dataFormat;
     private int lastDataIndex = 0;
     private long lastDate = 0;
     private double lastValue = 0;
@@ -82,14 +85,21 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         lastDataIndex = 0;
         lastDate = 0;
         lastValue = 0;
+        dataInterval = Long.parseLong(PreferenceManager
+                .getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_data_interval_key),context.getString(R.string.pref_data_interval_one)));
+
+        dataFormat = PreferenceManager
+                .getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_data_format_key),context.getString(R.string.pref_data_format_mgdl));
+
         limitHours = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(context)
                 .getString(context.getString(R.string.pref_limit_hours_key),context.getString(R.string.pref_limit_hours_24)));
 
         chart = (LineChart) rootView.findViewById(R.id.chart);
         lastValueText = (TextView) rootView.findViewById(R.id.lastValueText);
-        arrowImage1 = (ImageView) rootView.findViewById(R.id.current_data_image_1);
-        arrowImage2 = (ImageView) rootView.findViewById(R.id.current_data_image_2);
+        currentArrowImage = (ImageView) rootView.findViewById(R.id.current_data_image);
     }
 
 
@@ -103,32 +113,23 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
             switch (arrowState){
 
                 case DOUBLE_UP_ARROW :
-                    arrowImage2.setVisibility(View.VISIBLE);
-                    arrowImage1.setImageResource(R.drawable.up_arrow_2);
-                    arrowImage2.setImageResource(R.drawable.up_arrow_2);
+                    currentArrowImage.setImageResource(R.drawable.up_arrow_2);
                     break;
                 case UP_ARROW :
-                    arrowImage1.setImageResource(R.drawable.up_arrow_1);
-
-                    arrowImage2.setVisibility(View.GONE);
+                    currentArrowImage.setImageResource(R.drawable.up_arrow_1);
                     break;
                 case CURRENT_ARROW :
-                    arrowImage1.setImageResource(R.drawable.current_arrow_1);
-                    arrowImage2.setVisibility(View.GONE);
+                    currentArrowImage.setImageResource(R.drawable.current_arrow_1);
                     break;
                 case DOWN_ARROW :
-                    arrowImage1.setImageResource(R.drawable.down_arrow_1);
-                    arrowImage2.setVisibility(View.GONE);
+                    currentArrowImage.setImageResource(R.drawable.down_arrow_1);
                     break;
                 case DOUBLE_DOWN_ARROW :
-                    arrowImage2.setVisibility(View.VISIBLE);
-                    arrowImage1.setImageResource(R.drawable.down_arrow_2);
-                    arrowImage2.setImageResource(R.drawable.down_arrow_2);
+                    currentArrowImage.setImageResource(R.drawable.down_arrow_2);
                     break;
 
                 default:
-                    arrowImage1.setImageResource(R.drawable.current_arrow_1);
-                    arrowImage2.setVisibility(View.GONE);
+                    currentArrowImage.setImageResource(R.drawable.current_arrow_1);
                     break;
 
             }
@@ -182,12 +183,18 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         ArrayList<Entry> entries = new ArrayList<>();
         ArrayList<Integer> colors = new ArrayList<>();
         ArrayList<String> xAxisValues = getXAxisValues(currentMilliseconds);
+        HashMap<String, Boolean> dateMap = getCorrectDate(currentMilliseconds);
 
         while (cursor.moveToNext()) {
 
-            long currentDate = Utility.cursorDateToLong(cursor.getString(COL_GLUCOSE_TIME));
+            String currentDateString = cursor.getString(COL_GLUCOSE_TIME);
+            long currentDate = Utility.cursorDateToLong(currentDateString);
 
             if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
+
+                if(dateMap.get(currentDateString) == null){
+                    continue;
+                }
 
                 float convertedData = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
 
@@ -199,7 +206,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
-
+//
 //                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
 //                Log.v ("cursor" ,"type : " +  type);
 //                Log.v("cursor",  "Converted VALUE :  " +convertedData);
@@ -253,9 +260,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
            double diff = lastEntry.getValue() - prevEntry.getValue();
 
-           Log.v(TAG , "lastEntry value : " +  lastEntry.getValue());
-           Log.v(TAG , "prevEntry value : " +  prevEntry.getValue());
-           Log.v(TAG , "diff value : " +  diff);
+//           Log.v(TAG , "lastEntry value : " +  lastEntry.getValue());
+//           Log.v(TAG , "prevEntry value : " +  prevEntry.getValue());
+//           Log.v(TAG , "diff value : " +  diff);
 
            if(diff>= 3){
                arrowState = DOUBLE_UP_ARROW;
@@ -299,20 +306,33 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         ArrayList<String> xValues = new ArrayList<String>();
 
-
-//        Log.v("current TIme" , Utility.formatDate(currentTimeMillis));
-
         currentTimeMillis -= limitHours * HOURS;
 
-//        Log.v("past TIme" , Utility.formatDate(currentTimeMillis));
-
-
-        for(long i = 0; i<= limitHours * HOURS; i+=MINUTES ){
+        for(long i = 0; i<= limitHours * HOURS; i+=(MINUTES * dataInterval) ){
 
             xValues.add(Utility.getGraphDateFormat(currentTimeMillis + i));
+
+//            Log.v(TAG, Utility.getGraphDateFormat(currentTimeMillis + i));
         }
 
         return xValues;
+    }
+
+    private HashMap<String, Boolean> getCorrectDate(long currentTimeMillis){
+
+        HashMap<String, Boolean> map = new HashMap<>();
+
+        currentTimeMillis -= limitHours * HOURS;
+
+        for(long i = 0; i<= limitHours * HOURS; i+=(MINUTES * dataInterval) ){
+
+            Date date = new Date(currentTimeMillis + i);
+            date.setSeconds(0);
+            map.put(Utility.formatDate(date.getTime()),true);
+//            Log.v(TAG, Utility.formatDate(date.getTime()));
+        }
+
+        return map;
     }
 
     private int getIndexOfEntries(long findMiiliSeconds , long currentTimeMillis){
@@ -322,7 +342,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         long diff = findMiiliSeconds - pastMilliseconds;
 
 
-        int index  = (int) (diff / MINUTES) + 1;
+        int index  = (int) (diff / (MINUTES * dataInterval)) + 1;
 
         return index;
 

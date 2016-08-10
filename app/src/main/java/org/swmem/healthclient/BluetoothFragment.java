@@ -1,6 +1,7 @@
 package org.swmem.healthclient;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.nfc.NfcAdapter;
 import android.os.Build;
@@ -42,6 +43,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
     private final int HOURS = 60 * MINUTES;
     private final int DAYS = 24 * HOURS;
     private long limitHours;
+    private long dataInterval;
+    private String dataFormat;
     private View rootView;
     private LineChart chart;
 
@@ -71,15 +74,24 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         super.onResume();
         setUpChart(chart);
 
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(getContext());
+
         if(limitHours != Long.parseLong(
-                PreferenceManager.getDefaultSharedPreferences(getContext())
-                        .getString(getContext().getString(R.string.pref_limit_hours_key),
-                        getContext().getString(R.string.pref_limit_hours_24)))){
-
+                sharedPreferences
+                        .getString(getContext().getString(R.string.pref_limit_hours_key)
+                                , getContext().getString(R.string.pref_limit_hours_24)))){
             updateData();
-
+        }else if(dataInterval != Long.parseLong(
+                sharedPreferences
+                .getString(getContext().getString(R.string.pref_data_interval_key)
+                        ,getContext().getString(R.string.pref_data_interval_one)))){
+            updateData();
+        }else if(dataFormat.equals(sharedPreferences
+                .getString(getContext().getString(R.string.pref_data_format_key)
+                        ,getContext().getString(R.string.pref_data_format_mgdl)))){
+            updateData();
         }
-
 
     }
 
@@ -89,15 +101,26 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         setHasOptionsMenu(true);
     }
 
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        limitHours = Long.parseLong(PreferenceManager
-                .getDefaultSharedPreferences(getContext())
-                .getString(getContext().getString(R.string.pref_limit_hours_key), getContext().getString(R.string.pref_limit_hours_24)));
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(getContext());
+
+        limitHours = Long.parseLong(sharedPreferences
+                .getString(getContext().getString(R.string.pref_limit_hours_key),
+                        getContext().getString(R.string.pref_limit_hours_24)));
+
+        dataInterval = Long.parseLong(sharedPreferences
+                .getString(getContext().getString(R.string.pref_data_interval_key)
+                        ,getContext().getString(R.string.pref_data_interval_one)));
+
+        dataFormat = sharedPreferences
+                .getString(getContext().getString(R.string.pref_data_format_key)
+                        ,getContext().getString(R.string.pref_data_format_mgdl));
+
+
         getLoaderManager().initLoader(GRAPH_LOADER_ID,null,this);
         rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
         chart = (LineChart) rootView.findViewById(R.id.chart);
@@ -106,12 +129,9 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         return rootView;
     }
 
-
-
     private void updateData(){
         new GraphLoadTask(getContext(), rootView).execute();
     }
-
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -141,7 +161,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
 
     private void setUpChart(LineChart chart){
-
 
         int BLUETOOTH_COLOR = ContextCompat.getColor(getContext(),R.color.deep_blue);
         int NFC_COLOR = ContextCompat.getColor(getContext(),R.color.deep_orange);
@@ -192,7 +211,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         // 레헨드 셋팅
         Legend legend = chart.getLegend();
         legend.setTextSize(textSize);
-        legend.setCustom(new int[]{BLUETOOTH_COLOR,NFC_COLOR}, new String[] { "BlueTooth", "NFC" });
+        legend.setCustom(new int[]{BLUETOOTH_COLOR,NFC_COLOR}, new String[] { "Bluetooth", "NFC" });
 
 
         // 차트 설정들
@@ -216,11 +235,11 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         if(nfcAdapter.isEnabled()){
 
             Intent intent =new Intent(getActivity(), NfcActivity.class);
-
             startActivity(intent);
+
         }
         else{
-            Snackbar.make(rootView,"NFC를 활성화 해주세요",Snackbar.LENGTH_LONG).show();
+            Snackbar.make(rootView,"NFC 활성화 해주세요",Snackbar.LENGTH_LONG).show();
             // 4.2.2 (API 17) 부터 NFC 설정 환경이 변경됨.
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
                 Log.e("NFC", "nfc_setting");

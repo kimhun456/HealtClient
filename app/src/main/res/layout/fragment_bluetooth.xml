@@ -33,17 +33,11 @@
                 android:id="@+id/lastValueText"/>
 
             <ImageView
-                android:id="@+id/current_data_image_1"
+                android:id="@+id/current_data_image"
                 android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/current_arrow_1"
-                />
-            <ImageView
-                android:id="@+id/current_data_image_2"
-                android:layout_gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 />
 
         </LinearLayout>
