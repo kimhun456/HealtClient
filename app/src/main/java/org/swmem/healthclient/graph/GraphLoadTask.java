@@ -2,6 +2,7 @@ package org.swmem.healthclient.graph;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
@@ -18,8 +19,9 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.utils.Utility;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,6 +41,8 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     private final int DOWN_ARROW = 3;
     private final int DOUBLE_DOWN_ARROW = 4;
 
+    private final int DIFF_THREE = 3;
+    private final int DIFF_ONE = 1;
 
     private final int SECONDS = 1000;
     private final int MINUTES = 60 * SECONDS;
@@ -48,6 +52,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     private LineChart chart;
     private TextView lastValueText;
     private ImageView currentArrowImage;
+    private ImageView currentArrowImage2;
 
 
     private static final String[] DETAIL_COLUMNS = {
@@ -78,9 +83,20 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     private long lastDate = 0;
     private double lastValue = 0;
     private int arrowState = 2;
-
+    private float highGlucose;
+    private float lowGlucose;
+    private  AnimationDrawable animation1;
+    private  AnimationDrawable animation2;
 
     public GraphLoadTask(Context context, View rootView){
+
+        highGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_Hyperglycemia_key),"200"));
+        lowGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_Hypoglycemia_key),"80"));
+
         this.context =  context;
         lastDataIndex = 0;
         lastDate = 0;
@@ -100,36 +116,122 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         chart = (LineChart) rootView.findViewById(R.id.chart);
         lastValueText = (TextView) rootView.findViewById(R.id.lastValueText);
         currentArrowImage = (ImageView) rootView.findViewById(R.id.current_data_image);
+        currentArrowImage2 = (ImageView) rootView.findViewById(R.id.current_data_image2);
     }
-
 
     @Override
     protected void onPostExecute(LineData lineData) {
         super.onPostExecute(lineData);
 
         if(lastValue != 0){
-            lastValueText.setText(String.format("%.0f",lastValue));
+
+
+
+            if(dataFormat.equals(context.getString(R.string.pref_data_format_mmol))){
+
+                lastValueText.setText(String.format("%.1f",lastValue));
+            }else{
+
+                lastValueText.setText(String.format("%.0f",lastValue));
+            }
+
+            if(lastValue > highGlucose) {
+                lastValueText.setTextColor(ContextCompat.getColor(context, R.color.deep_red));
+            }
+            else if(lastValue < lowGlucose){
+                lastValueText.setTextColor(ContextCompat.getColor(context, R.color.deep_blue));
+            }
+            else{
+                lastValueText.setTextColor(ContextCompat.getColor(context, R.color.black));
+            }
 
             switch (arrowState){
 
                 case DOUBLE_UP_ARROW :
-                    currentArrowImage.setImageResource(R.drawable.up_arrow_2);
+
+                    currentArrowImage.setImageResource(R.drawable.transparent);
+                    currentArrowImage.setBackgroundResource(R.drawable.up_arrow_animation);
+                    currentArrowImage2.setVisibility(View.VISIBLE);
+                    currentArrowImage2.setBackgroundResource(R.drawable.up_arrow_animation);
+
+                    animation1 = (AnimationDrawable) currentArrowImage
+                            .getBackground();
+                    animation1.start();
+                    animation2 = (AnimationDrawable) currentArrowImage2
+                            .getBackground();
+                    animation2.start();
+
+
+
                     break;
                 case UP_ARROW :
-                    currentArrowImage.setImageResource(R.drawable.up_arrow_1);
+
+                    if(animation1 != null){
+                        animation1.stop();
+                    }
+                    if(animation2 != null){
+                        animation2.stop();
+                    }
+                    currentArrowImage.setBackgroundResource(R.drawable.transparent);
+                    currentArrowImage.setImageResource(R.drawable.up_arrow);
+                    currentArrowImage2.setVisibility(View.GONE);
                     break;
                 case CURRENT_ARROW :
+
+                    if(animation1 != null){
+                        animation1.stop();
+                    }
+                    if(animation2 != null){
+                        animation2.stop();
+                    }
+
+                    currentArrowImage.setBackgroundResource(R.drawable.transparent);
                     currentArrowImage.setImageResource(R.drawable.current_arrow_1);
+                    currentArrowImage2.setVisibility(View.GONE);
                     break;
+
+
                 case DOWN_ARROW :
-                    currentArrowImage.setImageResource(R.drawable.down_arrow_1);
+
+                    if(animation1 != null){
+                        animation1.stop();
+                    }
+                    if(animation2 != null){
+                        animation2.stop();
+                    }
+                    currentArrowImage.setBackgroundResource(R.drawable.transparent);
+                    currentArrowImage.setImageResource(R.drawable.down_arrow);
+                    currentArrowImage2.setVisibility(View.GONE);
+
                     break;
                 case DOUBLE_DOWN_ARROW :
-                    currentArrowImage.setImageResource(R.drawable.down_arrow_2);
+
+
+                    currentArrowImage.setImageResource(R.drawable.transparent);
+                    currentArrowImage.setBackgroundResource(R.drawable.down_arrow_animation);
+                    currentArrowImage2.setVisibility(View.VISIBLE);
+                    currentArrowImage2.setBackgroundResource(R.drawable.down_arrow_animation);
+
+                    animation1 = (AnimationDrawable) currentArrowImage
+                            .getBackground();
+                    animation1.start();
+                    animation2 = (AnimationDrawable) currentArrowImage2
+                            .getBackground();
+                    animation2.start();
+
                     break;
 
                 default:
+
+                    if(animation1 != null){
+                        animation1.stop();
+                    }
+                    if(animation2 != null){
+                        animation2.stop();
+                    }
+
                     currentArrowImage.setImageResource(R.drawable.current_arrow_1);
+                    currentArrowImage2.setVisibility(View.GONE);
                     break;
 
             }
@@ -192,26 +294,26 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
             if(currentDate >= pastMilliseconds && currentDate <= currentMilliseconds){
 
-                if(dateMap.get(currentDateString) == null){
-                    continue;
-                }
-
                 float convertedData = (float)cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
-
 
                 if(convertedData ==0.0){
                     convertedData = (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
                     Log.v ("cursor" ,"rawdata is insert : " + (float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
                 }
 
+
+                if(dataFormat.equals(context.getString(R.string.pref_data_format_mmol))){
+                    convertedData = Utility.mgdlTommol(convertedData);
+                }
+
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
-//
-//                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
-//                Log.v ("cursor" ,"type : " +  type);
-//                Log.v("cursor",  "Converted VALUE :  " +convertedData);
-//                Log.v ("cursor" ,"index : " +  index );
-//                Log.v ("cursor" ,"______________________");
+
+                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
+                Log.v ("cursor" ,"type : " +  type);
+                Log.v("cursor",  "Converted VALUE :  " +convertedData);
+                Log.v ("cursor" ,"index : " +  index );
+                Log.v ("cursor" ,"______________________");
 
                 if(index < 0){
                     continue;
@@ -226,11 +328,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                     myEntries.add(new MyEntry(index,convertedData,NFC_COLOR,Utility.formatDate(currentDate)));
                 }
 
-                if(currentDate > lastDate){
-                    lastDate = currentDate;
-                    lastValue = cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
-                }
-
             }
         }
 
@@ -239,47 +336,61 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         Collections.sort(myEntries, new Comparator<MyEntry>() {
             @Override
             public int compare(MyEntry t1, MyEntry t2) {
-                if(t1.getIndex() > t2.getIndex())
+                if(t1.getLongDate() > t2.getLongDate())
                     return 0;
                 else
                     return -1;
             }
         });
 
-        for(MyEntry myEntry : myEntries){
-            entries.add(new Entry(myEntry.getValue(), myEntry.getIndex()));
-            colors.add(myEntry.getColor());
+
+        // 화살표 설정
+        if( myEntries.size() >= 2){
+
+            MyEntry lastEntry = myEntries.get(myEntries.size()-1);
+            MyEntry prevEntry = myEntries.get(myEntries.size()-2);
+
+            lastValue = lastEntry.getValue();
+
+            float diff = lastEntry.getValue() - prevEntry.getValue();
+
+
+            if(dataFormat.equals(context.getString(R.string.pref_data_format_mmol))){
+                diff = Utility.mmolTomgdL(diff);
+            }
+
+            Log.v(TAG , "lastEntry value : " +  lastEntry.getValue());
+            Log.v(TAG , "prevEntry value : " +  prevEntry.getValue());
+            Log.v(TAG , "diff value : " +  diff);
+
+            if(diff>= DIFF_THREE){
+                arrowState = DOUBLE_UP_ARROW;
+            }else if(diff >=DIFF_ONE){
+                arrowState = UP_ARROW;
+            }else if(diff <=-DIFF_ONE && diff > -DIFF_THREE){
+                arrowState = DOWN_ARROW;
+            }else if(diff <=-DIFF_THREE){
+                arrowState = DOUBLE_DOWN_ARROW;
+            }else{
+                arrowState = CURRENT_ARROW;
+            }
+        }
+        else{
+            Log.v(TAG , " Entries is less than 2 ");
         }
 
 
-        // 화살표 설정
-       if( myEntries.size() > 2){
+        for(MyEntry myEntry : myEntries){
 
-           MyEntry lastEntry = myEntries.get(myEntries.size()-1);
-           MyEntry prevEntry = myEntries.get(myEntries.size()-2);
+            if(dateMap.get(myEntry.getDate()) == null){
+                continue;
+            }
 
-           double diff = lastEntry.getValue() - prevEntry.getValue();
+            entries.add(new Entry(myEntry.getValue(), myEntry.getIndex()));
+            colors.add(myEntry.getColor());
 
-//           Log.v(TAG , "lastEntry value : " +  lastEntry.getValue());
-//           Log.v(TAG , "prevEntry value : " +  prevEntry.getValue());
-//           Log.v(TAG , "diff value : " +  diff);
+        }
 
-           if(diff>= 3){
-               arrowState = DOUBLE_UP_ARROW;
-           }else if(diff >=1){
-               arrowState = UP_ARROW;
-           }else if(diff <=-1 && diff > -3){
-               arrowState = DOWN_ARROW;
-           }else if(diff <=-3){
-               arrowState = DOUBLE_DOWN_ARROW;
-           }else{
-               arrowState = CURRENT_ARROW;
-           }
-       }
-
-       else{
-           Log.v(TAG , " Entries is less than 2 ");
-       }
 
 
         // 데이터 세트 설정
@@ -305,7 +416,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     private ArrayList<String> getXAxisValues(long currentTimeMillis){
 
         ArrayList<String> xValues = new ArrayList<String>();
-
         currentTimeMillis -= limitHours * HOURS;
 
         for(long i = 0; i<= limitHours * HOURS; i+=(MINUTES * dataInterval) ){

@@ -15,15 +15,9 @@
  */
 package org.swmem.healthclient.utils;
 
-import android.content.Context;
-import android.preference.PreferenceManager;
-import android.util.Log;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class Utility {
@@ -68,6 +62,12 @@ public class Utility {
     }
 
 
+    public static float mmolTomgdL(float mmol){
+        return mmol*18.018018f;
+    }
+    public static float mgdlTommol(float mgdL){
+        return mgdL*0.0555f;
+    }
 
 
 }

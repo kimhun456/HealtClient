@@ -1,5 +1,7 @@
 package org.swmem.healthclient.graph;
 
+import org.swmem.healthclient.utils.Utility;
+
 /**
  * Created by hyunjae on 16. 7. 28.
  */
@@ -11,12 +13,19 @@ public class MyEntry {
     private String date;
 
 
+    private long longDate;
+
+
     public MyEntry(int index, float value, int color, String date) {
         this.index = index;
         this.value = value;
         this.color = color;
         this.date = date;
+        this.longDate = Utility.cursorDateToLong(date);
+    }
 
+    public long getLongDate() {
+        return longDate;
     }
 
     public int getIndex() {

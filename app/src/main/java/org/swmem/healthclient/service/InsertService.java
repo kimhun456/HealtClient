@@ -221,7 +221,6 @@ public class InsertService extends IntentService {
             //type
             if(i==0){
                 type = String.valueOf(buf[0]);
-                System.out.println("type : " + type);
             }
             //deviceID
             else if(i==1){

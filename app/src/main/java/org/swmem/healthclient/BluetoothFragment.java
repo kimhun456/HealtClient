@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -47,6 +48,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
     private String dataFormat;
     private View rootView;
     private LineChart chart;
+    private TextView formatTextView;
 
     public static NfcAdapter nfcAdapter;
 
@@ -82,15 +84,22 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
                         .getString(getContext().getString(R.string.pref_limit_hours_key)
                                 , getContext().getString(R.string.pref_limit_hours_24)))){
             updateData();
-        }else if(dataInterval != Long.parseLong(
+        }
+
+        if(dataInterval != Long.parseLong(
                 sharedPreferences
                 .getString(getContext().getString(R.string.pref_data_interval_key)
                         ,getContext().getString(R.string.pref_data_interval_one)))){
             updateData();
-        }else if(dataFormat.equals(sharedPreferences
+        }
+
+        if(!dataFormat.equals(sharedPreferences
                 .getString(getContext().getString(R.string.pref_data_format_key)
                         ,getContext().getString(R.string.pref_data_format_mgdl)))){
             updateData();
+            formatTextView.setText(sharedPreferences
+                    .getString(getContext().getString(R.string.pref_data_format_key)
+                            ,getContext().getString(R.string.pref_data_format_mgdl)));
         }
 
     }
@@ -124,6 +133,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         getLoaderManager().initLoader(GRAPH_LOADER_ID,null,this);
         rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
         chart = (LineChart) rootView.findViewById(R.id.chart);
+        formatTextView = (TextView) rootView.findViewById(R.id.data_format_text);
+        formatTextView.setText(dataFormat);
         setUpChart(chart);
 
         return rootView;
@@ -202,9 +213,9 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         leftAxis.removeAllLimitLines();
         leftAxis.addLimitLine(ll1);
         leftAxis.addLimitLine(ll2);
-
-        leftAxis.setAxisMinValue(40f);
-        leftAxis.setAxisMaxValue(400f);
+//
+//        leftAxis.setAxisMinValue(40f);
+//        leftAxis.setAxisMaxValue(400f);
 
 
 

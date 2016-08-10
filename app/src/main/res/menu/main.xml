@@ -4,21 +4,18 @@
     <item
         android:id="@+id/plus"
         android:orderInCategory="100"
-        android:icon="@drawable/up_arrow_1"
         android:title="plus random data"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/delete_menu"
         android:orderInCategory="100"
-        android:icon="@drawable/up_arrow_1"
         android:title="delete all data"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/noti_menu"
         android:orderInCategory="100"
-        android:icon="@drawable/up_arrow_1"
         android:title="test Notification"
         app:showAsAction="never" />
 </menu>
