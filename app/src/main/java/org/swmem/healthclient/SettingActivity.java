@@ -26,6 +26,8 @@ public class SettingActivity extends PreferenceActivity implements Preference.On
         // updated when the preference changes.
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hyperglycemia_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hypoglycemia_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_user_name_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_user_email_key)));
 
     }
 
@@ -69,7 +71,15 @@ public class SettingActivity extends PreferenceActivity implements Preference.On
             }
         } else {
             // For other preferences, set the summary to the value's simple string representation.
-            preference.setSummary(stringValue + " mg/dL");
+
+            if(preference.getKey().equals(preference.getContext().getString(R.string.pref_user_email_key))){
+                preference.setSummary(stringValue);
+            }else if(preference.getKey().equals(preference.getContext().getString(R.string.pref_user_name_key))){
+                preference.setSummary(stringValue);
+            }else{
+                preference.setSummary(stringValue + " mg/dL");
+            }
+
         }
         return true;
     }

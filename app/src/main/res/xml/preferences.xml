@@ -2,6 +2,27 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
+        android:title="User Setting">
+
+        <EditTextPreference
+            android:title="@string/pref_user_name_label"
+            android:key="@string/pref_user_name_key"
+            android:defaultValue="@string/pref_user_name_default"
+            android:summary="@string/pref_user_name_summary"
+            android:inputType="text"
+            android:singleLine="true" />
+
+        <EditTextPreference
+            android:title="@string/pref_user_email_label"
+            android:key="@string/pref_user_email_key"
+            android:defaultValue="@string/pref_user_email_default"
+            android:summary="@string/pref_user_email_summary"
+            android:inputType="textEmailAddress"
+            android:singleLine="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/pref_graph_title"
         android:icon="@drawable/ic_graph">
 

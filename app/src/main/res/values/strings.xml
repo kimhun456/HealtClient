@@ -58,16 +58,25 @@
     <!--Preference Data Format-->
 
 
-
     <string name="pref_data_format_key">data_format</string>
     <string name="pref_data_format_summary">Select Data Format</string>
     <string name="pref_data_format_title">Data Format</string>
-
     <string name="pref_data_format_mgdl" translatable="false">mg/dL</string>
     <string name="pref_data_format_mmol" translatable="false">mmol/L</string>
 
 
+    <!--Preference User Setting-->
 
+    <string name="pref_user_name_key" translatable="false">user_name</string>
+    <string name="pref_user_name_label">Name</string>
+    <string name="pref_user_name_summary">Set Name</string>
+    <string name="pref_user_name_default">Samsung</string>
+
+
+    <string name="pref_user_email_key" translatable="false">user_email</string>
+    <string name="pref_user_email_label">E-mail</string>
+    <string name="pref_user_email_summary">Set E-mail</string>
+    <string name="pref_user_email_default">samsung@samsung.com</string>
 
 
     <!-- Strings related to Hyperglycemia Notification Enabled preference -->

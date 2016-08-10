@@ -7,11 +7,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -75,6 +77,17 @@ public class BluetoothActivity extends AppCompatActivity
 
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
+
+                SharedPreferences sharedPreferences = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+                TextView nameText = (TextView)drawerView.findViewById(R.id.nav_user_name);
+                TextView emailText = (TextView)drawerView.findViewById(R.id.nav_user_email);
+
+                nameText.setText(sharedPreferences.getString(getString(R.string.pref_user_name_key)
+                        , getString(R.string.pref_user_name_default)));
+                emailText.setText(sharedPreferences.getString(getString(R.string.pref_user_email_key)
+                        ,getString(R.string.pref_user_email_default)));
+
                 sessionManager = new SessionManager(getApplicationContext());
                 sessionManage(sessionManager);
             }

@@ -73,8 +73,10 @@ public class InsertService extends IntentService {
             byte[] test = null;
             if(intent != null) test = intent.getByteArrayExtra("RealData");
 
-            for(int i=0; i<test.length; i++)
-                Logs.d(TAG, ""+ test[i]);
+            if (test != null) {
+                for(int i=0; i<test.length; i++)
+                    Logs.d(TAG, ""+ test[i]);
+            }
 
             /*
             byte[] test = {
@@ -90,8 +92,8 @@ public class InsertService extends IntentService {
             };*/
 
 
-            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
-//            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
+//            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
+            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 

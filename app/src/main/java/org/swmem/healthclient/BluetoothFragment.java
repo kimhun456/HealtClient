@@ -74,7 +74,6 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
     @Override
     public void onResume() {
         super.onResume();
-        setUpChart(chart);
 
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getContext());
@@ -83,6 +82,11 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
                 sharedPreferences
                         .getString(getContext().getString(R.string.pref_limit_hours_key)
                                 , getContext().getString(R.string.pref_limit_hours_24)))){
+
+            limitHours = Long.parseLong(sharedPreferences
+                    .getString(getContext().getString(R.string.pref_limit_hours_key),
+                            getContext().getString(R.string.pref_limit_hours_24)));
+            setUpChart(chart);
             updateData();
         }
 
@@ -90,12 +94,22 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
                 sharedPreferences
                 .getString(getContext().getString(R.string.pref_data_interval_key)
                         ,getContext().getString(R.string.pref_data_interval_one)))){
+            dataInterval = Long.parseLong(sharedPreferences
+                    .getString(getContext().getString(R.string.pref_data_interval_key)
+                            ,getContext().getString(R.string.pref_data_interval_one)));
+            setUpChart(chart);
             updateData();
         }
 
         if(!dataFormat.equals(sharedPreferences
                 .getString(getContext().getString(R.string.pref_data_format_key)
                         ,getContext().getString(R.string.pref_data_format_mgdl)))){
+
+            dataFormat = sharedPreferences
+                    .getString(getContext().getString(R.string.pref_data_format_key)
+                            ,getContext().getString(R.string.pref_data_format_mgdl));
+
+            setUpChart(chart);
             updateData();
             formatTextView.setText(sharedPreferences
                     .getString(getContext().getString(R.string.pref_data_format_key)
@@ -187,6 +201,11 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
         float textSize = 16;
 
+        if(dataFormat.equals(getContext().getString(R.string.pref_data_format_mmol))){
+            highGlucose = Utility.mgdlTommol(highGlucose);
+            lowGlucose = Utility.mgdlTommol(lowGlucose);
+        }
+
 
         // 리미트 라인 설정하는 곳
         LimitLine ll1 = new LimitLine(highGlucose);
@@ -197,7 +216,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         ll2.setLineWidth(1.5f);
         ll2.setLineColor(DOWN_LIMIT_COLOR);
 
-        chart.getAxisRight().setEnabled(false);
+        chart.getAxisRight().setDrawLabels(false);
 
 
         //X축 셋팅
@@ -209,14 +228,20 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
         // Y축 세팅
         YAxis leftAxis = chart.getAxisLeft();
+
+
+        if(dataFormat.equals(getContext().getString(R.string.pref_data_format_mmol))){
+            leftAxis.setAxisMinValue(0f);
+            leftAxis.setAxisMaxValue(22.2f);
+        }else{
+            leftAxis.setAxisMinValue(0f);
+            leftAxis.setAxisMaxValue(400f);
+        }
+
         leftAxis.setTextSize(textSize);
         leftAxis.removeAllLimitLines();
         leftAxis.addLimitLine(ll1);
         leftAxis.addLimitLine(ll2);
-//
-//        leftAxis.setAxisMinValue(40f);
-//        leftAxis.setAxisMaxValue(400f);
-
 
 
         // 레헨드 셋팅
@@ -226,6 +251,23 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
 
         // 차트 설정들
+
+        chart.getViewPortHandler().fitScreen();
+
+        if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_6))){
+            Log.v("zoom", "6");
+            chart.zoom(1.3f,1f,1f,1f);
+        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_12))){
+            Log.v("zoom", "12");
+            chart.zoom(3.3f,1f,1f,1f);
+        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_24))){
+            Log.v("zoom", "24");
+            chart.zoom(7f,1f,1f,1f);
+        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_72))){
+            Log.v("zoom", "72");
+            chart.zoom(19f,1f,1f,1f);
+        }
+
         chart.setDescription("");
         chart.setTouchEnabled(true);
         chart.setVisibleXRangeMinimum(5f);
