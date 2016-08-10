@@ -22,17 +22,52 @@
     <!-- PREFENCE-->
     
     <string name="pref_graph_title">Graph Setting</string>
-    <string name="pref_noti_title">Notification Setting</string>
+    <string name="pref_notification_title">Notification Setting</string>
 
-    <string name="pref_limit_day_key" translatable="false">limitDays</string>
-    <string name="pref_limit_day_label" translatable="true">Limit days</string>
-    <string name="pref_limit_day_summary" translatable="true">그래프에 표현 할 날짜 수를 정해줍니다.</string>
-    <string name="pref_limit_day_default" translatable="false">1</string>
-    <string name="pref_limit_day_two" translatable="false">2</string>
-    <string name="pref_limit_day_three" translatable="false">3</string>
-    <string name="pref_limit_day_label_default">1 day</string>
-    <string name="pref_limit_day_label_two">2 day</string>
-    <string name="pref_limit_day_label_three">3 day</string>
+    <string name="pref_limit_hours_key" translatable="false">Limit Hours</string>
+    <string name="pref_limit_hours_label" translatable="true">Limit Hours</string>
+    <string name="pref_limit_hours_summary" translatable="true">Select Maximum Hours</string>
+
+
+    <string name="pref_limit_hours_3" translatable="false">3</string>
+    <string name="pref_limit_hours_6" translatable="false">6</string>
+    <string name="pref_limit_hours_12" translatable="false">12</string>
+    <string name="pref_limit_hours_24" translatable="false">24</string>
+    <string name="pref_limit_hours_72" translatable="false">72</string>
+
+    <string name="pref_limit_hours_label_3">3H</string>
+    <string name="pref_limit_hours_label_6" >6H</string>
+    <string name="pref_limit_hours_label_12">12H</string>
+    <string name="pref_limit_hours_label_24">One Day</string>
+    <string name="pref_limit_hours_label_72">Three Days</string>
+
+
+    <!--Preference Data Interval-->
+
+    <string name="pref_data_interval_key">data_interval</string>
+    <string name="pref_data_interval_summary">Select Data interval</string>
+    <string name="pref_data_interval_title">Data Interval</string>
+
+    <string name="pref_data_interval_one" translatable="false">1</string>
+    <string name="pref_data_interval_five" translatable="false">5</string>
+
+    <string name="pref_data_interval_label_one">1 min</string>
+    <string name="pref_data_interval_label_five">5 min</string>
+
+
+    <!--Preference Data Format-->
+
+
+
+    <string name="pref_data_format_key">data_format</string>
+    <string name="pref_data_format_summary">Select Data Format</string>
+    <string name="pref_data_format_title">Data Format</string>
+
+    <string name="pref_data_format_mgdl" translatable="false">mg/dL</string>
+    <string name="pref_data_format_mmol" translatable="false">mmol/L</string>
+
+
+
 
 
     <!-- Strings related to Hyperglycemia Notification Enabled preference -->
@@ -86,7 +121,7 @@
 
     <!-- Sessiong keys and values-->
 
-    <string name="pref_session_exist_key">session</string>
+    <string name="pref_session_exist_key" translatable="false">session</string>
     <string name="pref_session_date_key">session_date</string>
     <string name="pref_session_device_key">session_device</string>
     <string name="not_connect">Expired</string>

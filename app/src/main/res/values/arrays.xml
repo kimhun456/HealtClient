@@ -1,15 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string-array name="pref_limit_day_options">
-        <item>@string/pref_limit_day_label_default</item>
-        <item>@string/pref_limit_day_label_two</item>
-        <item>@string/pref_limit_day_label_three</item>
+    <string-array name="pref_limit_hours_labels">
+        <item>@string/pref_limit_hours_label_3</item>
+        <item>@string/pref_limit_hours_label_6</item>
+        <item>@string/pref_limit_hours_label_12</item>
+        <item>@string/pref_limit_hours_label_24</item>
+        <item>@string/pref_limit_hours_label_72</item>
     </string-array>
 
-    <string-array name="pref_limit_day_values">
-        <item>@string/pref_limit_day_default</item>
-        <item>@string/pref_limit_day_two</item>
-        <item>@string/pref_limit_day_three</item>
+    <string-array name="pref_limit_hours_values">
+        <item>@string/pref_limit_hours_3</item>
+        <item>@string/pref_limit_hours_6</item>
+        <item>@string/pref_limit_hours_12</item>
+        <item>@string/pref_limit_hours_24</item>
+        <item>@string/pref_limit_hours_72</item>
     </string-array>
+
+    <string-array name="pref_data_interval_labels">
+        <item>@string/pref_data_interval_label_one</item>
+        <item>@string/pref_data_interval_label_five</item>
+    </string-array>
+
+    <string-array name="pref_data_interval_values">
+        <item>@string/pref_data_interval_one</item>
+        <item>@string/pref_data_interval_five</item>
+    </string-array>
+
+    <string-array name="pref_data_format_labels">
+        <item>@string/pref_data_format_mgdl</item>
+        <item>@string/pref_data_format_mmol</item>
+    </string-array>
+
+    <string-array name="pref_data_format_values">
+        <item>@string/pref_data_format_mgdl</item>
+        <item>@string/pref_data_format_mmol</item>
+    </string-array>
+
+
 </resources>

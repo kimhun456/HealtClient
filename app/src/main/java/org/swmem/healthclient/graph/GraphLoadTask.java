@@ -45,7 +45,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private LineChart chart;
     private TextView lastValueText;
-    private TextView minutesText;
     private ImageView arrowImage1;
     private ImageView arrowImage2;
 
@@ -71,7 +70,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     public static final int COL_GLUCOSE_TYPE = 6;
 
     private Context context;
-    private long limitDays;
+    private long limitHours;
     private int lastDataIndex = 0;
     private long lastDate = 0;
     private double lastValue = 0;
@@ -83,12 +82,12 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         lastDataIndex = 0;
         lastDate = 0;
         lastValue = 0;
-        limitDays = Long.parseLong(PreferenceManager
+        limitHours = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(context)
-                .getString(context.getString(R.string.pref_limit_day_key),"1"));
+                .getString(context.getString(R.string.pref_limit_hours_key),context.getString(R.string.pref_limit_hours_24)));
+
         chart = (LineChart) rootView.findViewById(R.id.chart);
         lastValueText = (TextView) rootView.findViewById(R.id.lastValueText);
-        minutesText = (TextView) rootView.findViewById(R.id.data_minute_text);
         arrowImage1 = (ImageView) rootView.findViewById(R.id.current_data_image_1);
         arrowImage2 = (ImageView) rootView.findViewById(R.id.current_data_image_2);
     }
@@ -99,8 +98,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         super.onPostExecute(lineData);
 
         if(lastValue != 0){
-            lastValueText.setText(String.format("%.2f",lastValue));
-            minutesText.setText(Utility.getGraphDateFormat(lastDate));
+            lastValueText.setText(String.format("%.0f",lastValue));
 
             switch (arrowState){
 
@@ -158,7 +156,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
 
         long currentMilliseconds = System.currentTimeMillis();
-        long pastMilliseconds = currentMilliseconds - (limitDays * DAYS);
+        long pastMilliseconds = currentMilliseconds - (limitHours * HOURS);
         String[] selectionArgs = {""};
         selectionArgs[0] =  Utility.formatDate(pastMilliseconds);
         String WHERE_DATE_BY_LIMIT_DAYS = HealthContract.GlucoseEntry.COLUMN_TIME + " > ?" ;
@@ -283,7 +281,8 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         lineDataSet.setValueTextSize(0f);
         lineDataSet.setCircleColors(colors);
         lineDataSet.setColors(colors);
-        lineDataSet.setHighLightColor(ContextCompat.getColor(context,R.color.black));
+        lineDataSet.setHighlightLineWidth(0f);
+        lineDataSet.setHighLightColor( ContextCompat.getColor(context,R.color.transparent));
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet);
         LineData data = new LineData(xAxisValues, dataSets);
@@ -303,12 +302,12 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
 //        Log.v("current TIme" , Utility.formatDate(currentTimeMillis));
 
-        currentTimeMillis -= limitDays * DAYS;
+        currentTimeMillis -= limitHours * HOURS;
 
 //        Log.v("past TIme" , Utility.formatDate(currentTimeMillis));
 
 
-        for(long i = 0; i<= limitDays * DAYS; i+=MINUTES ){
+        for(long i = 0; i<= limitHours * HOURS; i+=MINUTES ){
 
             xValues.add(Utility.getGraphDateFormat(currentTimeMillis + i));
         }
@@ -318,8 +317,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     private int getIndexOfEntries(long findMiiliSeconds , long currentTimeMillis){
 
-        long pastMilliseconds = currentTimeMillis - limitDays * DAYS;
-
+        long pastMilliseconds = currentTimeMillis - limitHours * HOURS;
 
         long diff = findMiiliSeconds - pastMilliseconds;
 
