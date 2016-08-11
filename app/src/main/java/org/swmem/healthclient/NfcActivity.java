@@ -12,13 +12,17 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.view.Gravity;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import org.swmem.healthclient.db.GlucoseData;
 import org.swmem.healthclient.db.HealthContract;
+import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.utils.Utility;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
@@ -94,8 +98,9 @@ public class NfcActivity extends Activity {
             NdefRecord record = recs[i];
             byte[] payload = record.getPayload();
 
+
             //임시 데이터.
-            byte[] test = {
+            /*byte[] test = {
                     0x01, 0x01,(byte)0xF4, 0x00, 0x01, (byte)0x98, 0x03, (byte)0xE8,
                     0x5C, 0x00, 0x00, 0x24, 0x00,
                     (byte)0x96, 0x01, 0x21, 0x24, 0x00,
@@ -177,18 +182,25 @@ public class NfcActivity extends Activity {
                     (byte)0xFF, 0x01, (byte)0xFF, 0x25, 0x00,
                     0x5E, 0x00, 0x00, 0x24, 0x00,
                     (byte)0x80, 0x01, (byte)0x80, 0x24, 0x00
-            };
+            };*/
 
             if(Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)){
-                byteDecoding(test);
+                Intent intent = new Intent(getApplicationContext(),InsertService.class);
+                intent.putExtra("RealData",payload);
+                startService(intent);
+
             }
             else if(Arrays.equals(record.getType(), NdefRecord.RTD_URI)){
                 //
+                Toast toast = Toast.makeText(getApplicationContext(), "지원하지 않는 NFC입니다.", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
             }
         }
     }
 
-    public void byteDecoding(byte[] buf){
+    /*public void byteDecoding(byte[] buf){
+
 
         GlucoseData glucoseData = new GlucoseData();
 
@@ -198,6 +210,7 @@ public class NfcActivity extends Activity {
         int battery;
         double rawData=0;
         double temperature=0;
+
 
         for(int i=0; i<buf.length; i++){
 
@@ -234,7 +247,7 @@ public class NfcActivity extends Activity {
                     rawData = byteTodouble(buf[i]);
                 }
                 //소수점 확인.
-                else if((i-9)%5 == 0 && buf[i] != 0){
+                else if((i-9)%5 == 0 && buf[i+1] != 0){
                     //rawData += (buf[i+1])*0.01;
 
                     double temp = byteTodouble(buf[i+1]);
@@ -282,7 +295,7 @@ public class NfcActivity extends Activity {
     }
     public double byteTodouble(byte buf){
         return buf&0xff;
-    }
+    }*/
 
 
 

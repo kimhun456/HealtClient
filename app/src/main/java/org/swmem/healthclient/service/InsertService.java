@@ -78,22 +78,9 @@ public class InsertService extends IntentService {
                     Logs.d(TAG, ""+ test[i]);
             }
 
-            /*
-            byte[] test = {
-                    0x01, 0x00,0x32, 0x00, 0x00, 0x08, 0x00, 0x64,
-                    0x5C, 0x00, 0x00, 0x24, 0x00,
-                    0x5C, 0x01, 0x21, 0x24, 0x00,
-                    0x5C, 0x01, 0x42, 0x25, 0x00,
-                    0x5D, 0x00, 0x00, 0x24, 0x00,
-                    0x5D, 0x01, 0x21, 0x24, 0x00,
-                    0x5D, 0x01, 0x42, 0x25, 0x00,
-                    0x5E, 0x00, 0x00, 0x24, 0x00,
-                    0x5E, 0x01, 0x21, 0x24, 0x00
-            };*/
 
-
-//            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
-            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
+            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
+//            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 
@@ -228,21 +215,26 @@ public class InsertService extends IntentService {
 
             //type
             if(i==0){
-                type = String.valueOf(buf[0]);
+                //type = String.valueOf(buf[0]);
+                type = byteTostr(buf[0]);
+                System.out.println("type : " + type);
             }
             //deviceID
             else if(i==1){
-                deviceID = String.valueOf(buf[1]<<8 | buf[2]);
+                //deviceID = String.valueOf(buf[1]<<8 | buf[2]);
+                deviceID = byteTostr(buf[1],buf[2]);
                 System.out.println("deviceID : "+ deviceID);
             }
             //nubmering
             else if(i==3){
-                numbering = buf[3]<<16  | buf[4]<<8 | buf[5];
+                //numbering = buf[3]<<16  | buf[4]<<8 | buf[5];
+                numbering = byteToint(buf[3], buf[4], buf[5]);
                 System.out.println("numbering : "+ numbering);
             }
             //battery
             else if(i==6){
-                battery = buf[6]<<8 | buf[7];
+                //battery = buf[6]<<8 | buf[7];
+                battery = byteToint(buf[6],buf[7]);
                 System.out.println("battery : "+ battery);
             }
 
@@ -250,14 +242,26 @@ public class InsertService extends IntentService {
             else{
                 //정수
                 if((i-8)%5 == 0){
-                    rawData = buf[i];
+                    rawData = byteTodouble(buf[i]);
                 }
                 //소수점 확인.
                 else if((i-9)%5 == 0 && buf[i] != 0){
-                    rawData += (buf[i+1])*0.01;
+                    double temp = byteTodouble(buf[i+1]);
+                    //1자리.
+                    if(temp>=100){
+                        rawData += (temp*0.001);
+                    }
+                    //2자리.
+                    else if(temp>=10){
+                        rawData += (temp*0.01);
+                    }
+                    //3자리.
+                    else if(temp>=1){
+                        rawData += (temp*0.1);
+                    }
                 }
                 else if((i-11)%5 == 0){
-                    temperature = buf[i];
+                    temperature = (byteTodouble(buf[i]));
                 }
                 else if((i>=12) && (i-12)%5 == 0){
                     //insert
@@ -293,6 +297,22 @@ public class InsertService extends IntentService {
 
 
         return map;
+    }
+
+    public int byteToint(byte first_buf, byte second_buf){
+        return ((first_buf & 0xff)<<8 | (second_buf & 0xff));
+    }
+    public int byteToint(byte first_buf, byte second_buf, byte third_buf){
+        return ((first_buf & 0xff)<<16 | (second_buf & 0xff)<<8 | (third_buf & 0xff));
+    }
+    public String byteTostr(byte buf){
+        return String.valueOf((buf&0xff));
+    }
+    public String byteTostr(byte first_buf, byte second_buf){
+        return String.valueOf(((first_buf)&0xff)<<8 | second_buf&0xff);
+    }
+    public double byteTodouble(byte buf){
+        return buf&0xff;
     }
 
 
