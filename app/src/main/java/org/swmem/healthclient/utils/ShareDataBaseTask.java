@@ -77,7 +77,6 @@ public class ShareDataBaseTask extends AsyncTask<Void,Void,Void> {
     @Override
     protected Void doInBackground(Void... voids) {
 
-
         exportDatabse("glucare.db");
 
         return null;
