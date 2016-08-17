@@ -75,46 +75,4 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory
-        android:title="User Setting">
-
-        <EditTextPreference
-            android:title="@string/pref_user_name_label"
-            android:key="@string/pref_user_name_key"
-            android:defaultValue="@string/pref_user_name_default"
-            android:summary="@string/pref_user_name_summary"
-            android:inputType="text"
-            android:singleLine="true" />
-
-        <EditTextPreference
-            android:title="@string/pref_user_email_label"
-            android:key="@string/pref_user_email_key"
-            android:defaultValue="@string/pref_user_email_default"
-            android:summary="@string/pref_user_email_summary"
-            android:inputType="textEmailAddress"
-            android:singleLine="true" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:title="Doctor Setting">
-
-        <EditTextPreference
-            android:title="@string/pref_doctor_name_label"
-            android:key="@string/pref_doctor_name_key"
-            android:defaultValue="@string/pref_doctor_name_default"
-            android:summary="@string/pref_doctor_name_summary"
-            android:inputType="text"
-            android:singleLine="true" />
-
-        <EditTextPreference
-            android:title="@string/pref_doctor_phone_label"
-            android:key="@string/pref_doctor_phone_key"
-            android:defaultValue="@string/pref_doctor_phone_default"
-            android:summary="@string/pref_doctor_phone_summary"
-            android:inputType="phone"
-            android:singleLine="true" />
-
-    </PreferenceCategory>
-
 </PreferenceScreen>

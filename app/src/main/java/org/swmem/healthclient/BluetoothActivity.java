@@ -265,6 +265,11 @@ public class BluetoothActivity extends AppCompatActivity
             startActivity(intent);
 
 
+        }else if (id == R.id.user_setting) {
+
+            Intent intent = new Intent(getBaseContext(), UserSettingActivity.class);
+            startActivity(intent);
+
         }else if (id == R.id.nav_share) {
 
             new ShareDataBaseTask(this).execute();

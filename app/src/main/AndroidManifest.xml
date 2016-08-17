@@ -60,6 +60,7 @@
             android:label="@string/select_device"
             android:theme="@android:style/Theme.Holo.Dialog.NoActionBar" />
         <activity android:name=".SettingActivity" />
+        <activity android:name=".UserSettingActivity" />
         <activity
             android:name=".NfcActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

@@ -252,22 +252,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
         // 차트 설정들
 
-        chart.getViewPortHandler().fitScreen();
 
-        if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_6))){
-            Log.v("zoom", "6");
-            chart.zoom(1.3f,1f,1f,1f);
-        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_12))){
-            Log.v("zoom", "12");
-            chart.zoom(3.3f,1f,1f,1f);
-        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_24))){
-            Log.v("zoom", "24");
-            chart.zoom(7f,1f,1f,1f);
-        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_72))){
-            Log.v("zoom", "72");
-            chart.zoom(19f,1f,1f,1f);
-        }
-
+        chart.setNoDataText("");
         chart.setDescription("");
         chart.setTouchEnabled(true);
         chart.setVisibleXRangeMinimum(5f);

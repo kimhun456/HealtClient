@@ -17,8 +17,8 @@
     <string name="share_setting">Share</string>
     <string name="call_setting">Call</string>
     <string name="NFC_settings">NFC</string>
-    <string name="no_data">No data</string>
     <string name="setting">Settings</string>
+    <string name="user_setting">User</string>
 
     <!-- PREFENCE-->
     

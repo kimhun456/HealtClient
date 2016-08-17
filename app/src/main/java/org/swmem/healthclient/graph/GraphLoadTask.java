@@ -238,13 +238,40 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         }
 
+        chart.setData(lineData);
+
+
+        // zooming 과 과련된 부분들
+
+        chart.getViewPortHandler().fitScreen();
+
+        chart.setVisibleXRangeMaximum(10);
+
+//
+//        if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_6))){
+//            Log.v("zoom", "6");
+//            chart.zoom(1.3f,1f,1f,1f);
+//        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_12))){
+//            Log.v("zoom", "12");
+//            chart.zoom(3.3f,1f,1f,1f);
+//        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_24))){
+//            Log.v("zoom", "24");
+//            chart.zoom(7f,1f,1f,1f);
+//        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_72))){
+//            Log.v("zoom", "72");
+//            chart.zoom(19f,1f,1f,1f);
+//        }
+
+
         if(lastDataIndex - 10 > 0){
             chart.moveViewToX(lastDataIndex-10);
         }else{
             chart.moveViewToX(lastDataIndex);
         }
-        chart.setData(lineData);
+
         chart.invalidate();
+
+        chart.setVisibleXRangeMaximum(1000000000);
 
         Log.v(TAG,"Load Graph Data");
 
