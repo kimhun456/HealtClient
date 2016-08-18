@@ -69,7 +69,8 @@ public class BTCTemplateService2 extends Service {
 
 	static String address = null;
 	private BluetoothDevice mDefaultDevice = null;
-	private int flag = 1;
+	private int flag = 1, MyCnt=0;
+	private byte[] MySource = new byte[1000];
 
 	@Override
 	public void onCreate() {
@@ -406,12 +407,18 @@ public class BTCTemplateService2 extends Service {
 
 				byte[] data = (byte[]) msg.obj;
 
-				for(int i=0; i<data.length; i++)
-					Logs.d(TAG, ""+ data[i]);
-
-				Intent intent = new Intent(getApplicationContext(),InsertService.class);
-				intent.putExtra("RealData",data);
-				startService(intent);
+				for(int i=0; i<data.length; i++) {
+					Logs.d(TAG, "Data : " + (0xff&data[i]));
+					if(data[i] == -1) {
+						Intent intent = new Intent(getApplicationContext(),InsertService.class);
+						intent.putExtra("RealData",MySource);
+						intent.putExtra("RealCnt",MyCnt);
+						startService(intent);
+						MyCnt=0;
+						break;
+					}
+					MySource[MyCnt++] = data[i];
+				}
 				// send bytes in the buffer to activity
 				break;
 				

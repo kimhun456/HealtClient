@@ -71,16 +71,33 @@ public class InsertService extends IntentService {
             sessionManager.setDeviceConnectTime(System.currentTimeMillis());
             sessionManager.setDeviceID("deviceID");
             byte[] test = null;
-            if(intent != null) test = intent.getByteArrayExtra("RealData");
-
-            if (test != null) {
-                for(int i=0; i<test.length; i++)
-                    Logs.d(TAG, ""+ test[i]);
+            int len = 0;
+            if(intent != null) {
+                test = intent.getByteArrayExtra("RealData");
+                len = intent.getIntExtra("RealCnt",0);
             }
 
+            if (test != null) {
+                for(int i=0; i<len; i++)
+                    Logs.d(TAG, ""+ (0xff&test[i]));
+            }
 
-//            HashMap<String, GlucoseData> insertMap = byteDecoding(test);
-            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
+            /*
+            byte[] test = {
+                    0x01, 0x00,0x32, 0x00, 0x00, 0x08, 0x00, 0x64,
+                    0x5C, 0x00, 0x00, 0x24, 0x00,
+                    0x5C, 0x01, 0x21, 0x24, 0x00,
+                    0x5C, 0x01, 0x42, 0x25, 0x00,
+                    0x5D, 0x00, 0x00, 0x24, 0x00,
+                    0x5D, 0x01, 0x21, 0x24, 0x00,
+                    0x5D, 0x01, 0x42, 0x25, 0x00,
+                    0x5E, 0x00, 0x00, 0x24, 0x00,
+                    0x5E, 0x01, 0x21, 0x24, 0x00
+            };*/
+
+
+            HashMap<String, GlucoseData> insertMap = byteDecoding(test, len);
+//            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 
@@ -197,7 +214,7 @@ public class InsertService extends IntentService {
     }
 
 
-    public HashMap<String , GlucoseData> byteDecoding(byte[] buf){
+    public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len){
 
 
         HashMap<String,GlucoseData> map = new HashMap<>();
@@ -211,28 +228,32 @@ public class InsertService extends IntentService {
 
         int count = 0;
 
-        for(int i=0; i<buf.length; i++){
+        for(int i=0; i<len; i++){
 
             //type
             if(i==0){
+                type = String.valueOf(0xff&buf[0]);
                 //type = String.valueOf(buf[0]);
                 type = byteTostr(buf[0]);
                 System.out.println("type : " + type);
             }
             //deviceID
             else if(i==1){
+                deviceID = String.valueOf((0xff&buf[1]<<8) | (0xff&buf[2]));
                 //deviceID = String.valueOf(buf[1]<<8 | buf[2]);
                 deviceID = byteTostr(buf[1],buf[2]);
                 System.out.println("deviceID : "+ deviceID);
             }
             //nubmering
             else if(i==3){
+                numbering = (0xff&buf[3]<<16)  | (0xff&buf[4]<<8) | (0xff&buf[5]);
                 //numbering = buf[3]<<16  | buf[4]<<8 | buf[5];
                 numbering = byteToint(buf[3], buf[4], buf[5]);
                 System.out.println("numbering : "+ numbering);
             }
             //battery
             else if(i==6){
+                battery = (0xff&buf[6]<<8) | (0xff&buf[7]);
                 //battery = buf[6]<<8 | buf[7];
                 battery = byteToint(buf[6],buf[7]);
                 System.out.println("battery : "+ battery);
@@ -242,6 +263,7 @@ public class InsertService extends IntentService {
             else{
                 //정수
                 if((i-8)%5 == 0){
+                    rawData = 0xff & buf[i];
                     rawData = byteTodouble(buf[i]);
                 }
                 //소수점 확인.
@@ -259,9 +281,11 @@ public class InsertService extends IntentService {
                     else if(temp>=1){
                         rawData += (temp*0.1);
                     }
+                    rawData += (0xff&buf[i+1])*0.01;
                 }
                 else if((i-11)%5 == 0){
                     temperature = (byteTodouble(buf[i]));
+                    temperature = 0xff&buf[i];
                 }
                 else if((i>=12) && (i-12)%5 == 0){
                     //insert

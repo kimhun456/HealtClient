@@ -553,9 +553,9 @@ public class BleManager {
 				final StringBuilder stringBuilder = new StringBuilder(data.length);
 				for(byte byteChar : data) {
 					stringBuilder.append(String.format("%02X ", byteChar));
-					baos.write(byteChar); pos++;
+					baos.write((0xff)&byteChar); pos++;
 				}
-				//Logs.d(TAG, "길이 : "+ data.length);
+				Logs.d(TAG, "길이 : "+ data.length);
 				Realdata = baos.toByteArray();
 
 				//stringBuilder.append(data);
