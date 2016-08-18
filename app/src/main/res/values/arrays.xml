@@ -2,20 +2,33 @@
 <resources>
 
     <string-array name="pref_limit_hours_labels">
-        <item>@string/pref_limit_hours_label_3</item>
-        <item>@string/pref_limit_hours_label_6</item>
-        <item>@string/pref_limit_hours_label_12</item>
         <item>@string/pref_limit_hours_label_24</item>
         <item>@string/pref_limit_hours_label_72</item>
+        <item>@string/pref_limit_hours_label_7days</item>
     </string-array>
 
     <string-array name="pref_limit_hours_values">
-        <item>@string/pref_limit_hours_3</item>
-        <item>@string/pref_limit_hours_6</item>
-        <item>@string/pref_limit_hours_12</item>
         <item>@string/pref_limit_hours_24</item>
         <item>@string/pref_limit_hours_72</item>
+        <item>@string/pref_limit_hours_7days</item>
     </string-array>
+
+    <string-array name="pref_show_hours_labels">
+        <item>@string/pref_show_hours_label_3</item>
+        <item>@string/pref_show_hours_label_6</item>
+        <item>@string/pref_show_hours_label_12</item>
+        <item>@string/pref_show_hours_label_24</item>
+        <item>@string/pref_show_hours_label_72</item>
+    </string-array>
+
+    <string-array name="pref_show_hours_values">
+        <item>@string/pref_show_hours_3</item>
+        <item>@string/pref_show_hours_6</item>
+        <item>@string/pref_show_hours_12</item>
+        <item>@string/pref_show_hours_24</item>
+        <item>@string/pref_show_hours_72</item>
+    </string-array>
+
 
     <string-array name="pref_data_interval_labels">
         <item>@string/pref_data_interval_label_one</item>

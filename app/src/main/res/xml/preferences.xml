@@ -9,9 +9,17 @@
 
 
         <ListPreference
+            android:title="@string/pref_show_hours_label"
+            android:key="@string/pref_show_hours_key"
+            android:defaultValue="@string/pref_show_hours_3"
+            android:entryValues="@array/pref_show_hours_values"
+            android:entries="@array/pref_show_hours_labels"
+            android:summary="@string/pref_show_hours_summary"/>
+
+        <ListPreference
             android:title="@string/pref_limit_hours_label"
             android:key="@string/pref_limit_hours_key"
-            android:defaultValue="@string/pref_limit_hours_24"
+            android:defaultValue="@string/pref_limit_hours_72"
             android:entryValues="@array/pref_limit_hours_values"
             android:entries="@array/pref_limit_hours_labels"
             android:summary="@string/pref_limit_hours_summary"/>

@@ -96,8 +96,8 @@ public class InsertService extends IntentService {
             };*/
 
 
-            HashMap<String, GlucoseData> insertMap = byteDecoding(test, len);
-//            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
+//            HashMap<String, GlucoseData> insertMap = byteDecoding(test, len);
+            HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 

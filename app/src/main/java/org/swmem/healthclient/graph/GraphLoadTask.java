@@ -1,5 +1,6 @@
 package org.swmem.healthclient.graph;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.AnimationDrawable;
@@ -78,15 +79,16 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     private Context context;
     private long limitHours;
     private long dataInterval;
+    private long showHours;
     private String dataFormat;
     private int lastDataIndex = 0;
-    private long lastDate = 0;
     private double lastValue = 0;
     private int arrowState = 2;
     private float highGlucose;
     private float lowGlucose;
     private  AnimationDrawable animation1;
     private  AnimationDrawable animation2;
+    private  ProgressDialog progressDialog;
 
     public GraphLoadTask(Context context, View rootView){
 
@@ -99,19 +101,28 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         this.context =  context;
         lastDataIndex = 0;
-        lastDate = 0;
         lastValue = 0;
+
+        showHours = Long.parseLong(PreferenceManager
+                .getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_show_hours_key)
+                        ,context.getString(R.string.pref_show_hours_3)));
+
         dataInterval = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(context)
-                .getString(context.getString(R.string.pref_data_interval_key),context.getString(R.string.pref_data_interval_one)));
+                .getString(context.getString(R.string.pref_data_interval_key)
+                        ,context.getString(R.string.pref_data_interval_one)));
 
         dataFormat = PreferenceManager
                 .getDefaultSharedPreferences(context)
-                .getString(context.getString(R.string.pref_data_format_key),context.getString(R.string.pref_data_format_mgdl));
+                .getString(context.getString(R.string.pref_data_format_key)
+                        ,context.getString(R.string.pref_data_format_mgdl));
 
         limitHours = Long.parseLong(PreferenceManager
                 .getDefaultSharedPreferences(context)
-                .getString(context.getString(R.string.pref_limit_hours_key),context.getString(R.string.pref_limit_hours_24)));
+                .getString(context.getString(R.string.pref_limit_hours_key)
+                        ,context.getString(R.string.pref_limit_hours_72)));
+
 
         chart = (LineChart) rootView.findViewById(R.id.chart);
         lastValueText = (TextView) rootView.findViewById(R.id.lastValueText);
@@ -120,9 +131,21 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
     }
 
     @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage("Loading...");
+        progressDialog.setIndeterminate(false);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setCancelable(true);
+        progressDialog.show();
+
+    }
+
+    @Override
     protected void onPostExecute(LineData lineData) {
         super.onPostExecute(lineData);
-
         if(lastValue != 0){
 
 
@@ -156,9 +179,9 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
                     animation1 = (AnimationDrawable) currentArrowImage
                             .getBackground();
-                    animation1.start();
                     animation2 = (AnimationDrawable) currentArrowImage2
                             .getBackground();
+                    animation1.start();
                     animation2.start();
 
 
@@ -214,9 +237,10 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
                     animation1 = (AnimationDrawable) currentArrowImage
                             .getBackground();
-                    animation1.start();
                     animation2 = (AnimationDrawable) currentArrowImage2
                             .getBackground();
+
+                    animation1.start();
                     animation2.start();
 
                     break;
@@ -238,30 +262,29 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         }
 
-        chart.setData(lineData);
-
-
-        // zooming 과 과련된 부분들
 
         chart.getViewPortHandler().fitScreen();
+        chart.setData(lineData);
+        // zooming 과 과련된 부분들
 
-        chart.setVisibleXRangeMaximum(10);
+        // 얼마나 보여줄 건지 처리하는 부분.
+        if(showHours > limitHours){
+            showHours = limitHours;
+        }
 
-//
-//        if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_6))){
-//            Log.v("zoom", "6");
-//            chart.zoom(1.3f,1f,1f,1f);
-//        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_12))){
-//            Log.v("zoom", "12");
-//            chart.zoom(3.3f,1f,1f,1f);
-//        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_24))){
-//            Log.v("zoom", "24");
-//            chart.zoom(7f,1f,1f,1f);
-//        }else if(limitHours == Long.parseLong(getString(R.string.pref_limit_hours_72))){
-//            Log.v("zoom", "72");
-//            chart.zoom(19f,1f,1f,1f);
-//        }
+        float xRangeMaximum = 60 * showHours / dataInterval;
+        float limitXRangeMaximum = 60 * limitHours / dataInterval;
 
+
+
+        Log.v("showHours",""+showHours);
+        Log.v("limitHours",""+limitHours);
+        Log.v("limitXRangeMaximum",""+limitXRangeMaximum);
+        Log.v("xRangeMaximum",""+xRangeMaximum);
+
+
+        chart.setVisibleXRangeMinimum(xRangeMaximum);
+        chart.setVisibleXRangeMaximum(xRangeMaximum);
 
         if(lastDataIndex - 10 > 0){
             chart.moveViewToX(lastDataIndex-10);
@@ -271,9 +294,15 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         chart.invalidate();
 
-        chart.setVisibleXRangeMaximum(1000000000);
+        chart.setVisibleXRangeMaximum(limitXRangeMaximum);
+        chart.setVisibleXRangeMinimum(1);
 
         Log.v(TAG,"Load Graph Data");
+
+
+        // Dialog remove
+
+        progressDialog.dismiss();
 
     }
 
@@ -331,7 +360,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
-
+//
 //                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
 //                Log.v ("cursor" ,"type : " +  type);
 //                Log.v("cursor",  "Converted VALUE :  " +convertedData);
