@@ -45,6 +45,8 @@ import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.MyNotificationManager;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class BTCTemplateService2 extends Service {
@@ -71,7 +73,8 @@ public class BTCTemplateService2 extends Service {
 	private BluetoothDevice mDefaultDevice = null;
 	private int flag = 1, MyCnt=0;
 	private byte[] MySource = new byte[1000];
-	private int packet_num=0;
+	private int packet_num=0, StartTimer = 0;
+	private int write_packet1=0, write_packet2=0;
 
 	@Override
 	public void onCreate() {
@@ -334,8 +337,23 @@ public class BTCTemplateService2 extends Service {
 			ServiceMonitoring.stopMonitoring(mContext);
 		}
 	}
-	
-	
+	public void DetectErrorStartTimer(){
+		// 이미 켜져있음
+		if(StartTimer == 1) return;
+		Logs.d(TAG, "# Start Timer Error");
+		TimerTask SendError = new TimerTask() {
+			@Override
+			public void run() {
+				byte[] send = new byte[]{(byte) 0xff,(byte) 0xff};
+				Logs.d(TAG, "# Error Send!!!");
+				mBleManager.write(null,send);
+			}
+		};
+		StartTimer = 1;
+		Timer timer = new Timer();
+		timer.schedule(SendError, 1000);
+	}
+
 	
 	/*****************************************************
 	 *	Handler, Listener, Timer, Sub classes
@@ -405,13 +423,17 @@ public class BTCTemplateService2 extends Service {
 			// Received packets from remote
 			case BleManager.MESSAGE_READ:
 				Logs.d(TAG, "Service - MESSAGE_READ: ");
-				sendMessageToDevice("come!!");
-				byte[] data = (byte[]) msg.obj;
 
-				if((0xff&data[0]) == 255 && (0xff&data[1]) == packet_num) {
+				//byte[] send = new byte[]{0x11,0x12};
+				byte[] data = (byte[]) msg.obj;
+				//mBleManager.write(null, send);
+				if(data.length > 3 && (0xff&data[0]) == 255 && (0xff&data[1]) == packet_num) {
 					int checksum = 0;
 
-					if(data.length != data[2] + 4) break;
+					if(data.length != data[2] + 4) {
+						DetectErrorStartTimer();
+						break;
+					}
 					for(int i=0; i<data.length - 1; i++)
 						checksum ^= data[i];
 					if(checksum != data[data.length-1]) break;
@@ -421,6 +443,14 @@ public class BTCTemplateService2 extends Service {
 						intent.putExtra("RealData",MySource);
 						intent.putExtra("RealCnt",MyCnt);
 						startService(intent);
+
+						// 정상 받은 상태를 write
+						byte[] send = new byte[]{(byte) 0xff,0x00,0x02,0x00,0x00,0x00};
+						send[3] = (byte) write_packet1;
+						send[4] = (byte) write_packet2;
+						for(int i=0; i<6; i++) send[5] ^= send[i];
+						mBleManager.write(null,send);
+
 						MyCnt=0;
 						break;
 					}
@@ -430,6 +460,11 @@ public class BTCTemplateService2 extends Service {
 						MySource[MyCnt++] = data[i];
 					}
 					packet_num++;
+					if(packet_num == 256){
+						write_packet1++;
+						packet_num = 0;
+					}
+					write_packet2 = packet_num;
 				}
 
 				/*
@@ -473,11 +508,12 @@ public class BTCTemplateService2 extends Service {
 						msg.getData().getString(Constants.SERVICE_HANDLER_MSG_KEY_TOAST), 
 						Toast.LENGTH_SHORT).show();
 				break;
-				
+
 			}	// End of switch(msg.what)
 			
 			super.handleMessage(msg);
 		}
+
 	}	// End of class MainHandler
 
 }
