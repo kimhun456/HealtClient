@@ -175,6 +175,7 @@ public class BluetoothActivity extends AppCompatActivity
     public void onDestroy() {
         super.onDestroy();
         finalizeActivity();
+        unbindService(mServiceConn);
         Log.d(TAG, "# Destroy");
     }
 
@@ -184,6 +185,7 @@ public class BluetoothActivity extends AppCompatActivity
         Log.d(TAG, "# Memory");
         // onDestroy is not always called when applications are finished by Android system.
         finalizeActivity();
+        unbindService(mServiceConn);
     }
 
 
@@ -227,10 +229,17 @@ public class BluetoothActivity extends AppCompatActivity
                 break;
 
             case R.id.noti_menu:
-                new MyNotificationManager(getApplicationContext()).makeNotification("title" , "contents");
+               // new MyNotificationManager(getApplicationContext()).makeNotification("title" , "contents");
 
                 // 버튼을 누를시 블루투스 연결 해제 테스트
+               // Logs.d(TAG, "check:"+ BluetoothAdapter.getDefaultAdapter().disable());
                 BluetoothAdapter.getDefaultAdapter().disable();
+                if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                    BluetoothAdapter.getDefaultAdapter().enable();
+                }
+                if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                    BluetoothAdapter.getDefaultAdapter().enable();
+                }
                 if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
                     BluetoothAdapter.getDefaultAdapter().enable();
                 }

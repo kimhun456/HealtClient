@@ -71,6 +71,7 @@ public class BTCTemplateService2 extends Service {
 	private BluetoothDevice mDefaultDevice = null;
 	private int flag = 1, MyCnt=0;
 	private byte[] MySource = new byte[1000];
+	private int packet_num=0;
 
 	@Override
 	public void onCreate() {
@@ -404,12 +405,38 @@ public class BTCTemplateService2 extends Service {
 			// Received packets from remote
 			case BleManager.MESSAGE_READ:
 				Logs.d(TAG, "Service - MESSAGE_READ: ");
-
+				sendMessageToDevice("come!!");
 				byte[] data = (byte[]) msg.obj;
 
+				if((0xff&data[0]) == 255 && (0xff&data[1]) == packet_num) {
+					int checksum = 0;
+
+					if(data.length != data[2] + 4) break;
+					for(int i=0; i<data.length - 1; i++)
+						checksum ^= data[i];
+					if(checksum != data[data.length-1]) break;
+
+					if(data[2] == 0){ // insert!!
+						Intent intent = new Intent(getApplicationContext(),InsertService.class);
+						intent.putExtra("RealData",MySource);
+						intent.putExtra("RealCnt",MyCnt);
+						startService(intent);
+						MyCnt=0;
+						break;
+					}
+
+					for(int i=3; i<3+data[2]; i++) {
+						Logs.d(TAG, "Data : " + (0xff&data[i]));
+						MySource[MyCnt++] = data[i];
+					}
+					packet_num++;
+				}
+
+				/*
 				for(int i=0; i<data.length; i++) {
 					Logs.d(TAG, "Data : " + (0xff&data[i]));
-					if(data[i] == -1) {
+
+					if((0xff&data[i]) == 255) {
 						Intent intent = new Intent(getApplicationContext(),InsertService.class);
 						intent.putExtra("RealData",MySource);
 						intent.putExtra("RealCnt",MyCnt);
@@ -418,7 +445,7 @@ public class BTCTemplateService2 extends Service {
 						break;
 					}
 					MySource[MyCnt++] = data[i];
-				}
+				}*/
 				// send bytes in the buffer to activity
 				break;
 				

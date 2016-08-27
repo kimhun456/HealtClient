@@ -332,12 +332,12 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
 
-//                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
-//                Log.v ("cursor" ,"type : " +  type);
-//                Log.v("cursor",  "Converted VALUE :  " +convertedData);
-//                Log.v("cursor",  "RAW VALUE :  " +(float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
-//                Log.v ("cursor" ,"index : " +  index );
-//                Log.v ("cursor" ,"______________________");
+                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
+                Log.v ("cursor" ,"type : " +  type);
+                Log.v("cursor",  "Converted VALUE :  " +convertedData);
+                Log.v("cursor",  "RAW VALUE :  " +(float)cursor.getDouble(COL_GLUCOSE_RAW_VALUE));
+                Log.v ("cursor" ,"index : " +  index );
+                Log.v ("cursor" ,"______________________");
 
                 if(index < 0){
                     continue;
