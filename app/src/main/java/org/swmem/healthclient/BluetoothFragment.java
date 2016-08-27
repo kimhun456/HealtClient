@@ -45,6 +45,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
     private final int DAYS = 24 * HOURS;
     private long limitHours;
     private long dataInterval;
+    private long showHours;
     private String dataFormat;
     private View rootView;
     private LineChart chart;
@@ -78,6 +79,8 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getContext());
 
+        boolean reset = false;
+
         if(limitHours != Long.parseLong(
                 sharedPreferences
                         .getString(getContext().getString(R.string.pref_limit_hours_key)
@@ -86,8 +89,19 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
             limitHours = Long.parseLong(sharedPreferences
                     .getString(getContext().getString(R.string.pref_limit_hours_key),
                             getContext().getString(R.string.pref_limit_hours_24)));
-            setUpChart(chart);
-            updateData();
+            reset = true;
+        }
+
+        if(showHours != Long.parseLong(
+                sharedPreferences
+                        .getString(getContext().getString(R.string.pref_show_hours_key)
+                                , getContext().getString(R.string.pref_show_hours_3)))){
+
+            limitHours = Long.parseLong(
+                    sharedPreferences
+                            .getString(getContext().getString(R.string.pref_show_hours_key)
+                                    , getContext().getString(R.string.pref_show_hours_3)));
+            reset = true;
         }
 
         if(dataInterval != Long.parseLong(
@@ -97,8 +111,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
             dataInterval = Long.parseLong(sharedPreferences
                     .getString(getContext().getString(R.string.pref_data_interval_key)
                             ,getContext().getString(R.string.pref_data_interval_one)));
-            setUpChart(chart);
-            updateData();
+            reset = true;
         }
 
         if(!dataFormat.equals(sharedPreferences
@@ -109,11 +122,15 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
                     .getString(getContext().getString(R.string.pref_data_format_key)
                             ,getContext().getString(R.string.pref_data_format_mgdl));
 
-            setUpChart(chart);
-            updateData();
+            reset = true;
             formatTextView.setText(sharedPreferences
                     .getString(getContext().getString(R.string.pref_data_format_key)
                             ,getContext().getString(R.string.pref_data_format_mgdl)));
+        }
+
+        if(reset){
+            setUpChart(chart);
+            updateData();
         }
 
     }
@@ -131,6 +148,10 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getContext());
 
+        showHours = Long.parseLong(sharedPreferences
+                .getString(getContext().getString(R.string.pref_show_hours_key),
+                        getContext().getString(R.string.pref_show_hours_3)));
+
         limitHours = Long.parseLong(sharedPreferences
                 .getString(getContext().getString(R.string.pref_limit_hours_key),
                         getContext().getString(R.string.pref_limit_hours_24)));
@@ -147,6 +168,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
         getLoaderManager().initLoader(GRAPH_LOADER_ID,null,this);
         rootView = inflater.inflate(R.layout.fragment_bluetooth, container, false);
         chart = (LineChart) rootView.findViewById(R.id.chart);
+
         formatTextView = (TextView) rootView.findViewById(R.id.data_format_text);
         formatTextView.setText(dataFormat);
         setUpChart(chart);
@@ -155,6 +177,9 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
     }
 
     private void updateData(){
+        chart.clearAllViewportJobs();
+        chart.clearFocus();
+        chart.clear();
         new GraphLoadTask(getContext(), rootView).execute();
     }
 
