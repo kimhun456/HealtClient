@@ -3,11 +3,15 @@ package org.swmem.healthclient.Nfc;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.NfcV;
+import android.support.annotation.RequiresPermission;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.swmem.healthclient.service.InsertService;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,198 +28,101 @@ public class NfcvFunction extends Activity{
     static String type;
     static String deviceID;
     static int battery;
-    static int data_length;
     static int data_start;
     static int data_end;
     static double rawData=0;
     static double temperature=0;
 
 
-    public void SetTag(Tag nfcTag) {
-        Log.d(TAG, "SetTag");
-
-        mytag = nfcTag;
-        System.out.println("READ NFC");
-
-        read(mytag);
-    }
-
-    public void read(Tag tag){
+    public void read(Tag tag) {
         Log.d(TAG, "read");
-        byte[] real_data = null;
-        byte[] info_data = new byte[8192];
-        byte[] write_data = null;
+        mytag = tag;
 
-        int write_data_index=0;
-        int read_data_index=0;
-        boolean update = true;
+        //read
+        byte[] read_response = new byte[]{(byte) 0x0A};
+        byte[] read_data = new byte[8192];
+        int read_data_length = 0;
+        byte[] ReadSingleBlockFrame;
+        byte read_startAddress = 0x0000;
+        //ReadSingleBlockFrame = new byte[]{(byte) 0x02, (byte) 0x20, read_startAddress}; //ReadSingle command, startAddress.
 
-       // Toast.makeText(getApplicationContext(), "TAG Check 1", Toast.LENGTH_SHORT).show();
+        int offset=0;
+        int blocks = 2047;
+        ReadSingleBlockFrame = new byte[]{(byte) 0x60, (byte) 0x23,(byte)0x00,
+                (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,
+                (byte)(offset&0x0ff), (byte)((blocks -1 ) & 0x0ff)}; //Read Multi command, startAddress.
 
-        if(tag != null){
+        //write
+        byte[] write_response = new byte[]{(byte)0xFF};
+        byte[] WriteSingleBlockFrame;
+        byte write_startAddress = 0x10;
+        WriteSingleBlockFrame = new byte[]{(byte)0x02, (byte)0x21, write_startAddress, 0x52, 0x45, 0x41, 0x44 };
+        int write_errorOccured=1;
 
+        int errorOccured = 1;
 
-            byte[] id = tag.getId();
-            byte[] readCmd = new byte[3+id.length];
-            readCmd[0] = 0x20;
-            readCmd[1] = 0x20;
-            System.arraycopy(id, 0, readCmd, 2, id.length);
-            readCmd[2+id.length] = (byte)0;
+        NfcV nfcvTag = NfcV.get(tag);
+        try{
+            nfcvTag.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
-            NfcV tech = NfcV.get(tag);
-            if (tech != null) {
-                // send read command
+        //while (errorOccured != 0) {
+            try {
 
-                Toast.makeText(getApplicationContext(), "TAG Check 3", Toast.LENGTH_SHORT).show();
+                read_response = nfcvTag.transceive(ReadSingleBlockFrame);
 
-                Log.d(TAG, "NfcV tech get");
-                try {
-                    tech.connect();
-                    Log.d(TAG, "tech connect");
+                Log.d(TAG, "try");
+                for (int j = 0; j < read_response.length; j++) {
+                    read_data[read_data_length++] = read_response[j];
+                    System.out.println(" read data : " + read_response[j]);
+                }
+                //read_startAddress = (byte) (read_startAddress | 0x0004);
 
-                    for(int i=0; i<=2; i++){
-
-                        readCmd[2+id.length]= (byte)i;
-                        info_data = tech.transceive(readCmd);
-
-                        Log.d(TAG, "info_ length :" +info_data.length);
-                        for(int j=1; j< info_data.length; j++){
-                            Log.d(TAG, "info_data : "+info_data[j]);
-                            //write_data[write_data_index++] = info_data[j]; //copy.
-                        }
+                //MAKE확인.
+                if(read_data_length == 16){
+                    if(read_data[12] == 0x4D && read_data[13]==0x41 && read_data[14] ==0x4B && read_data[15] == 0x45 ){
+                        //1초대기. => 다시 search.
+                        Thread.sleep(1000);
+                        read_data_length=0;
+                        read_startAddress=0x0000;
                     }
 
-                    type = String.valueOf(info_data[0]);
-                    deviceID = byteTostr(info_data[2], info_data[3]);
-                    battery = byteToint(info_data[4], info_data[5]);
-
-                    data_start = byteToint(info_data[8], info_data[9]);
-                    data_end = byteToint(info_data[10], info_data[11]);
-
-                    if(data_start < data_end){
-                        data_length = data_end - data_start;
-                    }
-                    //end가 8188을 넘은경우.
+                    //"READ" 기록.
                     else{
-                        data_length = (data_end - 32) + (8192 - data_start);
-                        update = false;
-                    }
-
-                    // F: MAKE확인 & G:READ확인.
-                    if(info_data[12]==0x4D || (char)info_data[13]==0x41 || (char)info_data[14]==0x4B || (char)info_data[15]==0x45){
-                        //read기록.
-                        write_data[16]=0x52;
-                        write_data[17]=0x45;
-                        write_data[18]=0x41;
-                        write_data[19]=0x44;
-                        tech.transceive(write_data);
-                    }
-
-                    //data 저장.
-                    int a, b, c, d, e;
-                    int x=0;
-                    read_data_index = data_length-1;
-
-                    if(update){
-
-                        for(int i=data_start; i< data_end; i++){
-                            real_data[read_data_index--] = info_data[i];
-
-                            if(x==0){
-                                a = info_data[i];
+                        while(write_errorOccured!=0){
+                            write_response = nfcvTag.transceive(WriteSingleBlockFrame);
+                            if(write_response[0] == (byte)0x00 || write_response[0] == (byte) 0x01){
+                                write_errorOccured = 0;
                             }
-                            else if(x==1){
-                                b = info_data[i];
-                            }
-                            else if(x==2){
-                                c = info_data[i];
-                                //raw_data 조합(a,b,c)
-                            }
-                            else if(x==3){
-                                d = info_data[i];
-                            }
-                            else if(x==4){
-                                e = info_data[i];
-                                //temp 조합(d,e);
-                                x=0;
-                                continue;
-                            }
-                            x++;
                         }
-                    }
-                    else{
-                        for(int i=data_start; i<8192; i++ ){
-                            real_data[read_data_index--] = info_data[i];
-
-                            if(x==0){
-                                a = info_data[i];
-                            }
-                            else if(x==1){
-                                b = info_data[i];
-                            }
-                            else if(x==2){
-                                c = info_data[i];
-                            }
-                            else if(x==3){
-                                d = info_data[i];
-                            }
-                            else if(x==4){
-                                e = info_data[i];
-                                x=0;
-                                continue;
-                            }
-                            x++;
-                        }
-                        for(int i=0; i<data_end; i++){
-                            real_data[read_data_index--] = info_data[i];
-
-                            if(x==0){
-                                a = info_data[i];
-                            }
-                            else if(x==1){
-                                b = info_data[i];
-                            }
-                            else if(x==2){
-                                c = info_data[i];
-                            }
-                            else if(x==3){
-                                d = info_data[i];
-                            }
-                            else if(x==4){
-                                e = info_data[i];
-                                x=0;
-                                continue;
-                            }
-                            x++;
-                        }
-
-
-                    }
-
-
-
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        tech.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
+
+                if (read_response[0] == (byte) 0x00 || read_response[0] == (byte) 0x01)
+                    errorOccured = 0;
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        //
+
+        //데이터 누락없이 모두 받았을 경우.
+        if (read_data_length == 8192) {
+            Log.d(TAG, "trans Intent to insertService");
+            //데이터 배열 intent넘기기.
+            Intent intent = new Intent(getApplicationContext(), InsertService.class);
+            intent.putExtra("RealData", read_data);
+            intent.putExtra("RealCnt", read_data_length);
+            startService(intent);
         }
+        else{
+            Log.d(TAG, "trans error");
+            Toast.makeText(getApplicationContext(),"다시 시도해 주십시오.", Toast.LENGTH_LONG).show();
+        }
+
+
     }
-
-
-    public static  String byteTostr(byte first_buf, byte second_buf){
-        return String.valueOf(((first_buf)&0xff)<<8 | second_buf&0xff);
-    }
-
-    public static int byteToint(byte first_buf, byte second_buf){
-        return ((first_buf & 0xff)<<8 | (second_buf & 0xff));
-    }
-
 }
