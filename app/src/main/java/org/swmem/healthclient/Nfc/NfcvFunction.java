@@ -50,11 +50,10 @@ public class NfcvFunction extends Activity{
         int read_data_index=0;
         boolean update = true;
 
-        Toast.makeText(getApplicationContext(), "TAG Check 1", Toast.LENGTH_SHORT).show();
+       // Toast.makeText(getApplicationContext(), "TAG Check 1", Toast.LENGTH_SHORT).show();
 
         if(tag != null){
 
-            Toast.makeText(getApplicationContext(), "TAG Check 2", Toast.LENGTH_SHORT).show();
 
             byte[] id = tag.getId();
             byte[] readCmd = new byte[3+id.length];
