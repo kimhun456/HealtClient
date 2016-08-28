@@ -93,9 +93,7 @@ public class NfcActivity extends Activity {
 
             Log.d(TAG, "tag intent get");
             mytag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-
-
-            myNfcvFunction.read(mytag);
+            new NfcvFunction().read(mytag);
             finish();
         }
     }
