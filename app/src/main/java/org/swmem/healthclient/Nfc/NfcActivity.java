@@ -2,33 +2,22 @@ package org.swmem.healthclient.Nfc;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.NfcManager;
 import android.nfc.Tag;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import org.swmem.healthclient.BluetoothFragment;
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.db.GlucoseData;
-import org.swmem.healthclient.db.HealthContract;
-import org.swmem.healthclient.service.InsertService;
-import org.swmem.healthclient.utils.Utility;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import java.io.IOException;
 
 /**
  * Created by Woo on 2016-08-02.
@@ -41,13 +30,15 @@ public class NfcActivity extends Activity {
     NfcAdapter nfcAdapter = BluetoothFragment.nfcAdapter;
 
     private Tag mytag;
-    private NfcvFunction myNfcvFunction = new NfcvFunction();
+    private NfcvFunction myNfcvFunction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "oncreate");
 
         super.onCreate(savedInstanceState);
+
+        myNfcvFunction =  new NfcvFunction(getApplicationContext());
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -93,7 +84,17 @@ public class NfcActivity extends Activity {
 
             Log.d(TAG, "tag intent get");
             mytag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-            new NfcvFunction().read(mytag);
+            try {
+
+                if(myNfcvFunction.read(mytag) == false){
+                    Toast.makeText(getApplicationContext(),"다시 태깅해주세요.", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             finish();
         }
     }
@@ -120,4 +121,3 @@ public class NfcActivity extends Activity {
 
 
 }
-

@@ -1,10 +1,11 @@
 package org.swmem.healthclient.Nfc;
 
-import android.app.Activity;
-import android.app.Application;
+/**
+ * Created by Woo on 2016-08-29.
+ */
+
 import android.content.Context;
 import android.content.Intent;
-import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.NfcV;
 import android.util.Log;
@@ -13,120 +14,129 @@ import android.widget.Toast;
 import org.swmem.healthclient.service.InsertService;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by Woo on 2016-08-27.
  */
-public class NfcvFunction extends Activity{
+public class NfcvFunction {
 
     static String TAG = "NfcVFunction";
     private Tag mytag;
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
+    Context mContext;
 
-
-    public void SetTag(Tag nfcTag) {
-        Log.d(TAG, "SetTag");
-
-        mytag = nfcTag;
-        System.out.println("READ NFC");
-
-        read(mytag);
+    NfcvFunction(Context context) {
+        this.mContext = context;
     }
 
-    public void read(Tag tag){
+    public boolean read(Tag tag) throws IOException {
         Log.d(TAG, "read");
-        byte[] real_data = new byte[8192];
+        mytag = tag;
+
+        //temp data;
+        int temp_data_length = 0;
         byte[] temp_data = new byte[8192];
-        byte[] write_data = new byte[]{0x02, 0x21, (byte)4, 0x42, 0x45, 0x42, 0x44 }; //low data rate / single block / address / "READ"
 
-        int real_data_index=0;
-        int write_data_index=0;
-        int read_data_index=0;
-        boolean update = true;
+        //write command
+        byte[] write_response = new byte[]{(byte)0xFF};
+        int write_start_position = 0;
+        int write_end_position = 4;
+        byte[] write_data = new byte[]{
+                (byte)0x0A, (byte)0x21,
+                (byte) write_end_position, (byte) write_start_position,
+                (byte)0x52, (byte)0x45, (byte)0x41, (byte)0x44}; //low data rate / single block / address / "READ"
 
-        // Toast.makeText(getApplicationContext(), "TAG Check 1", Toast.LENGTH_SHORT).show();
+        //read commnad
+        int read_start_position = 0;
+        int read_move_position = 0;
+        int read_block = 31;
 
-        if(tag != null){
 
+        byte[] readCmd = new byte[]{
+                (byte) 0x0A, (byte) 0x23,
+                (byte) read_move_position,
+                (byte) read_start_position,
+                (byte) read_block};
 
-            byte[] id = tag.getId();
-            byte[] readCmd = new byte[3+id.length];
-            readCmd[0] = 0x20;
-            readCmd[1] = 0x20;
-            System.arraycopy(id, 0, readCmd, 2, id.length);
-            readCmd[2+id.length] = (byte)0;
+        byte[] read_response = new byte[]{(byte) 0x0A};
 
-            NfcV tech = NfcV.get(tag);
-            //Toast.makeText(getApplicationContext(), "TAG Check 3", Toast.LENGTH_SHORT).show();
+        boolean checkMAKE=true;
 
-            if (tech != null) {
-                // send read command
+        int error = 1;
+        NfcV nfcvTag = NfcV.get(mytag);
+        while (error != 0) {
+            try {
+                nfcvTag.close();
+                nfcvTag.connect();
 
-                Log.d(TAG, "NfcV tech get");
-                try {
-                    tech.connect();
-                    Log.d(TAG, "tech connect");
+                read_response = nfcvTag.transceive(readCmd);
 
-                    for(int i=0; i<10; i++){ //block 변경 해야함. 10개블락 => 2147블락
-                        Log.d(TAG, "I : "+ i);
-                        readCmd[2+id.length]= (byte)i;
-                        temp_data = tech.transceive(readCmd);
+                for (int j = 1; j < read_response.length; j++)
+                    temp_data[temp_data_length++] = read_response[j];
 
-                        for(int j=1; j< temp_data.length; j++){
-                            Log.d(TAG, "info_data : "+ temp_data[j]);
-                            real_data[real_data_index++] = temp_data[j]; //copy.
-                        }
+                //"MAKE" 확인
+                if (checkMAKE && temp_data_length >= 16) {
+                    if (temp_data[12] == 0x4D && temp_data[13] == 0x41 && temp_data[14] == 0x4B && temp_data[15] == 0x45) {
+                        checkMAKE = false;
+                        return false;
+                    }
 
-                        //"MAKE" 확인
-                        if(real_data_index == 16){
-                            if(real_data[12]==0x4D && real_data[13]==0x41 && real_data[14]==0x4B && real_data[15]==0x45){
-                                //1초대기 후 다시 read
-                                Thread.sleep(1000);
-                                //초기화.
-                                real_data_index=0;
-                                i=-1;
-                            }
+                    //"READ" 기록
+                    else {
+                        int write_error=1;
 
-                            //"READ" 기록
-                            else{
-                                try{
-                                    tech.transceive(write_data);
+                        while(write_error!=0){
+                            Log.d(TAG, "Write _ READ ");
+                            try {
+                                write_response = nfcvTag.transceive(write_data);
+
+                                if(write_response[0]==(byte)0x00 || write_response[0]==(byte)0x01){
+                                    write_error=0;
                                 }
-                                catch(Exception e){
-                                    e.printStackTrace();
-                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "write _ error");
+                                e.printStackTrace();
                             }
                         }
-                    }
-
-                    Log.d(TAG, "real_data_index : " + real_data_index);
-                    //데이터 모두 전송받으면 인텐트 전송.
-                    if(real_data_index == 40){ //40->8192
-                        Log.d(TAG, "trans Intent to insertService");
-                        //데이터 배열 intent넘기기.
-                        Intent intent = new Intent(this, InsertService.class);
-                        intent.putExtra("RealData", real_data);
-                        intent.putExtra("RealCnt", read_data_index);
-                        startService(intent);
-                    }
-                    else{
-                        Log.d(TAG, "trans Error");
-                        tech.close();
-                        Toast.makeText(getApplicationContext(),"다시 태깅해주세요.", Toast.LENGTH_LONG).show();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        tech.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
+
+                read_move_position = read_move_position + 32;
+
+                System.out.println("temp_data_length : " + temp_data_length);
+
+                if (temp_data_length >= 4000 && read_response[0] == (byte) 0x00 || read_response[0] == (byte) 0x01)
+                    error = 0;
+
+            } catch (Exception e) {
+                Log.e(TAG, "Tag was lost");
+                e.printStackTrace();
+                nfcvTag.close();
+            } finally {
+                nfcvTag.close();
             }
+
         }
+
+        Toast.makeText(mContext.getApplicationContext(), "넘어옴.", Toast.LENGTH_LONG).show();
+        for (int i = 0; i < 36; i++)
+            System.out.println("temp_data :"+  i + " " + temp_data[i]);
+
+        if (temp_data_length == 40) { //40->8192
+            Log.d(TAG, "trans Intent to insertService");
+            //데이터 배열 intent넘기기.
+            Intent intent = new Intent(mContext.getApplicationContext(), InsertService.class);
+            intent.putExtra("RealData", temp_data);
+            intent.putExtra("RealCnt", temp_data_length);
+            mContext.getApplicationContext().startService(intent);
+        } else {
+            Log.d(TAG, "trans Error");
+            Toast.makeText(mContext.getApplicationContext(), "다시 태깅해주세요.", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
     }
 
 
