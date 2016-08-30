@@ -486,7 +486,7 @@ public class BTCTemplateService2 extends Service {
 						Intent intent = new Intent(getApplicationContext(), InsertService.class);
 						intent.putExtra("RealData", MySource);
 						intent.putExtra("RealCnt", MyCnt);
-						intent.putExtra("MyType",0);
+						intent.putExtra("MyType",0); // 변경
 						Logs.d(TAG, "RealCnt : " + MyCnt);
 						startService(intent);
 

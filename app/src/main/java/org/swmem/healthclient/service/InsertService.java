@@ -230,6 +230,7 @@ public class InsertService extends IntentService {
 
         int count = 0;
 
+
         for(int i=0; i<len; i++){
 
             //type
@@ -268,35 +269,21 @@ public class InsertService extends IntentService {
                     rawData = byteTodouble(buf[i]);
                 }
                 // 두번째 정수
-                if((i-9)%5 == 0){
-                    rawData += byteTodouble(buf[i]);
+                if((i-9)%5 == 0 && buf[i] != 0){
+                    rawData += 0xff&buf[i] << 8;
                 }
-                //소수점 확인.
-                else if((i-9)%5 == 0 && buf[i] != 0){
-                    double temp = byteTodouble(buf[i+1]);
-                    //1자리.
-                    if(temp>=100){
-                        rawData += (temp*0.001);
-                    }
-                    //2자리.
-                    else if(temp>=10){
-                        rawData += (temp*0.01);
-                    }
-                    //3자리.
-                    else if(temp>=1){
-                        rawData += (temp*0.1);
-                    }
-                    rawData += (0xff&buf[i+1])*0.01;
+                if((i-10)%5 == 0 && buf[i] != 0) {
+                    rawData += 0xff&buf[i] << 16;
                 }
                 else if((i-11)%5 == 0){
-                    temperature = (byteTodouble(buf[i]));
                     temperature = 0xff&buf[i];
                 }
-                else if((i>=12) && (i-12)%5 == 0){
+                else if(i>=12 && (i-12)%5 == 0){
+                    temperature += 0xff&buf[i]<<8;
+
                     //insert
                     System.out.print("rawData : "+ rawData);
                     System.out.println("  temperature : "+ temperature);
-
 
                     GlucoseData data = new GlucoseData();
 
@@ -320,8 +307,6 @@ public class InsertService extends IntentService {
                     count++;
 
                 }
-
-
             }
 
         }
