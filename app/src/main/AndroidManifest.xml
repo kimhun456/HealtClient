@@ -46,13 +46,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".DeviceListActivity"
@@ -62,10 +55,9 @@
         <activity android:name=".SettingActivity" />
         <activity android:name=".UserSettingActivity" />
         <activity
-            android:name=".NfcActivity"
+            android:name=".Nfc.NfcActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@android:style/Theme.Holo.Dialog.NoActionBar"  />
-        <activity android:name=".NfcTextActivity" />
 
         <service
             android:name="org.swmem.healthclient.service.BTCTemplateService">

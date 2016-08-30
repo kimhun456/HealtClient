@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:layout_gravity="center"
-    tools:context="org.swmem.healthclient.NfcActivity">
+    tools:context=".Nfc.NfcActivity">
 
 
     <TextView

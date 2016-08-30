@@ -323,6 +323,88 @@ public class InsertService extends IntentService {
         return map;
     }
 
+    public HashMap<String , GlucoseData> Nfc_byteDecoding(byte[] buf, int len){
+
+
+
+        HashMap<String,GlucoseData> nfc_map = new HashMap<>();
+
+        String type = "";
+        String deviceID ="";
+        int numbering;
+        int battery;
+        double rawData=0;
+        double temperature=0;
+        int count = 0;
+        int data_start_position;
+        int data_end_position;
+        int data_length;
+        boolean update=true;
+
+        //데이터 정보.(0~1 = 데이터 정보 / 2~3=센서ID / 4~5=베터리 값 / 8~9=시작 / 10~11=끝
+        type = byteTostr(buf[0], buf[1]);
+        deviceID = byteTostr(buf[2],buf[3]);
+        battery = byteToint(buf[4],buf[5]);
+        data_start_position = byteToint(buf[8], buf[9]);
+        data_end_position = byteToint(buf[10],buf[11]);
+
+        if(data_start_position < data_end_position){
+            data_length = data_end_position - data_start_position;
+            update = true;
+        }
+        else{
+            data_length = (8192 - data_start_position) + data_end_position;
+            update = false;
+        }
+
+
+
+        //start_position < end_position
+        if(update){
+
+            //end -> start
+            for(int i=data_end_position; i>=data_start_position; i--){
+                //2개 temp
+                //3개 data;
+            }
+        }
+        //start_position > end_postion
+        else{
+
+            //end -> 0
+            for(int i=data_end_position; i>=0; i--){
+
+            }
+            //8192 -> start
+            for(int i=8191; i>=data_start_position; i--){
+
+            }
+
+        }
+
+
+        GlucoseData data = new GlucoseData();
+
+        if(type.equals(HealthContract.GlucoseEntry.NFC)){
+            data.setType(HealthContract.GlucoseEntry.NFC);
+        }else{
+            data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+        }
+
+        String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
+        data.setDate(date);
+        data.setRawData(rawData);
+        data.setTemperature(temperature);
+        data.setDeviceID(deviceID);
+        data.setModifed(false);
+        data.setConvert(false);
+        data.setInDataBase(false);
+        nfc_map.put(date,data);
+        count++;
+
+        return nfc_map;
+    }
+
     public int byteToint(byte first_buf, byte second_buf){
         return ((first_buf & 0xff)<<8 | (second_buf & 0xff));
     }
