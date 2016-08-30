@@ -21,6 +21,7 @@ import org.swmem.healthclient.db.HealthContract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.IntToDoubleFunction;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -71,11 +72,12 @@ public class InsertService extends IntentService {
             sessionManager.setDeviceConnectTime(System.currentTimeMillis());
             sessionManager.setDeviceID("deviceID");
             byte[] test = null;
-            int len = 0;
-            if(intent != null) {
-                test = intent.getByteArrayExtra("RealData");
-                len = intent.getIntExtra("RealCnt",0);
-            }
+            int len = 0, MyType = -1;
+
+            test = intent.getByteArrayExtra("RealData");
+            len = intent.getIntExtra("RealCnt",0);
+            MyType = intent.getIntExtra("MyType",-1);
+
 
             if (test != null) {
                 for(int i=0; i<len; i++)
@@ -96,7 +98,7 @@ public class InsertService extends IntentService {
             };*/
 
 
-            HashMap<String, GlucoseData> insertMap = byteDecoding(test, len);
+            HashMap<String, GlucoseData> insertMap = byteDecoding(test, len, MyType);
             //HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
 
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
@@ -214,7 +216,7 @@ public class InsertService extends IntentService {
     }
 
 
-    public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len){
+    public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len, int MyType){
 
 
         HashMap<String,GlucoseData> map = new HashMap<>();
@@ -261,10 +263,13 @@ public class InsertService extends IntentService {
             //수정 앞으로 해야될 부분
             //gluecoseData & temperature;
             else{
-                //정수
+                // 첫번째 정수
                 if((i-8)%5 == 0){
-                    rawData = 0xff & buf[i];
                     rawData = byteTodouble(buf[i]);
+                }
+                // 두번째 정수
+                if((i-9)%5 == 0){
+                    rawData += byteTodouble(buf[i]);
                 }
                 //소수점 확인.
                 else if((i-9)%5 == 0 && buf[i] != 0){
@@ -302,6 +307,8 @@ public class InsertService extends IntentService {
                     }
 
                     String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
+                    if(MyType == 0) data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+                    else data.setType(HealthContract.GlucoseEntry.NFC);
                     data.setDate(date);
                     data.setRawData(rawData);
                     data.setTemperature(temperature);
