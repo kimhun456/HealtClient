@@ -405,7 +405,6 @@ public class BleManager {
 			Logs.d(TAG, "# BluetoothGatt not initialized");
 			return false;
 		}
-
 		BluetoothGattCharacteristic writableChar = null;
 
 		if(chr == null) {
@@ -441,6 +440,7 @@ public class BleManager {
 
 		writableChar.setValue(data);
 		writableChar.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+		writableChar.setWriteType(BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE);
 		mBluetoothGatt.writeCharacteristic(writableChar);
 		mDefaultChar = writableChar;
 		return true;

@@ -1,6 +1,7 @@
 package org.swmem.healthclient;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ public class StartActivity extends AppCompatActivity {
         Typeface font = Typeface.createFromAsset(this.getAssets(), "Galada.ttf");
         txt.setTypeface(font);
 
+        getPackageManager().hasSystemFeature(PackageManager.FEATURE_LOCATION);
         new Handler().postDelayed(new Runnable() {
 
             /*

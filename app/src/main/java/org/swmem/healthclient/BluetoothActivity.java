@@ -221,7 +221,7 @@ public class BluetoothActivity extends AppCompatActivity
 
         switch (id){
             case R.id.plus :
-                insertDummies();
+                //insertDummies();
                 break;
 
             case R.id.delete_menu:
@@ -409,10 +409,10 @@ public class BluetoothActivity extends AppCompatActivity
                     //}
                     if(address != null) {
                         if(mService != null){
-                            unbindService(mServiceConn);
-                            mService.finalizeService();
-                            mService = null;
-                            Logs.d(TAG, "Unbind");
+                            //unbindService(mServiceConn);
+                            //mService.finalizeService();
+                            //mService = null;
+                            //Logs.d(TAG, "Unbind");
                         }
                         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                         am.restartPackage(getPackageName());

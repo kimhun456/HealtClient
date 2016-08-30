@@ -19,6 +19,7 @@ package org.swmem.healthclient.service;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -30,6 +31,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -73,7 +75,7 @@ public class BTCTemplateService2 extends Service {
 	private BluetoothDevice mDefaultDevice = null;
 	private int flag = 1, MyCnt=0;
 	private byte[] MySource = new byte[1000];
-	private int packet_num=0, StartTimer = 0;
+	private int StartTimer = 0;
 	private int write_packet1=0, write_packet2=0;
 
 	@Override
@@ -287,6 +289,13 @@ public class BTCTemplateService2 extends Service {
      * @param address  The BluetoothDevice to connect
      */
 	public void connectDevice(String address) {
+		SharedPreferences pref = getSharedPreferences("Bledata", 0);
+		SharedPreferences.Editor editor = pref.edit();
+		editor = pref.edit();
+		editor.putInt("packet1", 0);
+		editor.putInt("packet2", 0);
+		editor.apply();
+
 		if(address != null && mBleManager != null) {
 			if(mBleManager.connectGatt(mContext, true, address)) {
 				BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
@@ -344,9 +353,29 @@ public class BTCTemplateService2 extends Service {
 		TimerTask SendError = new TimerTask() {
 			@Override
 			public void run() {
-				byte[] send = new byte[]{(byte) 0xff,(byte) 0xff};
 				Logs.d(TAG, "# Error Send!!!");
-				mBleManager.write(null,send);
+
+				SharedPreferences pref = getSharedPreferences("Bledata", 0);
+				write_packet2 = pref.getInt("packet2",-1);
+				write_packet1 = pref.getInt("packet1",-1);
+
+				byte[] send = new byte[]{(byte) 0xff, 0x00, 0x02, 0x00, 0x00, 0x00};
+				send[3] = (byte) write_packet1;
+				send[4] = (byte) write_packet2;
+				for (int i = 0; i < 6; i++) send[5] ^= send[i];
+				mBleManager.write(null, send);
+
+				// bluetooth disconnect!!
+				BluetoothAdapter.getDefaultAdapter().disable();
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
 			}
 		};
 		StartTimer = 1;
@@ -424,66 +453,85 @@ public class BTCTemplateService2 extends Service {
 			case BleManager.MESSAGE_READ:
 				Logs.d(TAG, "Service - MESSAGE_READ: ");
 
+				{
+				byte[] send = new byte[]{(byte) 0xff, 0x02};
+				mBleManager.write(null, send);}
+
+				pref = getSharedPreferences("Bledata", 0);
+				write_packet2 = pref.getInt("packet2",-1);
+				write_packet1 = pref.getInt("packet1",-1);
+				if(write_packet1 == -1 || write_packet2 == -1){
+					Logs.d(TAG, "Packet Load Error!!");
+					break;
+				}
+				Logs.d(TAG, "Now Packet1 : "+write_packet1+" Packet2 : "+write_packet2);
 				//byte[] send = new byte[]{0x11,0x12};
 				byte[] data = (byte[]) msg.obj;
-				//mBleManager.write(null, send);
-				if(data.length > 3 && (0xff&data[0]) == 255 && (0xff&data[1]) == packet_num) {
+				if(data.length > 3 && (0xff&data[0]) == 255 && (0xff&data[1]) == write_packet2) {
 					int checksum = 0;
 
-					if(data.length != data[2] + 4) {
+					if (data.length != data[2] + 4) {
+						Logs.d(TAG, "Data Length Error!!");
 						DetectErrorStartTimer();
 						break;
 					}
-					for(int i=0; i<data.length - 1; i++)
+					for (int i = 0; i < data.length - 1; i++)
 						checksum ^= data[i];
-					if(checksum != data[data.length-1]) break;
-
-					if(data[2] == 0){ // insert!!
-						Intent intent = new Intent(getApplicationContext(),InsertService.class);
-						intent.putExtra("RealData",MySource);
-						intent.putExtra("RealCnt",MyCnt);
+					if (checksum != data[data.length - 1]) {
+						Logs.d(TAG, "Check Sum Error!!");
+						DetectErrorStartTimer();
+						break;
+					}
+					if (data[2] == 0) { // insert!!
+						Intent intent = new Intent(getApplicationContext(), InsertService.class);
+						intent.putExtra("RealData", MySource);
+						intent.putExtra("RealCnt", MyCnt);
+						Logs.d(TAG, "RealCnt : " + MyCnt);
 						startService(intent);
 
 						// 정상 받은 상태를 write
-						byte[] send = new byte[]{(byte) 0xff,0x00,0x02,0x00,0x00,0x00};
+						byte[] send = new byte[]{(byte) 0xff, 0x00, 0x02, 0x00, 0x00, 0x00};
 						send[3] = (byte) write_packet1;
 						send[4] = (byte) write_packet2;
-						for(int i=0; i<6; i++) send[5] ^= send[i];
-						mBleManager.write(null,send);
+						for (int i = 0; i < 6; i++) send[5] ^= send[i];
+						mBleManager.write(null, send);
 
-						MyCnt=0;
+						write_packet2++;
+						if (write_packet2 == 256) {
+							write_packet1++;
+							write_packet2 = 0;
+						}
+						pref = getSharedPreferences("Bledata", 0);
+						SharedPreferences.Editor editor = pref.edit();
+						editor = pref.edit();
+						editor.putInt("packet1", write_packet1);
+						editor.putInt("packet2", write_packet2);
+						editor.apply();
+						MyCnt = 0;
 						break;
 					}
-
-					for(int i=3; i<3+data[2]; i++) {
-						Logs.d(TAG, "Data : " + (0xff&data[i]));
+					for (int i = 3; i < 3 + data[2]; i++) {
+						Logs.d(TAG, "Data : " + (0xff & data[i]));
 						MySource[MyCnt++] = data[i];
 					}
-					packet_num++;
-					if(packet_num == 256){
+					write_packet2++;
+					if (write_packet2 == 256) {
 						write_packet1++;
-						packet_num = 0;
+						write_packet2 = 0;
 					}
-					write_packet2 = packet_num;
+					pref = getSharedPreferences("Bledata", 0);
+					SharedPreferences.Editor editor = pref.edit();
+					editor = pref.edit();
+					editor.putInt("packet1", write_packet1);
+					editor.putInt("packet2", write_packet2);
+					editor.apply();
+				}else{
+					Logs.d(TAG, "Protocol Error!!");
+					//DetectErrorStartTimer();
 				}
-
-				/*
-				for(int i=0; i<data.length; i++) {
-					Logs.d(TAG, "Data : " + (0xff&data[i]));
-
-					if((0xff&data[i]) == 255) {
-						Intent intent = new Intent(getApplicationContext(),InsertService.class);
-						intent.putExtra("RealData",MySource);
-						intent.putExtra("RealCnt",MyCnt);
-						startService(intent);
-						MyCnt=0;
-						break;
-					}
-					MySource[MyCnt++] = data[i];
-				}*/
 				// send bytes in the buffer to activity
 				break;
-				
+
 			case BleManager.MESSAGE_DEVICE_NAME:
 				Logs.d(TAG, "Service - MESSAGE_DEVICE_NAME: ");
 				

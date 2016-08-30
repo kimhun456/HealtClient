@@ -239,26 +239,26 @@ public class InsertService extends IntentService {
             }
             //deviceID
             else if(i==1){
-                deviceID = String.valueOf((0xff&buf[1]<<8) | (0xff&buf[2]));
+                deviceID = String.valueOf((0xff&buf[2]<<8) | (0xff&buf[1]));
                 //deviceID = String.valueOf(buf[1]<<8 | buf[2]);
-                deviceID = byteTostr(buf[1],buf[2]);
+                deviceID = byteTostr(buf[2],buf[1]);
                 System.out.println("deviceID : "+ deviceID);
             }
             //nubmering
             else if(i==3){
-                numbering = (0xff&buf[3]<<16)  | (0xff&buf[4]<<8) | (0xff&buf[5]);
+                numbering = (0xff&buf[5]<<16)  | (0xff&buf[4]<<8) | (0xff&buf[3]);
                 //numbering = buf[3]<<16  | buf[4]<<8 | buf[5];
-                numbering = byteToint(buf[3], buf[4], buf[5]);
+                numbering = byteToint(buf[5], buf[4], buf[3]);
                 System.out.println("numbering : "+ numbering);
             }
             //battery
             else if(i==6){
-                battery = (0xff&buf[6]<<8) | (0xff&buf[7]);
+                battery = (0xff&buf[7]<<8) | (0xff&buf[6]);
                 //battery = buf[6]<<8 | buf[7];
-                battery = byteToint(buf[6],buf[7]);
+                battery = byteToint(buf[7],buf[6]);
                 System.out.println("battery : "+ battery);
             }
-
+            //수정 앞으로 해야될 부분
             //gluecoseData & temperature;
             else{
                 //정수
