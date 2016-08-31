@@ -227,8 +227,42 @@ public class InsertService extends IntentService {
         int battery;
         double rawData=0;
         double temperature=0;
-
         int count = 0;
+
+
+        //NFC;
+/*        if(MyType==1){
+            type = HealthContract.GlucoseEntry.NFC;//byteTostr(buf[0], buf[1]);
+            deviceID = byteTostr(buf[2],buf[3]);
+            battery = byteToint(buf[4],buf[5]);
+            numbering = len - 16;
+
+            for(int i=0; i< numbering / 5; i++){
+                rawData = byteToint(buf[16 + 5*i+2],buf[16 + 5*i + 1], buf[16 + 5*i]);
+                temperature = byteToint(buf[16+ 5*i + 4] , buf[16+ 5*i + 3]);
+
+                data.setRawData(rawData);
+                data.setTemperature(temperature);
+                count++;
+            }
+
+            if(type.equals(HealthContract.GlucoseEntry.NFC)){
+                data.setType(HealthContract.GlucoseEntry.NFC);
+            }else{
+                data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+            }
+            String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
+            if(MyType == 0) data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+            else data.setType(HealthContract.GlucoseEntry.NFC);
+            data.setDate(date);
+            data.setDeviceID(deviceID);
+            data.setModifed(false);
+            data.setConvert(false);
+            data.setInDataBase(false);
+            map.put(date,data);
+        }*/
+
+
 
 
         for(int i=0; i<len; i++){

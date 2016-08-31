@@ -2,13 +2,17 @@ package org.swmem.healthclient.Nfc;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Window;
 import android.widget.ImageView;
@@ -31,6 +35,7 @@ public class NfcActivity extends Activity {
 
     private Tag mytag;
     private NfcvFunction myNfcvFunction;
+    Vibrator vibe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,15 +53,8 @@ public class NfcActivity extends Activity {
         Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); //현재 액티비티에서 NFC데이터 처리.
         pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-/*        IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-        IntentFilter[] mFilters = new IntentFilter[] {ndef,};
-        String[][] mTechLists = new String[][] {new String[]{android.nfc.tech.NfcV.class.getName()}};
+        vibe =(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
 
-
-        NfcManager manager = (NfcManager) getSystemService(Context.NFC_SERVICE);
-        NfcAdapter adapter = manager.getDefaultAdapter();
-
-        nfcAdapter.enableForegroundDispatch(this, pendingIntent, mFilters, mTechLists);*/
 
         onNewIntent(getIntent());
 
@@ -86,18 +84,23 @@ public class NfcActivity extends Activity {
             mytag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             try {
 
+
                 if(myNfcvFunction.read(mytag) == false){
                     Toast.makeText(getApplicationContext(),"다시 태깅해주세요.", Toast.LENGTH_SHORT).show();
-                    finish();
+                    vibe.vibrate(100);
+                }
+                else{
+                    vibe.vibrate(2000);
                 }
 
+                finish();
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            finish();
         }
     }
+
 
 
     @Override

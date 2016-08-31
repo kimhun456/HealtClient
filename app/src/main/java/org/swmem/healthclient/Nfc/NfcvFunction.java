@@ -8,13 +8,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.nfc.tech.NfcV;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.service.InsertService;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
 
 /**
  * Created by Woo on 2016-08-27.
@@ -35,20 +35,12 @@ public class NfcvFunction {
         Log.d(TAG, "read");
         mytag = tag;
 
-        //info data
-        int info_data_length=0;
-        int info_read_sector_position = 0;
-        int info_read_moveblock_position = 0;
-        int info_read_block = 31;
-        byte[] info_data = new byte[10000];
-        byte[] info_readCmd = new byte[]{
-                (byte) 0x0A, (byte) 0x23,
-                (byte) info_read_moveblock_position,
-                (byte) info_read_sector_position,
-                (byte) info_read_block};
-
-        byte[] info_read_response = new byte[] {(byte) 0x0A};
-
+        //read_data;
+        byte[] real_data = new byte[10000];
+        int real_data_length=0;
+        //temp data;
+        int temp_data_length = 0;
+        byte[] temp_data = new byte[10000];
 
         //write command = "READ " 기록
         byte[] write_response = new byte[]{(byte)0xFF};
@@ -80,6 +72,7 @@ public class NfcvFunction {
         int read_moveblock_position = 0;
         int read_block = 31;
 
+
         byte[] readCmd = new byte[]{
                 (byte) 0x0A, (byte) 0x23,
                 (byte) read_moveblock_position,
@@ -88,77 +81,46 @@ public class NfcvFunction {
 
         byte[] read_response = new byte[] {(byte) 0x0A};
 
-
-        //temp read commnad
-        int temp_read_sector_position = 0;
-        int temp_read_moveblock_position = 0;
-        int temp_read_block = 0;
-
-        byte[] temp_readCmd = new byte[]{
-                (byte) 0x0A, (byte) 0x23,
-                (byte) temp_read_moveblock_position,
-                (byte) temp_read_sector_position,
-                (byte) temp_read_block};
-
-        byte[] temp_read_response = new byte[] {(byte) 0x0A};
-
-
-        boolean update = true;
         boolean checkMAKE=true;
         boolean checkDE = true;
-        boolean firstCheck = true;
         int data_start_position=0;
         int data_end_position=0;
         int data_length=0;
 
-        int info_error = 1;
-
+        int error = 1;
         NfcV nfcvTag = NfcV.get(mytag);
-
-        //info_data;
-        while(info_error != 0){
-            Log.d(TAG, "info read");
-            try{
+        while (error != 0) {
+            try {
                 nfcvTag.close();
                 nfcvTag.connect();
 
-                info_read_response = nfcvTag.transceive(info_readCmd);
+                read_response = nfcvTag.transceive(readCmd);
 
-                read_moveblock_position += 32;
+/*                Log.d(TAG, "sector_position" + read_sector_position);
+                Log.d(TAG, "moveblock_position" + read_moveblock_position);*/
 
-                if(firstCheck){
-                    for (int j = 1; j <= 16; j++)
-                        info_data[info_data_length++] = info_read_response[j];
-                    firstCheck=false;
-                }
-
-                Log.d(TAG, "info_data_length :" + info_data_length);
+                for (int j = 1; j < read_response.length; j++)
+                    temp_data[temp_data_length++] = read_response[j];
 
                 //데이터 시작위치 & 데이터 끝위치.
-                if(checkDE && info_data_length>=12){
-                    Log.d(TAG, "start_position & end_position");
-                    data_start_position = byteToint(info_data[8], info_data[9]);
-                    data_end_position = byteToint(info_data[10], info_data[11]);
-                    write3_pointer_D1 = info_data[10];
-                    write3_pointer_D2 = info_data[11];
+                if(checkDE && temp_data_length>=8){
+                    data_start_position = byteToint(temp_data[8], temp_data[9]);
+                    data_end_position = byteToint(temp_data[10], temp_data[11]);
+                    write3_pointer_D1 = temp_data[10];
+                    write3_pointer_D2 = temp_data[11];
                     checkDE = false;
 
                     if(data_start_position < data_end_position){
                         data_length = data_end_position - data_start_position;
-                        update = true;
                     }
                     else{
                         data_length = 8192-data_start_position + data_end_position;
-                        update = false;
                     }
-                    Log.e(TAG, "cal_byte :" + info_data[8] + " " +info_data[9]+ " "+ info_data[10] + " "+info_data[11]);
-                    Log.e(TAG, "cal_length :" + data_length + " "+data_start_position + " "+ data_end_position);
                 }
 
                 //"MAKE" 확인
-                if (checkMAKE && info_data_length == 16) {
-                    if (info_data[12] == 0x4D && info_data[13] == 0x41 && info_data[14] == 0x4B && info_data[15] == 0x45) {
-                        Log.d(TAG, "info MAKE");
+                if (checkMAKE && temp_data_length >= 16) {
+                    if (temp_data[12] == 0x4D && temp_data[13] == 0x41 && temp_data[14] == 0x4B && temp_data[15] == 0x45) {
                         return false;
                     }
 
@@ -172,334 +134,149 @@ public class NfcvFunction {
                                 write_response = nfcvTag.transceive(write_data);
 
                                 if(write_response[0]==(byte)0x00 || write_response[0]==(byte)0x01){
+                                    Log.d(TAG, "Write -> READ complete");
                                     write_error=0;
                                     checkMAKE= false;
-                                    info_error=0;
                                 }
                             } catch (Exception e) {
 
                                 write_error++;
 
-                                if(write_error==10){
+                                if(write_error==3){
                                     Log.e(TAG, "write _ error");
+                                    e.printStackTrace();
                                     return false;
                                 }
                             }
                         }
                     }
                 }
-            }
-            catch(Exception e){
-                Log.e(TAG, "info_error");
-                e.printStackTrace();
-            }
-        }
 
-        if(update){
-
-            Log.d(TAG, "start < end");
-            read_moveblock_position = data_start_position%256;
-            read_sector_position = data_start_position/256;
-            read_block = 1;
-
-            int temp_error=1;
-
-            while (temp_error != 0) {
-                try {
-                    nfcvTag.close();
-                    nfcvTag.connect();
-
-                    if(read_sector_position == 31 && read_moveblock_position > 127){
-                        read_block = (read_moveblock_position - 127)/4;
-                        read_response = nfcvTag.transceive(readCmd);
-
-                        if(read_moveblock_position%4 != 0){
-                            temp_read_sector_position=31;
-                            temp_read_moveblock_position=252;
-                            temp_read_block=1;
-
-                            temp_read_response = nfcvTag.transceive(temp_readCmd);
-                        }
-
-                        for (int j = 1; j<read_response.length; j++){
-                            info_data[info_data_length++] = read_response[j];
-                        }
-
-                        if(temp_read_response[0] == (byte)0x00 || temp_read_response[0] == (byte)0x01){
-
-                            for(int i=(read_moveblock_position%4), j=1; i<4; i++, j++){
-                                info_data[info_data_length++] = temp_read_response[j];
-                            }
-                        }
-
-                    }
-                    else {
-                        read_response = nfcvTag.transceive(readCmd);
-
-                        for (int j = 1; info_data_length - 16 <=data_length; j++){
-                            info_data[info_data_length++] = read_response[j];
-                        }
-                    }
-
-                    read_moveblock_position += 32;
-
-                    Log.d(TAG, "sector_position" + read_sector_position);
-                    Log.d(TAG, "moveblock_position" + read_moveblock_position);
-                    Log.d(TAG,"info_data_length : " + data_length );
-
-                    read_moveblock_position = read_moveblock_position + 4;
-                    read_sector_position = read_moveblock_position/256;
-
-                    //데이터 완전히 다 읽음.
-                    if ( (info_data_length-16 == data_length) && read_response[0] == (byte) 0x00 || read_response[0] == (byte) 0x01){
-                        temp_error = 0;
-
-                        //G="    "기록
-                        int write2_error=1;
-                        while(write2_error!=0){
-                            Log.d(TAG, "Write2 _ null ");
-                            try {
-                                write2_response = nfcvTag.transceive(write2_data);
-
-                                if(write2_response[0]==(byte)0x00 || write2_response[0]==(byte)0x01){
-                                    write2_error=0;
-                                    checkMAKE= false;
-                                }
-                            } catch (Exception e) {
-
-                                write2_error++;
-
-                                if(write2_error==10){
-                                    Log.e(TAG, "write2 _ error");
-                                    return false;
-                                }
-                            }
-                        }
-
-                        //포인터(D)갱신
-                        int write3_error=1;
-                        byte[] write3_data = new byte[]{
-                                (byte)0x0A, (byte)0x21,
-                                (byte) write3_end_position, (byte) write3_start_position,
-                                (byte)write3_pointer_D1, (byte)write3_pointer_D2, (byte)write3_pointer_D1, (byte)write3_pointer_D2}; //low data rate / multi block / address / "    "
-
-                        while(write3_error!=0){
-                            Log.d(TAG, "Write3 _ Pointer D ");
-                            try {
-                                write3_response = nfcvTag.transceive(write_data);
-
-                                if(write3_response[0]==(byte)0x00 || write3_response[0]==(byte)0x01){
-                                    write3_error=0;
-                                    checkMAKE= false;
-                                }
-                            } catch (Exception e) {
-
-                                write3_error++;
-
-                                if(write3_error==10){
-                                    Log.e(TAG, "write3 _ error");
-                                    return false;
-                                }
-                            }
-                        }
-
-                    }
-                } catch (Exception e) {
-
-                    temp_error++;
-                    if(temp_error==10){
-                        Log.e(TAG, "start < end error");
-                        e.printStackTrace();
-                        nfcvTag.close();
-                        return false;
-                    }
-                } finally {
-                    nfcvTag.close();
+                read_moveblock_position = read_moveblock_position + 32;
+                if(read_moveblock_position == 0){
+                    read_sector_position++;
+                }
+                else if(read_moveblock_position == 128){
+                    read_moveblock_position *= -1;
                 }
 
-            }
 
+                System.out.println("temp_data_length : " + temp_data_length);
 
-        }
+                //데이터 완전히 다 읽음.
+                if ( (8192 == temp_data_length) && read_response[0] == (byte) 0x00 || read_response[0] == (byte) 0x01){
+                    error = 0;
 
-        /////////////////////////////////////////////////////////////////////////////////////start_postion > end_position-------------------------
-        else{
-            Log.d(TAG, "start > end");
+                    //G="    "기록
+                    int write2_error=1;
+                    while(write2_error!=0){
+                        Log.d(TAG, "Write2 _ null ");
+                        try {
+                            write2_response = nfcvTag.transceive(write_data);
 
-            read_moveblock_position = data_start_position%256;
-            read_sector_position = data_start_position/256;
-            read_block = 31;
-
-            // start -> 8192
-            int temp_error=1;
-            while (temp_error != 0) {
-                Log.d(TAG, "start -> 8192");
-                try {
-                    nfcvTag.close();
-                    nfcvTag.connect();
-
-                    if(read_sector_position>= 31 && read_moveblock_position >= 127){
-                        read_block = (read_moveblock_position - 127)/4;
-                        read_response = nfcvTag.transceive(readCmd);
-
-                        if(read_moveblock_position%4 != 0){
-                            temp_read_sector_position=31;
-                            temp_read_moveblock_position=252;
-                            temp_read_block=1;
-
-                            temp_read_response = nfcvTag.transceive(temp_readCmd);
-                        }
-
-                        for (int j = 1; j<read_response.length; j++){
-                            info_data[info_data_length++] = read_response[j];
-                        }
-
-                        if(temp_read_response[0] == (byte)0x00 || temp_read_response[0] == (byte)0x01){
-
-                            for(int i=(read_moveblock_position%4), j=1; i<4; i++, j++){
-                                info_data[info_data_length++] = temp_read_response[j];
+                            if(write2_response[0]==(byte)0x00 || write2_response[0]==(byte)0x01){
+                                Log.d(TAG, "Write2 -> G = '  'complete");
+                                write2_error=0;
+                                checkMAKE= false;
                             }
-                        }
+                        } catch (Exception e) {
 
-                    }
-                    else {
-                        read_response = nfcvTag.transceive(readCmd);
+                            write2_error++;
 
-                        for (int j = 1; j <= 8192 - data_start_position; j++){
-                            info_data[info_data_length++] = read_response[j];
+                            if(write2_error==3){
+                                Log.e(TAG, "write2 _ error");
+                                e.printStackTrace();
+                                return false;
+                            }
                         }
                     }
 
-                    Log.d(TAG, "sector_position" + read_sector_position);
-                    Log.d(TAG, "moveblock_position" + read_moveblock_position);
+                    //포인터(D)갱신
+                    int write3_error=1;
+                    byte[] write3_data = new byte[]{
+                            (byte)0x0A, (byte)0x21,
+                            (byte) write3_end_position, (byte) write3_start_position,
+                            (byte)write3_pointer_D1, (byte)write3_pointer_D2, (byte)write3_pointer_D1, (byte)write3_pointer_D2}; //low data rate / multi block / address / "    "
 
-                    read_moveblock_position = read_moveblock_position + 4;
-                    read_sector_position = read_moveblock_position/256;
+                    while(write3_error!=0){
+                        try {
+                            write3_response = nfcvTag.transceive(write_data);
 
-                    System.out.println("info_data_length : " + info_data_length);
+                            if(write3_response[0]==(byte)0x00 || write3_response[0]==(byte)0x01){
+                                Log.d(TAG, "Write3 _ Pointer D complete ");
+                                write3_error=0;
+                                checkMAKE= false;
 
-                    //데이터 완전히 다 읽음.
-                    if ( (8192-data_start_position == info_data_length -16) && read_response[0] == (byte) 0x00 || read_response[0] == (byte) 0x01){
-                        temp_error = 0;
+                            }
+                        } catch (Exception e) {
 
+                            write3_error++;
 
-                        int end_error=1;
-                        while(end_error != 0) {
-
-                            Log.d(TAG, "0 -> end");
-                            read_moveblock_position = 0;
-                            read_sector_position = 0;
-                            read_block = 31;
-
-                            try {
-                                nfcvTag.close();
-                                nfcvTag.connect();
-
-                                read_response = nfcvTag.transceive(readCmd);
-
-                                Log.d(TAG, "sector_position" + read_sector_position);
-                                Log.d(TAG, "moveblock_position" + read_moveblock_position);
-
-
-                                for (int j = 1; j <= data_end_position; j++)
-                                    info_data[info_data_length++] = read_response[j];
-
-                                read_moveblock_position = read_moveblock_position + 4;
-                                read_sector_position = read_moveblock_position / 256;
-
-                                System.out.println("info_data_length : " + info_data_length);
-
-                                //데이터 완전히 다 읽음.
-                                if ((info_data_length-16 == data_length) && read_response[0] == (byte) 0x00 || read_response[0] == (byte) 0x01) {
-                                    end_error = 0;
-                                }
-                            } catch (Exception e) {
-                                end_error++;
-
-                                if(end_error==10){
-                                    Log.d(TAG, "0 -> end error");
-                                    return false;
-                                }
+                            if(write3_error==3){
+                                Log.e(TAG, "write3 _ error");
+                                e.printStackTrace();
+                                return false;
                             }
                         }
-
-                        //G="    "기록
-                        int write2_error=1;
-                        while(write2_error!=0){
-                            Log.d(TAG, "Write2 _ null ");
-                            try {
-                                write2_response = nfcvTag.transceive(write2_data);
-
-                                if(write2_response[0]==(byte)0x00 || write2_response[0]==(byte)0x01){
-                                    write2_error=0;
-                                    checkMAKE= false;
-                                }
-                            } catch (Exception e) {
-
-                                write2_error++;
-
-                                if(write2_error==10){
-                                    Log.e(TAG, "write2 _ error");
-                                    return false;
-                                }
-                            }
-                        }
-
-                        //포인터(D)갱신
-                        int write3_error=1;
-                        byte[] write3_data = new byte[]{
-                                (byte)0x0A, (byte)0x21,
-                                (byte) write3_end_position, (byte) write3_start_position,
-                                (byte)write3_pointer_D1, (byte)write3_pointer_D2, (byte)write3_pointer_D1, (byte)write3_pointer_D2}; //low data rate / multi block / address / "    "
-
-                        while(write3_error!=0){
-                            Log.d(TAG, "Write3 _ Pointer D ");
-                            try {
-                                write3_response = nfcvTag.transceive(write3_data);
-
-                                if(write3_response[0]==(byte)0x00 || write3_response[0]==(byte)0x01){
-                                    write3_error=0;
-                                    checkMAKE= false;
-                                }
-                            } catch (Exception e) {
-
-                                write3_error++;
-
-                                if(write3_error==10){
-                                    Log.e(TAG, "write3 _ error");
-                                    return false;
-                                }
-                            }
-                        }
-
                     }
-                } catch (Exception e) {
-                    temp_error++;
-                    if(temp_error==10){
 
-                        Log.e(TAG, "start > end error");
-                        nfcvTag.close();
-                        return false;
-                    }
-                } finally {
-                    nfcvTag.close();
                 }
+            } catch (Exception e) {
 
+                error++;
+                if(error==3){
+
+                    Log.e(TAG, "Tag was lost");
+                    e.printStackTrace();
+                    nfcvTag.close();
+                    return false;
+                }
+            } finally {
+                nfcvTag.close();
             }
+
         }
+
+        //Toast.makeText(mContext.getApplicationContext(), "넘어옴.", Toast.LENGTH_LONG).show();
 
         //data check
-        Log.d(TAG, "info_data_length:" + info_data_length);
-        for(int i=0; i<data_length; i++){
-            Log.d(TAG, "info_data : "+ i+ " " + info_data[i]);
+
+        Log.d(TAG , "start : "+data_start_position + "end : " + data_end_position);
+        for(int i=0; i<100; i++){
+            Log.d(TAG, "temp_data : "+ i + " " + temp_data[i]);
+        }
+
+//데이터 저장(최근데이터 부터 넣어야 해서 끝지점 부터 저장합니다)
+        //시작지점이 끝지점 보다 작은경우.
+        if(data_start_position < data_end_position){
+            for(int i=data_end_position-1; i>=data_start_position; i--){
+                real_data[real_data_length++] = temp_data[i];
+            }
+        }
+        //시작지점이 끝지점 보다 큰 경우(메모리가 8192를 넘었을 경우 순환큐 방식으로 저장되어있기 때문에, 두 구간으로 나눠 각각 저장)
+        else if(data_start_position > data_end_position){
+            //end->0
+            for(int i= data_end_position-1; i>=0; i--){
+                real_data[real_data_length++] = temp_data[i];
+            }
+
+            //8192->start
+            for(int i=8191; i>=data_start_position; i--){
+                real_data[real_data_length++] = temp_data[i];
+            }
+        }
+
+        //데이터 확인.
+        for(int i=0; i<real_data_length; i++){
+            Log.d(TAG, "real_data : "+ i + " " + real_data[i]);
         }
 
         Log.d(TAG, "trans Intent to insertService");
-
         //데이터 배열 intent넘기기.
-        /*Intent intent = new Intent(mContext.getApplicationContext(), InsertService.class);
-        intent.putExtra("RealData", temp_data);
-        intent.putExtra("RealCnt", temp_data_length);
+/*        Intent intent = new Intent(mContext.getApplicationContext(), InsertService.class);
+        intent.putExtra("RealData", real_data);
+        intent.putExtra("RealCnt", real_data_length);
+        intent.putExtra("MyType", 1);
         mContext.getApplicationContext().startService(intent);*/
 
         return true;
