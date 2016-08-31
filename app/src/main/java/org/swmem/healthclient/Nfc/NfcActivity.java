@@ -47,19 +47,20 @@ public class NfcActivity extends Activity {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
         setContentView(R.layout.activity_nfc);
 
-        Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); //현재 액티비티에서 NFC데이터 처리.
+        //현재 액티비티에서 NFC데이터 처리.
+        Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
+        //진동.
         vibe =(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
-
 
         onNewIntent(getIntent());
 
     }
 
+    //NFC 태깅 화면 애니메이션.
     public void onWindowFocusChanged(boolean hasFocus){
         Log.d(TAG, "onWindowFocusChanged");
 
@@ -78,19 +79,22 @@ public class NfcActivity extends Activity {
         Log.d(TAG, "onNewIntent");
         String action = intent.getAction();
 
+        //NFC태깅 action발생 시.
         if(NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
 
             Log.d(TAG, "tag intent get");
             mytag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             try {
 
-
+                //오류 발생했을 경우.
                 if(myNfcvFunction.read(mytag) == false){
                     Toast.makeText(getApplicationContext(),"다시 태깅해주세요.", Toast.LENGTH_SHORT).show();
-                    vibe.vibrate(100);
+                    vibe.vibrate(100); //0.1초 진동.
                 }
+
+                //정상 동작(데이터 다 받았을 경우)
                 else{
-                    vibe.vibrate(2000);
+                    vibe.vibrate(2000); //2초 진동.
                 }
 
                 finish();
