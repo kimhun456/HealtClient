@@ -19,23 +19,23 @@ package org.swmem.healthclient.service;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.bluetooth.BleManager;
 import org.swmem.healthclient.bluetooth.ConnectionInfo;
 import org.swmem.healthclient.bluetooth.TransactionBuilder;
@@ -44,6 +44,11 @@ import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
+import org.swmem.healthclient.utils.MyNotificationManager;
+
+import java.io.ByteArrayOutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class BTCTemplateService extends Service {
@@ -51,8 +56,8 @@ public class BTCTemplateService extends Service {
 
 	// Context, System
 	private Context mContext = null;
-	private static Handler mActivityHandler = null;
-	private ServiceHandler mServiceHandler = new ServiceHandler();
+	private static Handler mActivityHandler2 = null;
+	private ServiceHandler2 mServiceHandler2 = new ServiceHandler2();
 	private final IBinder mBinder = new ServiceBinder();
 	
 	// Bluetooth
@@ -66,23 +71,48 @@ public class BTCTemplateService extends Service {
 	private TransactionBuilder mTransactionBuilder = null;
 	private TransactionReceiver mTransactionReceiver = null;
 
-
+	static String address = null;
+	private int flag = 1, MyCnt=0;
+	private byte[] MySource = new byte[1000];
+	private int StartTimer = 0;
+	private int write_packet1=0, write_packet2=0;
 
 	@Override
 	public void onCreate() {
 		Logs.d(TAG, "# Service - onCreate() starts here");
 		
 		mContext = getApplicationContext();
+
 		initialize();
 	}
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Logs.d(TAG, "# Service - onStartCommand() starts here");
-		
+		initialize();
+
 		// If service returns START_STICKY, android restarts service automatically after forced close.
 		// At this time, onStartCommand() method in service must handle null intent.
-		return Service.START_NOT_STICKY;
+		if(intent != null) {
+			// Scan을 통해 얻은 Address를 받아서 사용
+			address = intent.getExtras().getString("address");
+			// Address를 저장
+			SharedPreferences pref = getSharedPreferences("Bledata", 0);
+			SharedPreferences.Editor editor = pref.edit();
+			editor.putString("ADDRESS", address);
+			editor.apply();
+		}
+		else Logs.d(TAG, " intent is null");
+
+		// Service가 재시작 됬을 때 Address를 얻어와서 시작
+		SharedPreferences pref = getSharedPreferences("Bledata", 0);
+		address = pref.getString("ADDRESS",null);
+
+		if (address != null) {
+			Logs.d(TAG, address + "연결!!");
+			connectDevice(address);
+		}
+		return Service.START_STICKY;
 	}
 	
 	@Override
@@ -94,14 +124,13 @@ public class BTCTemplateService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		Logs.d(TAG, "# Service - onBind()");
-		return mBinder;
+		Logs.d(TAG, " # Service - onBind()");
+		return null;
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
 		Logs.d(TAG, "# Service - onUnbind()");
-		stopSelf();
 		return true;
 	}
 	
@@ -109,7 +138,6 @@ public class BTCTemplateService extends Service {
 	public void onDestroy() {
 		Logs.d(TAG, "# Service - onDestroy()");
 		finalizeService();
-		mServiceHandler = null;
 	}
 	
 	@Override
@@ -127,7 +155,7 @@ public class BTCTemplateService extends Service {
 		Logs.d(TAG, "# Service : initialize ---");
 		
 		AppSettings.initializeAppSettings(mContext);
-		//startServiceMonitoring();
+		startServiceMonitoring();
 		
 		// Use this check to determine whether BLE is supported on the device. Then
 		// you can selectively disable BLE-related features.
@@ -167,7 +195,6 @@ public class BTCTemplateService extends Service {
 	private void sendMessageToDevice(String message) {
 		if(message == null || message.length() < 1)
 			return;
-		
 		TransactionBuilder.Transaction transaction = mTransactionBuilder.makeTransaction();
 		transaction.begin();
 		transaction.setMessage(message);
@@ -175,7 +202,6 @@ public class BTCTemplateService extends Service {
 		transaction.sendTransaction();
 	}
 
-	
 	/*****************************************************
 	 *	Public methods
 	 ******************************************************/
@@ -191,36 +217,6 @@ public class BTCTemplateService extends Service {
 		mBleManager = null;
 	}
 	
-	/**
-	 * Setting up bluetooth connection
-	 * @param h
-	 */
-	public void setupService(Handler h) {
-		Logs.d(TAG, "# Service - Setup Service");
-		mActivityHandler = h;
-		
-		// Double check BT manager instance
-		if(mBleManager == null)
-			setupBLE();
-		
-		// Initialize transaction builder & receiver
-		if(mTransactionBuilder == null)
-			mTransactionBuilder = new TransactionBuilder(mBleManager, mActivityHandler);
-		if(mTransactionReceiver == null)
-			mTransactionReceiver = new TransactionReceiver(mActivityHandler);
-		
-		// TODO: If ConnectionInfo holds previous connection info,
-		// try to connect using it.
-		if(mConnectionInfo.getDeviceAddress() != null && mConnectionInfo.getDeviceName() != null) {
-			//connectDevice(mConnectionInfo.getDeviceAddress());
-		} 
-		else {
-			if (mBleManager.getState() == BleManager.STATE_NONE) {
-				// Do nothing
-			}
-		}
-	}
-	
     /**
      * Setup and initialize BLE manager
      */
@@ -229,19 +225,85 @@ public class BTCTemplateService extends Service {
 
         // Initialize the BluetoothManager to perform bluetooth le scanning
         if(mBleManager == null)
-        	mBleManager = BleManager.getInstance(mContext, mServiceHandler);
+        	mBleManager = BleManager.getInstance(mContext, mServiceHandler2);
     }
-	
+
     /**
-     * Check bluetooth is enabled or not.
+     * Connect to a remote device.
+     * @param address  The BluetoothDevice to connect
      */
-	public boolean isBluetoothEnabled() {
-		if (mBluetoothAdapter == null) {
-			Log.e(TAG, "# Service - cannot find bluetooth adapter. Restart app.");
-			return false;
+	public void connectDevice(String address) {
+		// Service가 종료되도 패킷을 저장하고 로드 가능.
+		// 저장 패킷 초기화 부분
+		SharedPreferences pref = getSharedPreferences("Bledata", 0);
+		SharedPreferences.Editor editor = pref.edit();
+		editor = pref.edit();
+		editor.putInt("packet1", 0);
+		editor.putInt("packet2", 0);
+		editor.apply();
+
+		if(address != null && mBleManager != null) {
+			// Bluetooth 연결
+			if(mBleManager.connectGatt(mContext, true, address)) {
+				BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+				mConnectionInfo.setDeviceAddress(address);
+				mConnectionInfo.setDeviceName(device.getName());
+			}
 		}
-		return mBluetoothAdapter.isEnabled();
 	}
+	
+	/**
+	 * Start service monitoring. Service monitoring prevents
+	 * unintended close of service.
+	 */
+	public void startServiceMonitoring() {
+		if(AppSettings.getBgService()) {
+			Logs.d(TAG, "# Start Monitoring");
+			ServiceMonitoring.startMonitoring(mContext);
+		} else {
+			ServiceMonitoring.stopMonitoring(mContext);
+		}
+	}
+	public void DetectErrorStartTimer(){ // 프로토콜이 틀렸을 시 실행.
+		// 이미 켜져있음
+		if(StartTimer == 1) return;
+		Logs.d(TAG, "# Start Timer Error");
+		TimerTask SendError = new TimerTask() {
+			@Override
+			public void run() {
+				Logs.d(TAG, "# Error Send!!!");
+
+				// 현재까지 받은 패킷을 불러와서 혈당기기에 전송
+				SharedPreferences pref = getSharedPreferences("Bledata", 0);
+				write_packet2 = pref.getInt("packet2",-1);
+				write_packet1 = pref.getInt("packet1",-1);
+
+				byte[] send = new byte[]{(byte) 0xff, 0x00, 0x02, 0x00, 0x00, 0x00};
+				send[3] = (byte) write_packet1;
+				send[4] = (byte) write_packet2;
+				for (int i = 0; i < 6; i++) send[5] ^= send[i];
+				mBleManager.write(null, send);
+
+				// bluetooth disconnect!!
+				BluetoothAdapter.getDefaultAdapter().disable();
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
+				StartTimer = 0;
+			}
+		};
+		StartTimer = 1;
+		Timer timer = new Timer();
+		// 10초 후 실행
+		timer.schedule(SendError, 10000);
+	}
+
 	
 	/*****************************************************
 	 *	Handler, Listener, Timer, Sub classes
@@ -255,11 +317,11 @@ public class BTCTemplateService extends Service {
     /**
      * Receives messages from bluetooth manager
      */
-	class ServiceHandler extends Handler
+	class ServiceHandler2 extends Handler
 	{
 		@Override
 		public void handleMessage(Message msg) {
-
+			SharedPreferences pref = getSharedPreferences("Connstat", 0);
 			switch(msg.what) {
 			// Bluetooth state changed
 			case BleManager.MESSAGE_STATE_CHANGE:
@@ -277,76 +339,159 @@ public class BTCTemplateService extends Service {
 
 				case BleManager.STATE_CONNECTED:
 					Logs.d(TAG, "Service Connected");
+					// Bluetooth 연결 상태를 저장하고 얻어옴
+					pref = getSharedPreferences("Connstat", 0);
+					flag = pref.getInt("stat",1);
+					if(flag == 1) {
+						new MyNotificationManager(mContext).makeNotification(" Connected ", "Bluetooth 대기 중 입니다. (최대 1분 소요)");
+
+						pref = getSharedPreferences("Connstat", 0);
+						SharedPreferences.Editor editor = pref.edit();
+						editor.putInt("stat", 0);
+						editor.apply();
+					}
 					break;
 
 				case BleManager.STATE_IDLE:
 					Logs.d(TAG, "Service Idle");
+					// Idle상태가 Disconnect상태
+					new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요."  );
+					pref = getSharedPreferences("Connstat", 0);
+					SharedPreferences.Editor editor = pref.edit();
+					editor.putInt("stat", 1);
+					editor.apply();
 					break;
 				}
-				break;
-
-			// If you want to send data to remote
-			case BleManager.MESSAGE_WRITE:
-				Logs.d(TAG, "Service - MESSAGE_WRITE: ");
-				String message = (String) msg.obj;
-				if(message != null && message.length() > 0)
-					sendMessageToDevice(message);
 				break;
 
 			// Received packets from remote
 			case BleManager.MESSAGE_READ:
 				Logs.d(TAG, "Service - MESSAGE_READ: ");
 
-				String strMsg = (String) msg.obj;
-				Logs.d("Main", ""+strMsg);
-
-				int readCount = strMsg.length();
-				// send bytes in the buffer to activity
-				if(strMsg != null && strMsg.length() > 0) {
-					mActivityHandler.obtainMessage(Constants.MESSAGE_READ_CHAT_DATA, strMsg)
-							.sendToTarget();
-					int command = mCommandParser.setString(strMsg);
-					if(command == TransactionReceiver.CommandParser.COMMAND_THINGSPEAK) {
-						String parameters = mCommandParser.getParameterString();
-						StringBuilder requestUrl = new StringBuilder("http://184.106.153.149/update?");
-						if(parameters != null && parameters.length() > 0)
-							requestUrl.append(parameters);
-
-						//Logs.d("# Find thingspeak command. URL = "+requestUrl);
-
-						mCommandParser.resetParser();
-					}
+				// 외주분 확인용 Write (지울 예정)
+				{
+					byte[] send = new byte[]{(byte) 0xff, 0x02};
+					mBleManager.write(null, send);
 				}
+
+				// 저장된 패킷을 얻어옴
+				pref = getSharedPreferences("Bledata", 0);
+				write_packet2 = pref.getInt("packet2",-1);
+				write_packet1 = pref.getInt("packet1",-1);
+				// 패킷 로드 실패
+				if(write_packet1 == -1 || write_packet2 == -1){
+					Logs.d(TAG, "Packet Load Error!!");
+					break;
+				}
+				Logs.d(TAG, "Now Packet1 : "+write_packet1+" Packet2 : "+write_packet2);
+
+				byte[] data = (byte[]) msg.obj;
+				// 외주분 확인용 Read (지울 예정)
+				Toast.makeText(getApplicationContext(),"READ : "+data[0], Toast.LENGTH_SHORT).show();
+
+				// 프로토콜, 패킷 확인 과정
+				if(data.length > 3 && (0xff&data[0]) == 255 && (0xff&data[1]) == write_packet2) {
+					int checksum = 0;
+
+					if (data.length != data[2] + 4) {
+						Logs.d(TAG, "Data Length Error!!");
+						DetectErrorStartTimer();
+						break;
+					}
+					for (int i = 0; i < data.length - 1; i++)
+						checksum ^= data[i];
+					if (checksum != data[data.length - 1]) {
+						Logs.d(TAG, "Check Sum Error!!");
+						DetectErrorStartTimer();
+						break;
+					}
+					if (data[2] == 0) { // insert!! (마지막 프로토콜 일 시)
+						// insert를 하기위해 byte배열과 갯수를 넘김
+						Intent intent = new Intent(getApplicationContext(), InsertService.class);
+						intent.putExtra("RealData", MySource);
+						intent.putExtra("RealCnt", MyCnt);
+						intent.putExtra("MyType",0); // 0:Bluetooth Type
+						Logs.d(TAG, "RealCnt : " + MyCnt);
+						startService(intent);
+
+						// 정상 받은 상태를 write
+						byte[] send = new byte[]{(byte) 0xff, 0x00, 0x02, 0x00, 0x00, 0x00};
+						send[3] = (byte) write_packet1;
+						send[4] = (byte) write_packet2;
+						for (int i = 0; i < 6; i++) send[5] ^= send[i];
+						mBleManager.write(null, send);
+
+						// 패킷 증가
+						write_packet2++;
+						if (write_packet2 == 256) {
+							write_packet1++;
+							write_packet2 = 0;
+						}
+						// 패킷 저장
+						pref = getSharedPreferences("Bledata", 0);
+						SharedPreferences.Editor editor = pref.edit();
+						editor = pref.edit();
+						editor.putInt("packet1", write_packet1);
+						editor.putInt("packet2", write_packet2);
+						editor.apply();
+						MyCnt = 0;
+						break;
+					}
+					// 받은 Data를 배열에 저장
+					for (int i = 3; i < 3 + data[2]; i++) {
+						Logs.d(TAG, "Data : " + (0xff & data[i]));
+						MySource[MyCnt++] = data[i];
+					}
+					// 패킷 증가
+					write_packet2++;
+					if (write_packet2 == 256) {
+						write_packet1++;
+						write_packet2 = 0;
+					}
+					// 패킷 저장
+					pref = getSharedPreferences("Bledata", 0);
+					SharedPreferences.Editor editor = pref.edit();
+					editor = pref.edit();
+					editor.putInt("packet1", write_packet1);
+					editor.putInt("packet2", write_packet2);
+					editor.apply();
+				}else{
+					Logs.d(TAG, "Protocol Error!!");
+					//DetectErrorStartTimer();
+				}
+				// send bytes in the buffer to activity
 				break;
 
 			case BleManager.MESSAGE_DEVICE_NAME:
 				Logs.d(TAG, "Service - MESSAGE_DEVICE_NAME: ");
-
+				
 				// save connected device's name and notify using toast
 				String deviceAddress = msg.getData().getString(Constants.SERVICE_HANDLER_MSG_KEY_DEVICE_ADDRESS);
 				String deviceName = msg.getData().getString(Constants.SERVICE_HANDLER_MSG_KEY_DEVICE_NAME);
-
+				
 				if(deviceName != null && deviceAddress != null) {
 					// Remember device's address and name
 					mConnectionInfo.setDeviceAddress(deviceAddress);
 					mConnectionInfo.setDeviceName(deviceName);
-
+					
 					Toast.makeText(getApplicationContext(),
 							"Connected to " + deviceName, Toast.LENGTH_SHORT).show();
 				}
 				break;
-
+				
 			case BleManager.MESSAGE_TOAST:
 				Logs.d(TAG, "Service - MESSAGE_TOAST: ");
-
+				
 				Toast.makeText(getApplicationContext(),
-						msg.getData().getString(Constants.SERVICE_HANDLER_MSG_KEY_TOAST),
+						msg.getData().getString(Constants.SERVICE_HANDLER_MSG_KEY_TOAST), 
 						Toast.LENGTH_SHORT).show();
 				break;
 
 			}	// End of switch(msg.what)
-
+			
 			super.handleMessage(msg);
 		}
+
 	}	// End of class MainHandler
+
 }

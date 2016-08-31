@@ -60,11 +60,11 @@
             android:theme="@android:style/Theme.Holo.Dialog.NoActionBar"  />
 
         <service
-            android:name="org.swmem.healthclient.service.BTCTemplateService">
+            android:name="org.swmem.healthclient.service.ScanService">
         </service>
 
         <service
-            android:name="org.swmem.healthclient.service.BTCTemplateService2" android:process=":remote">
+            android:name="org.swmem.healthclient.service.BTCTemplateService" android:process=":remote">
         </service>
 
         <service

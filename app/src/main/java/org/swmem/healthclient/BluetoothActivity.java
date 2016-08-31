@@ -33,12 +33,11 @@ import android.widget.Toast;
 
 import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.service.BTCTemplateService;
-import org.swmem.healthclient.service.BTCTemplateService2;
 import org.swmem.healthclient.service.InsertService;
+import org.swmem.healthclient.service.ScanService;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
-import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.utils.SessionManager;
 import org.swmem.healthclient.utils.ShareDataBaseTask;
 
@@ -50,7 +49,7 @@ public class BluetoothActivity extends AppCompatActivity
     private static final java.lang.String TAG = "BluetoothActivity";
     private final String BLEUTOOTH_FRAGMENT_TAG = "BluetoothFragment";
 
-    private BTCTemplateService mService;
+    private ScanService mService;
     private Timer mRefreshTimer = null;
     private ActivityHandler mActivityHandler;
     private SessionManager sessionManager;
@@ -108,8 +107,6 @@ public class BluetoothActivity extends AppCompatActivity
                     .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
                     .commit();
         }
-//        mTextStatus = (TextView) findViewById(R.id.status_text);
-//        mTextStatus.setText(getResources().getString(R.string.bt_state_init));
         doStartService();
     }
 
@@ -174,7 +171,7 @@ public class BluetoothActivity extends AppCompatActivity
     @Override
     public void onDestroy() {
         super.onDestroy();
-        finalizeActivity();
+        // ScanService UnBind
         unbindService(mServiceConn);
         Log.d(TAG, "# Destroy");
     }
@@ -184,13 +181,15 @@ public class BluetoothActivity extends AppCompatActivity
         super.onLowMemory();
         Log.d(TAG, "# Memory");
         // onDestroy is not always called when applications are finished by Android system.
-        finalizeActivity();
+        // ScanService UnBind
         unbindService(mServiceConn);
     }
 
 
     public void insertDummies(){
         Intent intent = new Intent(getApplicationContext(),InsertService.class);
+        // Random Data insert
+        intent.putExtra("MyType",2);
         startService(intent);
     }
 
@@ -221,18 +220,17 @@ public class BluetoothActivity extends AppCompatActivity
 
         switch (id){
             case R.id.plus :
-                //insertDummies();
+                insertDummies();
                 break;
 
             case R.id.delete_menu:
                 deleteAllData();
                 break;
 
-            case R.id.noti_menu:
-               // new MyNotificationManager(getApplicationContext()).makeNotification("title" , "contents");
-
-                // 버튼을 누를시 블루투스 연결 해제 테스트
-               // Logs.d(TAG, "check:"+ BluetoothAdapter.getDefaultAdapter().disable());
+            case R.id.discon_menu:
+                // 버튼을 누를시 블루투스 연결 해제
+                // background service로 블루투스가 작동되므로, activity에서 bluetooth restart.
+                // 기기에 따라 블루투스 restart시간 차이가 있어서 안전하게 3번 실행.
                 BluetoothAdapter.getDefaultAdapter().disable();
                 if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
                     BluetoothAdapter.getDefaultAdapter().enable();
@@ -312,7 +310,7 @@ public class BluetoothActivity extends AppCompatActivity
 
         public void onServiceConnected(ComponentName className, IBinder binder) {
 
-            mService = ((BTCTemplateService.ServiceBinder) binder).getService();
+            mService = ((ScanService.ServiceBinder) binder).getService();
 
             // Activity couldn't work with mService until connections are made
             // So initialize parameters and settings here. Do not initialize while running onCreate()
@@ -337,15 +335,9 @@ public class BluetoothActivity extends AppCompatActivity
      */
     private void doStartService() {
         Log.d(TAG, "# Activity - doStartService()");
-        //startService(new Intent(this, BTCTemplateService.class));
-        bindService(new Intent(this, BTCTemplateService.class), mServiceConn, Context.BIND_AUTO_CREATE);
+       // Bluetooth Scan 과정은 activity가 필요하므로, bindService를 이용하여 Scan실행
+        bindService(new Intent(this, ScanService.class), mServiceConn, Context.BIND_AUTO_CREATE);
     }
-
-    private void doStopService() {
-        Log.d(TAG, "# Activity - doStopService()");
-        //stopService(new Intent(this, BTCTemplateService.class));
-    }
-
     /**
      * Initialization / Finalization
      */
@@ -378,21 +370,6 @@ public class BluetoothActivity extends AppCompatActivity
         //mRefreshTimer.schedule(new RefreshTimerTask(), 5*1000);
     }
 
-    private void finalizeActivity() {
-        Logs.d(TAG, "# Activity - finalizeActivity()");
-        if(!AppSettings.getBgService()) {
-            Logs.d(TAG, "# Stop Service");
-            doStopService();
-        } else {
-
-        }
-
-        // Clean used resources
-    //RecycleUtils.recursiveRecycle(getWindow().getDecorView());
-    System.gc();
-}
-
-
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode,resultCode,data);
         Logs.d(TAG, "onActivityResult " + resultCode);
@@ -404,22 +381,14 @@ public class BluetoothActivity extends AppCompatActivity
                     // Get the device MAC address
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     // Attempt to connect to the device
-                    //if(address != null && mService != null) {
-                    //    mService.connectDevice(address);
-                    //}
                     if(address != null) {
-                        if(mService != null){
-                            //unbindService(mServiceConn);
-                            //mService.finalizeService();
-                            //mService = null;
-                            //Logs.d(TAG, "Unbind");
-                        }
+                        // 새로운 Bluetooth를 연결할 때 이미 연결되어있는 Service를 찾아서 Bluetooth 해제시킴.
                         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                         am.restartPackage(getPackageName());
 
-                        Blecon = new Intent(this, BTCTemplateService2.class);
+                        // Bluetooth 연결하는 Service로 Address를 넘기고 시작.
+                        Blecon = new Intent(this, BTCTemplateService.class);
                         Blecon.putExtra("address", address);
-                        Logs.d(TAG, address + "보냄!!");
                         startService(Blecon);
                     }
                 }

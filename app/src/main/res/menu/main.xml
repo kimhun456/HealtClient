@@ -14,8 +14,8 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/noti_menu"
+        android:id="@+id/discon_menu"
         android:orderInCategory="100"
-        android:title="test Notification"
+        android:title="BlueTooth DisConnect"
         app:showAsAction="never" />
 </menu>

@@ -199,6 +199,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
         switch (id){
             case R.id.scan_menu:
+                // Bluetooth 스캔 실행
                 doScan();
                 break;
 
@@ -290,6 +291,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
     }
 
     private void doScan() {
+        // DeviceListActivity에서 Scan, List 보여줌
         Intent intent = new Intent(getActivity(), DeviceListActivity.class);
         getActivity().startActivityForResult(intent, Constants.REQUEST_CONNECT_DEVICE);
     }

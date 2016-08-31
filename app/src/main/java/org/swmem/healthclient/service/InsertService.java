@@ -74,33 +74,22 @@ public class InsertService extends IntentService {
             byte[] test = null;
             int len = 0, MyType = -1;
 
+            // intent로 받은 byte배열과 숫자, 타입을 받음
             test = intent.getByteArrayExtra("RealData");
             len = intent.getIntExtra("RealCnt",0);
             MyType = intent.getIntExtra("MyType",-1);
-
 
             if (test != null) {
                 for(int i=0; i<len; i++)
                     Logs.d(TAG, ""+ (0xff&test[i]));
             }
 
-            /*
-            byte[] test = {
-                    0x01, 0x00,0x32, 0x00, 0x00, 0x08, 0x00, 0x64,
-                    0x5C, 0x00, 0x00, 0x24, 0x00,
-                    0x5C, 0x01, 0x21, 0x24, 0x00,
-                    0x5C, 0x01, 0x42, 0x25, 0x00,
-                    0x5D, 0x00, 0x00, 0x24, 0x00,
-                    0x5D, 0x01, 0x21, 0x24, 0x00,
-                    0x5D, 0x01, 0x42, 0x25, 0x00,
-                    0x5E, 0x00, 0x00, 0x24, 0x00,
-                    0x5E, 0x01, 0x21, 0x24, 0x00
-            };*/
-
-
-            HashMap<String, GlucoseData> insertMap = byteDecoding(test, len, MyType);
-            //HashMap<String, GlucoseData> insertMap = makeRandomInsertMap();
-
+            HashMap<String, GlucoseData> insertMap;
+            if(MyType == 2) { // 랜덤 Data일 때
+                insertMap = makeRandomInsertMap();
+            }else { // 그 외의 정상 테이터를 받았을 때 (MyType 0 : Bluetooth, MyType 1 : NFC)
+                insertMap = byteDecoding(test, len, MyType);
+            }
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 
             dbMap = convertDBMap(insertMap, dbMap);
