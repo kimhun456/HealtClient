@@ -229,6 +229,13 @@ public class BluetoothActivity extends AppCompatActivity
 
             case R.id.discon_menu:
                 // 버튼을 누를시 블루투스 연결 해제
+
+                // Address 초기화
+                SharedPreferences pref = getSharedPreferences("Bledata", 0);
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putString("ADDRESS", null);
+                editor.apply();
+
                 // background service로 블루투스가 작동되므로, activity에서 bluetooth restart.
                 // 기기에 따라 블루투스 restart시간 차이가 있어서 안전하게 3번 실행.
                 BluetoothAdapter.getDefaultAdapter().disable();
