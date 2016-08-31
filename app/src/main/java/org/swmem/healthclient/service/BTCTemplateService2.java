@@ -455,7 +455,8 @@ public class BTCTemplateService2 extends Service {
 
 				{
 				byte[] send = new byte[]{(byte) 0xff, 0x02};
-				mBleManager.write(null, send);}
+				mBleManager.write(null, send);
+				}
 
 				pref = getSharedPreferences("Bledata", 0);
 				write_packet2 = pref.getInt("packet2",-1);
@@ -467,6 +468,7 @@ public class BTCTemplateService2 extends Service {
 				Logs.d(TAG, "Now Packet1 : "+write_packet1+" Packet2 : "+write_packet2);
 				//byte[] send = new byte[]{0x11,0x12};
 				byte[] data = (byte[]) msg.obj;
+				Toast.makeText(getApplicationContext(),"READ : "+data[0], Toast.LENGTH_SHORT).show();
 				if(data.length > 3 && (0xff&data[0]) == 255 && (0xff&data[1]) == write_packet2) {
 					int checksum = 0;
 
