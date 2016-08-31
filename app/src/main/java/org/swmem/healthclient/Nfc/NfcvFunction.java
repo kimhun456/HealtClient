@@ -72,7 +72,6 @@ public class NfcvFunction extends Activity{
         byte write3_pointer_D1=0; //포인터 E(9메모리)임시 저장.(다음위치)
         byte write3_pointer_D2=0; //포인터 E(10메모리)임시 저장. (다음위치)
 
-
         //read할때마다 사용하는 Command
         int read_sector_position = 0;
         int read_moveblock_position = 0;
@@ -254,6 +253,11 @@ public class NfcvFunction extends Activity{
             Log.d(TAG, "temp_data : "+ i + " " + temp_data[i]);
         }
 
+        //info_데이터 저장.(데이터 정보 , 센서ID , 베터리 값)
+        for(int i=0; i<5; i++){
+            real_data[real_data_length++] = temp_data[i];
+        }
+
 //데이터 저장(최근데이터 부터 넣어야 해서 끝지점 부터 저장합니다)
         //시작지점이 끝지점 보다 작은경우.
         if(data_start_position < data_end_position){
@@ -281,11 +285,11 @@ public class NfcvFunction extends Activity{
 
         Log.d(TAG, "trans Intent to insertService");
         //데이터 배열 intent넘기기.
-/*        Intent intent = new Intent(mContext.getApplicationContext(), InsertService.class);
+        Intent intent = new Intent(mContext.getApplicationContext(), InsertService.class);
         intent.putExtra("RealData", real_data);
         intent.putExtra("RealCnt", real_data_length);
         intent.putExtra("MyType", 1);
-        mContext.getApplicationContext().startService(intent);*/
+        mContext.getApplicationContext().startService(intent);
 
         return true;
     }
