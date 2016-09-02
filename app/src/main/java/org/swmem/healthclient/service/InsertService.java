@@ -218,17 +218,18 @@ public class InsertService extends IntentService {
         double temperature=0;
         int count = 0;
 
+        GlucoseData data = new GlucoseData();
 
         //NFC 데이터 처리.
-/*        if(MyType==1){
+        if(MyType==1){
             type = HealthContract.GlucoseEntry.NFC;//byteTostr(buf[0], buf[1]);
             deviceID = byteTostr(buf[2],buf[3]);
             battery = byteToint(buf[4],buf[5]);
             numbering = (len - 6)/5;
 
             for(int i=0; i< numbering; i++){
-                rawData = byteToint(buf[5*i+2],buf[5*i + 1], buf[5*i]);
-                temperature = byteToint(buf[5*i + 4] , buf[5*i + 3]);
+                rawData = byteToint(buf[ 6 + 5*i + 2],buf[6 + 5*i + 1], buf[6 + 5*i]);
+                temperature = byteToint(buf[6 + 5*i + 4] , buf[6 + 5*i + 3]);
 
                 data.setRawData(rawData);
                 data.setTemperature(temperature);
@@ -249,7 +250,7 @@ public class InsertService extends IntentService {
             data.setConvert(false);
             data.setInDataBase(false);
             map.put(date,data);
-        }*/
+        }
 
 
 
@@ -308,7 +309,6 @@ public class InsertService extends IntentService {
                     System.out.print("rawData : "+ rawData);
                     System.out.println("  temperature : "+ temperature);
 
-                    GlucoseData data = new GlucoseData();
 
                     if(type.equals(HealthContract.GlucoseEntry.NFC)){
                         data.setType(HealthContract.GlucoseEntry.NFC);

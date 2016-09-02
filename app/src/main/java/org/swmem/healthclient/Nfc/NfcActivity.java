@@ -79,10 +79,12 @@ public class NfcActivity extends Activity {
         Log.d(TAG, "onNewIntent");
         String action = intent.getAction();
 
+
         //NFC태깅 action발생 시.
         if(NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
 
             Log.d(TAG, "tag intent get");
+            //intent.putExtra("TAG",NfcAdapter.EXTRA_TAG);
             mytag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             try {
 

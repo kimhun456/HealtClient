@@ -59,6 +59,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@android:style/Theme.Holo.Dialog.NoActionBar"  />
 
+
         <service
             android:name="org.swmem.healthclient.service.ScanService">
         </service>
