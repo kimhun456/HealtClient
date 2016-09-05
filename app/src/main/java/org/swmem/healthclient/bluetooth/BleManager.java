@@ -1,13 +1,11 @@
 package org.swmem.healthclient.bluetooth;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.utils.Logs;
 
 import android.bluetooth.BluetoothAdapter;
@@ -18,7 +16,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 
 

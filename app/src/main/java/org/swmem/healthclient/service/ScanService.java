@@ -18,13 +18,8 @@ package org.swmem.healthclient.service;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Binder;
@@ -35,14 +30,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.bluetooth.BleManager;
 import org.swmem.healthclient.bluetooth.ConnectionInfo;
 import org.swmem.healthclient.bluetooth.TransactionBuilder;
 import org.swmem.healthclient.bluetooth.TransactionReceiver;
-import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.utils.AppSettings;
-import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
 
 

@@ -19,9 +19,6 @@ package org.swmem.healthclient.service;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,7 +28,6 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -40,13 +36,11 @@ import org.swmem.healthclient.bluetooth.BleManager;
 import org.swmem.healthclient.bluetooth.ConnectionInfo;
 import org.swmem.healthclient.bluetooth.TransactionBuilder;
 import org.swmem.healthclient.bluetooth.TransactionReceiver;
-import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.MyNotificationManager;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
