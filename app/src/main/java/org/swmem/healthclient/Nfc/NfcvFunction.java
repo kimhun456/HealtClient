@@ -111,6 +111,7 @@ public class NfcvFunction {
                     write3_pointer_D2 = temp_data[11];
                     checkDE = false;
 
+                    Log.d(TAG, "temp : " + temp); //overwrite
                     Log.d(TAG, "end : " + data_end_position);
 
                     //오버라이팅 아닌경우.
@@ -134,12 +135,14 @@ public class NfcvFunction {
 
                 //"MAKE" 확인
                 if (checkMAKE && temp_data_length >= 16) {
-                    if (temp_data[12] == 0x4D && temp_data[13] == 0x41 && temp_data[14] == 0x4B && temp_data[15] == 0x45) {
+                    if ((temp_data[12] == 0x4D )&& (temp_data[13] == 0x41) && (temp_data[14] == 0x4B )&& (temp_data[15] == 0x45)) {
+                        Toast.makeText(mContext.getApplicationContext(), "Device가 기록중입니다.", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "MAKE error");
                         return false;
                     }
 
                     //"READ" 기록
-                    else {
+                    else if (temp_data[12] == 0x20 && temp_data[13] == 0x20 && temp_data[14] == 0x20 && temp_data[15] == 0x20){
                         int write_error=1;
 
                         while(write_error!=0){
@@ -170,6 +173,9 @@ public class NfcvFunction {
                                 }
                             }
                         }
+                    }
+                    else{
+                        return false;
                     }
                 }
 
@@ -273,7 +279,7 @@ public class NfcvFunction {
 
         //info_데이터 저장.(데이터 정보 , 센서ID , 베터리 값)
         for(int i=0; i<=5; i++){
-            real_data[real_data_length++] = temp_data[i];
+            real_data[real_data_length++] = (temp_data[i]);
         }
 
         //혈당, 온도 데이터 저장(최근데이터 부터 넣어야 해서 끝지점 부터 저장합니다)
@@ -299,18 +305,18 @@ public class NfcvFunction {
         }
 
         //데이터 확인.
-        /*Log.d(TAG, "real_data_length : "  + real_data_length);
+        Log.d(TAG, "real_data_length : "  + real_data_length);
         for(int i=0; i<real_data_length; i++){
             Log.d(TAG, "real_data : "+ i + " " + real_data[i]);
-        }*/
+        }
 
         Log.d(TAG, "trans Intent to insertService");
         //데이터 배열 intent넘기기.
-        /*Intent intent = new Intent(mContext.getApplicationContext(), InsertService.class);
+        Intent intent = new Intent(mContext.getApplicationContext(), InsertService.class);
         intent.putExtra("RealData", real_data);
         intent.putExtra("RealCnt", real_data_length);
         intent.putExtra("MyType", 1);
-        mContext.getApplicationContext().startService(intent);*/
+        mContext.getApplicationContext().startService(intent);
 
         return true;
     }
