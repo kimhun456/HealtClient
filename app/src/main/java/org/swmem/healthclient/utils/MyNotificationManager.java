@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.app.NotificationCompat;
 
-import org.swmem.healthclient.view.BluetoothActivity;
+import org.swmem.healthclient.view.GraphActivity;
 import org.swmem.healthclient.R;
 
 /**
@@ -39,7 +39,7 @@ public class MyNotificationManager {
         }
 
         // Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(context, BluetoothActivity.class);
+        Intent resultIntent = new Intent(context, GraphActivity.class);
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.
@@ -47,7 +47,7 @@ public class MyNotificationManager {
         // your application to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         // Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(BluetoothActivity.class);
+        stackBuilder.addParentStack(GraphActivity.class);
         // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
 

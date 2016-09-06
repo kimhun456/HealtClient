@@ -92,7 +92,7 @@ public class InsertService extends IntentService {
             }else { // 그 외의 정상 테이터를 받았을 때 (MyType 0 : Bluetooth, MyType 1 : NFC)
                 insertMap = byteDecoding(test, len, MyType,sessionManager);
             }
-            HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
+            HashMap<String, GlucoseData> dbMap = getDBHashmap(currentTimeMillis);
 
             dbMap = convertDBMap(insertMap, dbMap);
 
@@ -407,7 +407,7 @@ public class InsertService extends IntentService {
 
 
 
-    private HashMap< String ,GlucoseData> getDBmap(long currentTimeMillis){
+    private HashMap< String ,GlucoseData> getDBHashmap(long currentTimeMillis){
 
         HashMap< String, GlucoseData> glucoseDataHashMap = new HashMap<>();
 
@@ -423,7 +423,6 @@ public class InsertService extends IntentService {
 
         // These indices are tied to DETAIL_COLUMNS.  If DETAIL_COLUMNS changes, these
         // must change.
-        final int COL_GLUCOSE_ID = 0;
         final int COL_GLUCOSE_GLUCOSE_VALUE = 1;
         final int COL_GLUCOSE_TEMPEATURE_VALUE = 2;
         final int COL_GLUCOSE_RAW_VALUE = 3;
@@ -431,7 +430,7 @@ public class InsertService extends IntentService {
         final int COL_GLUCOSE_TIME = 5;
         final int COL_GLUCOSE_TYPE = 6;
 
-        long pastMilliseconds = currentTimeMillis - (1 * DAYS);
+        long pastMilliseconds = currentTimeMillis - DAYS;
         String[] selectionArgs = {""};
         selectionArgs[0] =  Utility.formatDate(pastMilliseconds);
         String WHERE_DATE_BY_LIMIT_DAYS = HealthContract.GlucoseEntry.COLUMN_TIME + " > ?" ;
@@ -492,6 +491,7 @@ public class InsertService extends IntentService {
     }
 
 
+    // 데이터들을 알고리즘을 활용하여 쓴다.
     private HashMap< String ,GlucoseData>  takeAlgorithm(HashMap< String, GlucoseData> insertMap){
 
 
@@ -600,7 +600,10 @@ public class InsertService extends IntentService {
             GlucoseData data = insertMap.get(key);
 
             ContentValues contentValues = new ContentValues();
+
+            // 데이터 베이스에 있는 데이터
             if(data.isInDataBase()){
+                // 데이터가 수정되었다면
                 if(data.isModifed()){
 
 //                    Log.v(TAG , " DB에 있지만 수정된 데이터들 : " + key);
@@ -611,7 +614,9 @@ public class InsertService extends IntentService {
                                     data.getConvertedData())
                             .build());
                 }
-            }else{
+            }
+            // 데이터베이스에 존재하지 않는 데이터
+            else{
 
 
 //                Log.v(TAG , " insert db 에서 DB XXXXXX 데이터들 : " + key);
@@ -626,10 +631,14 @@ public class InsertService extends IntentService {
                 contentValues.put(HealthContract.GlucoseEntry.COLUMN_TIME, data.getDate());
                 contentValues.put(HealthContract.GlucoseEntry.COLUMN_RAW_VALUE, data.getRawData());
 
+
+                // 데이터가 알고리즘을 거쳤다면
                 if(data.isConverted()){
                     contentValues.put(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE,
                             data.getConvertedData());
-                }else{
+                }
+                // 아니라면 null을 넣어준다.
+                else{
                     contentValues.putNull(HealthContract.GlucoseEntry.COLUMN_GLUCOSE_VALUE);
                 }
 
@@ -645,11 +654,10 @@ public class InsertService extends IntentService {
         ContentValues contentValues[] = new ContentValues[addList.size()];
         for(int i=0;i<addList.size();i++){
             contentValues[i] = addList.get(i);
-
         }
 
 
-        // add한다.
+        // bulkInsert를 통하여 한번에 데이터베이스에 넣는다.
         getApplicationContext().getContentResolver().bulkInsert(
                 HealthContract.GlucoseEntry.CONTENT_URI,
                 contentValues
@@ -659,9 +667,9 @@ public class InsertService extends IntentService {
         try {
             getApplicationContext().getContentResolver().applyBatch(
                     HealthContract.CONTENT_AUTHORITY,operations);
-        } catch (RemoteException e) {
-            e.printStackTrace();
         } catch (OperationApplicationException e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
 
@@ -676,9 +684,7 @@ public class InsertService extends IntentService {
 
         currentMiili -= minutes * MINUTES;
 
-        String prevDate = Utility.formatDate(currentMiili);
-
-        return prevDate;
+        return Utility.formatDate(currentMiili);
 
     }
 

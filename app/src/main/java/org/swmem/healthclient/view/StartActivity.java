@@ -31,7 +31,7 @@ public class StartActivity extends AppCompatActivity {
             public void run() {
                 // This method will be executed once the timer is over
                 // Start your app main activity
-                Intent i = new Intent(StartActivity.this, BluetoothActivity.class);
+                Intent i = new Intent(StartActivity.this, GraphActivity.class);
                 startActivity(i);
 
                 // close this activity

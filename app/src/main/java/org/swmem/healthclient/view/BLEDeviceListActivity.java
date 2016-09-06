@@ -46,9 +46,9 @@ import java.util.Set;
  * by the user, the MAC address of the device is sent back to the parent
  * Activity in the result Intent.
  */
-public class DeviceListActivity extends Activity {
+public class BLEDeviceListActivity extends Activity {
     // Debugging
-    private static final String TAG = "DeviceListActivity";
+    private static final String TAG = "BLEDeviceListActivity";
     
     // Constants
 	public static final long SCAN_PERIOD = 8*1000;	// Stops scanning after a pre-defined scan period.

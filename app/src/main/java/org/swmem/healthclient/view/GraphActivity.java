@@ -43,11 +43,11 @@ import org.swmem.healthclient.utils.ShareDataBaseTask;
 
 import java.util.Timer;
 
-public class BluetoothActivity extends AppCompatActivity
+public class GraphActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final java.lang.String TAG = "BluetoothActivity";
-    private final String BLEUTOOTH_FRAGMENT_TAG = "BluetoothFragment";
+    private static final java.lang.String TAG = "GraphActivity";
+    private final String BLEUTOOTH_FRAGMENT_TAG = "GraphFragment";
 
     private ScanService mService;
     private Timer mRefreshTimer = null;
@@ -104,7 +104,7 @@ public class BluetoothActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new BluetoothFragment(), BLEUTOOTH_FRAGMENT_TAG)
+                    .add(R.id.container, new GraphFragment(), BLEUTOOTH_FRAGMENT_TAG)
                     .commit();
         }
         doStartService();
@@ -380,10 +380,10 @@ public class BluetoothActivity extends AppCompatActivity
 
         switch(requestCode) {
             case Constants.REQUEST_CONNECT_DEVICE:
-                // When DeviceListActivity returns with a device to connect
+                // When BLEDeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
                     // Get the device MAC address
-                    String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    String address = data.getExtras().getString(BLEDeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     // Attempt to connect to the device
                     if(address != null) {
                         // 새로운 Bluetooth를 연결할 때 이미 연결되어있는 Service를 찾아서 Bluetooth 해제시킴.

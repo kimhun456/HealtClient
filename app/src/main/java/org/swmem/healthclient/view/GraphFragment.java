@@ -37,7 +37,7 @@ import org.swmem.healthclient.utils.Constants;
 import org.swmem.healthclient.utils.Utility;
 
 
-public class BluetoothFragment extends Fragment implements LoaderManager .LoaderCallbacks<Cursor>{
+public class GraphFragment extends Fragment implements LoaderManager .LoaderCallbacks<Cursor>{
 
 
 
@@ -67,10 +67,10 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
     public static final int GRAPH_LOADER_ID = 0;
 
-    private static final java.lang.String TAG = "BluetoothFragment";
+    private static final java.lang.String TAG = "GraphFragment";
 
 
-    public BluetoothFragment() {
+    public GraphFragment() {
 
     }
 
@@ -293,7 +293,7 @@ public class BluetoothFragment extends Fragment implements LoaderManager .Loader
 
     private void doScan() {
         // DeviceListActivity에서 Scan, List 보여줌
-        Intent intent = new Intent(getActivity(), DeviceListActivity.class);
+        Intent intent = new Intent(getActivity(), BLEDeviceListActivity.class);
         getActivity().startActivityForResult(intent, Constants.REQUEST_CONNECT_DEVICE);
     }
 

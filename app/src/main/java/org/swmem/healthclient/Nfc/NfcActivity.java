@@ -16,7 +16,7 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import org.swmem.healthclient.view.BluetoothFragment;
+import org.swmem.healthclient.view.GraphFragment;
 import org.swmem.healthclient.R;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class NfcActivity extends Activity {
 
     static String TAG = "NfcActivity";
     public static PendingIntent pendingIntent; //intent값을 옮겨넣는다.
-    NfcAdapter nfcAdapter = BluetoothFragment.nfcAdapter;
+    NfcAdapter nfcAdapter = GraphFragment.nfcAdapter;
 
     private Tag mytag;
     private NfcvFunction myNfcvFunction;
