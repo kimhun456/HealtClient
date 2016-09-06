@@ -1,4 +1,4 @@
-package org.swmem.healthclient.NFC;
+package org.swmem.healthclient.Nfc;
 
 /**
  * Created by Woo on 2016-08-29.
@@ -36,7 +36,7 @@ public class NFCvManager {
         Log.d(TAG, "read");
         mytag = tag;
 
-        //read_data(실제로 그래프를 그릴 데이터)
+        //read_data(실제로 그래프를 그릴 raw데이터)
         byte[] real_data = new byte[10000];
         int real_data_length=0;
 

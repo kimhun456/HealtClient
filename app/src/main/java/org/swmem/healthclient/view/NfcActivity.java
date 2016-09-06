@@ -16,7 +16,7 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import org.swmem.healthclient.NFC.NFCvManager;
+import org.swmem.healthclient.Nfc.NFCvManager;
 import org.swmem.healthclient.R;
 
 import java.io.IOException;
