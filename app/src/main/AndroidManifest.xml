@@ -55,7 +55,7 @@
         <activity android:name=".view.SettingActivity" />
         <activity android:name=".view.UserSettingActivity" />
         <activity
-            android:name=".Nfc.NfcActivity"
+            android:name=".view.NfcActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@android:style/Theme.Holo.Dialog.NoActionBar"  />
 

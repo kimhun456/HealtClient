@@ -28,7 +28,6 @@ import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 
-import org.swmem.healthclient.Nfc.NfcActivity;
 import org.swmem.healthclient.R;
 import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.graph.GraphLoadTask;

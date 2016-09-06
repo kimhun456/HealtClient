@@ -1,4 +1,4 @@
-package org.swmem.healthclient.Nfc;
+package org.swmem.healthclient.view;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -16,6 +16,7 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.swmem.healthclient.Nfc.NfcvFunction;
 import org.swmem.healthclient.view.GraphFragment;
 import org.swmem.healthclient.R;
 
