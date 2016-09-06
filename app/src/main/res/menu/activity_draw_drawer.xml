@@ -18,10 +18,6 @@
                 android:id="@+id/nav_setting"
                 android:icon="@drawable/ic_menu_setting"
                 android:title="@string/setting" />
-            <item
-                android:id="@+id/nav_info"
-                android:icon="@drawable/ic_menu_information"
-                android:title="@string/information_setting" />
         </menu>
     </item>
 

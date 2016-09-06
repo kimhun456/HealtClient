@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.swmem.healthclient.db.GlucoseData;
 import org.swmem.healthclient.utils.MyNotificationManager;
@@ -22,8 +21,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
+ *
+ * Created By  HyunJae
+ *
+ *
  * An {@link IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
+ *
+ *
+ *  BlueTooth or NFC 에서 새로운 데이터가 들어오게 된다면
+ *  Insert Service 에서 데이터를 판별하고 데이터가 적절하다면
+ *  알고리즘을 거쳐서 데이터베이스에 들어가게 된다.
  *
  */
 public class InsertService extends IntentService {
@@ -41,8 +49,8 @@ public class InsertService extends IntentService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Toast.makeText(this, "Inserting..." , Toast.LENGTH_SHORT).show();
-
+        Log.v(TAG,"Insert Start !!! ");
+//        Toast.makeText(this, "Inserting..." , Toast.LENGTH_SHORT).show();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -60,8 +68,6 @@ public class InsertService extends IntentService {
         // 현재시간
         long currentTimeMillis =  System.currentTimeMillis();
         if (intent != null) {
-
-            // TODO: intent에서 byte[]를 받아서 insertMap을 만들기
 
             SessionManager sessionManager = new SessionManager(getApplicationContext());
             sessionManager.setExist(true);
@@ -84,7 +90,7 @@ public class InsertService extends IntentService {
             if(MyType == 2) { // 랜덤 Data일 때
                 insertMap = makeRandomInsertMap();
             }else { // 그 외의 정상 테이터를 받았을 때 (MyType 0 : Bluetooth, MyType 1 : NFC)
-                insertMap = byteDecoding(test, len, MyType);
+                insertMap = byteDecoding(test, len, MyType,sessionManager);
             }
             HashMap<String, GlucoseData> dbMap = getDBmap(currentTimeMillis);
 
@@ -95,7 +101,6 @@ public class InsertService extends IntentService {
             insertDataBase(dbMap);
 
             doNotification(dbMap);
-
 
         }
     }
@@ -196,12 +201,13 @@ public class InsertService extends IntentService {
     @Override
     public void onDestroy() {
 
-        Toast.makeText(this, "Inserting... END!" , Toast.LENGTH_SHORT).show();
+        Log.v(TAG,"Inserting End!!!");
+//        Toast.makeText(this, "Inserting... END!" , Toast.LENGTH_SHORT).show();
         super.onDestroy();
     }
 
 
-    public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len, int MyType){
+    public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len, int MyType, SessionManager sessionManager){
 
 
         HashMap<String,GlucoseData> map = new HashMap<>();
@@ -219,6 +225,7 @@ public class InsertService extends IntentService {
             Log.d(TAG, "MyType == 1");
             //type = HealthContract.GlucoseEntry.NFC;//byteTostr(buf[0], buf[1]);
             deviceID = byteTostr(buf[2],buf[3]);
+            sessionManager.setDeviceID(deviceID);
             battery = byteToint(buf[4],buf[5]);
             numbering = (len - 6)/5;
 
@@ -231,7 +238,6 @@ public class InsertService extends IntentService {
                 Log.d(TAG, "temperature : "+temperature);
 
                 GlucoseData data = new GlucoseData();
-
                 data.setRawData(rawData);
                 data.setTemperature(temperature);
                 String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
@@ -305,11 +311,11 @@ public class InsertService extends IntentService {
                         if(type.equals(HealthContract.GlucoseEntry.NFC)){
                             data.setType(HealthContract.GlucoseEntry.NFC);
                         }else{
-                            data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+                            data.setType(HealthContract.GlucoseEntry.BLUETOOTH);
                         }
 
                         String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
-                        if(MyType == 0) data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+                        if(MyType == 0) data.setType(HealthContract.GlucoseEntry.BLUETOOTH);
                         else data.setType(HealthContract.GlucoseEntry.NFC);
                         data.setDate(date);
                         data.setRawData(rawData);
@@ -326,6 +332,12 @@ public class InsertService extends IntentService {
 
             }
         }
+
+        
+        //// TODO: 2016-09-06 배터리로 노티피케이션 하는 부분.
+
+
+
         return map;
     }
 
@@ -364,7 +376,7 @@ public class InsertService extends IntentService {
             if(rand < 0.5){
                 data.setType(HealthContract.GlucoseEntry.NFC);
             }else{
-                data.setType(HealthContract.GlucoseEntry.BLEUTOOTH);
+                data.setType(HealthContract.GlucoseEntry.BLUETOOTH);
             }
 
             data.setDate(convertedTime);
@@ -473,7 +485,6 @@ public class InsertService extends IntentService {
             //데이터 베이스에 없으면 넣는다.
             if(dbMap.get(key) == null){
                 dbMap.put(key, insertMap.get(key));
-//                Log.v(TAG , " DB XXXXXX 데이터들 : " + key);
             }
 
         }
@@ -605,9 +616,9 @@ public class InsertService extends IntentService {
 
 //                Log.v(TAG , " insert db 에서 DB XXXXXX 데이터들 : " + key);
 
-                if(data.getType().equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
+                if(data.getType().equals(HealthContract.GlucoseEntry.BLUETOOTH)){
                     contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE,
-                            HealthContract.GlucoseEntry.BLEUTOOTH);
+                            HealthContract.GlucoseEntry.BLUETOOTH);
                 }else{
                     contentValues.put(HealthContract.GlucoseEntry.COLUMN_TYPE,
                             HealthContract.GlucoseEntry.NFC);

@@ -6,9 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
-import org.swmem.healthclient.BluetoothActivity;
+import org.swmem.healthclient.view.BluetoothActivity;
 import org.swmem.healthclient.R;
 
 /**
@@ -34,7 +33,7 @@ public class MyNotificationManager {
                         .setAutoCancel(true)
                         .setContentText(contents);
 
-        if(title == " Disconnected ") {
+        if(title.equals(" Disconnected ")) {
             //Log.d("chang", "진동");
             mBuilder.setVibrate(new long[]{0,500}); // 0.5초
         }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -17,6 +18,11 @@ import static android.os.Environment.getExternalStorageDirectory;
 
 /**
  * Created by hyunjae on 16. 8. 5.
+ *
+ * 데이터베이스를 공유하게 해주는 AsyncTask..
+ * 현재까지 저장된 데이터베이스를 share할 수 있다.
+ * 데이터베이스는 sqlite 형식의 glucose.db라는 파일로 공유된다.
+ *
  */
 public class ShareDataBaseTask extends AsyncTask<Void,Void,Void> {
 
@@ -51,7 +57,7 @@ public class ShareDataBaseTask extends AsyncTask<Void,Void,Void> {
         }
     }
 
-    public void exportDatabse(String databaseName) {
+    public void exportDatabase(String databaseName) {
         try {
             File sd = getExternalStorageDirectory();
             File data = getDataDirectory();
@@ -70,15 +76,17 @@ public class ShareDataBaseTask extends AsyncTask<Void,Void,Void> {
                 }
             }
         } catch (Exception e) {
-
+            Log.e("Database Export",e.toString());
         }
     }
+
+
+
 
     @Override
     protected Void doInBackground(Void... voids) {
 
-        exportDatabse("glucare.db");
-
+        exportDatabase("glucare.db");
         return null;
     }
 }

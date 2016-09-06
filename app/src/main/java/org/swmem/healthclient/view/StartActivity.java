@@ -1,16 +1,16 @@
-package org.swmem.healthclient;
+package org.swmem.healthclient.view;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
+import org.swmem.healthclient.R;
+
 public class StartActivity extends AppCompatActivity {
     private static int SPLASH_TIME_OUT = 1000;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

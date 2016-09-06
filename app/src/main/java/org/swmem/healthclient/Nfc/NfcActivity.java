@@ -2,7 +2,6 @@ package org.swmem.healthclient.Nfc;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -10,7 +9,6 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
@@ -18,7 +16,7 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import org.swmem.healthclient.BluetoothFragment;
+import org.swmem.healthclient.view.BluetoothFragment;
 import org.swmem.healthclient.R;
 
 import java.io.IOException;

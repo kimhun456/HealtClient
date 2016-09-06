@@ -124,8 +124,6 @@ public class TransactionReceiver {
             mParameters = null;
         }
 
-
-
         private int checkCommand() {
             int prefixIndex = mReceivedString.lastIndexOf(THINGSPEAK_PREFIX);
             if(prefixIndex > -1) {

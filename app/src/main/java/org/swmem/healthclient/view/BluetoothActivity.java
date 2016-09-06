@@ -1,4 +1,4 @@
-package org.swmem.healthclient;
+package org.swmem.healthclient.view;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -31,6 +31,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.swmem.healthclient.R;
 import org.swmem.healthclient.db.HealthContract;
 import org.swmem.healthclient.service.BTCTemplateService;
 import org.swmem.healthclient.service.InsertService;
@@ -286,9 +287,6 @@ public class BluetoothActivity extends AppCompatActivity
         }else if (id == R.id.nav_share) {
 
             new ShareDataBaseTask(this).execute();
-
-
-        }else if (id == R.id.nav_info) {
 
         }else if (id == R.id.nav_call) {
 

@@ -1,4 +1,4 @@
-package org.swmem.healthclient;
+package org.swmem.healthclient.view;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
@@ -13,19 +13,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-public class UserSettingActivity extends PreferenceActivity
+import org.swmem.healthclient.R;
+
+public class SettingActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
 
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.user_preferences);
+        addPreferencesFromResource(R.xml.preferences);
+
+
+
         // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
         // updated when the preference changes.
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_user_name_key)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_user_email_key)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_doctor_name_key)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_doctor_phone_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hyperglycemia_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_Hypoglycemia_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_data_format_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_data_interval_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_limit_hours_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_show_hours_key)));
+
     }
 
     @Override
@@ -81,6 +89,7 @@ public class UserSettingActivity extends PreferenceActivity
             }else{
                 preference.setSummary(stringValue);
             }
+
         }
         return true;
     }
@@ -90,4 +99,5 @@ public class UserSettingActivity extends PreferenceActivity
     public Intent getParentActivityIntent() {
         return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     }
+
 }

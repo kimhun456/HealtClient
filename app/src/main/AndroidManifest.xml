@@ -27,7 +27,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".BluetoothActivity"
+            android:name=".view.BluetoothActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar"/>
@@ -39,7 +39,7 @@
             android:exported="true" />
 
         <activity
-            android:name=".StartActivity"
+            android:name=".view.StartActivity"
             android:theme="@style/Theme.Design.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,12 +48,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DeviceListActivity"
+            android:name=".view.DeviceListActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/select_device"
             android:theme="@android:style/Theme.Holo.Dialog.NoActionBar" />
-        <activity android:name=".SettingActivity" />
-        <activity android:name=".UserSettingActivity" />
+        <activity android:name=".view.SettingActivity" />
+        <activity android:name=".view.UserSettingActivity" />
         <activity
             android:name=".Nfc.NfcActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

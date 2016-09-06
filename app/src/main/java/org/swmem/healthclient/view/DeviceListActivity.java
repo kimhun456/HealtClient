@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.swmem.healthclient;
+package org.swmem.healthclient.view;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -33,6 +33,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.swmem.healthclient.R;
 import org.swmem.healthclient.bluetooth.BleManager;
 
 import java.util.ArrayList;

@@ -31,6 +31,13 @@ import java.util.HashMap;
 
 /**
  * Created by hyunjae on 16. 7. 29.
+ *
+ *
+ * DB에 저장되어있는 데이터를 불러와서 그래프에 그려주는 역할 을 하는
+ *
+ * AsyncTask
+ *
+ *
  */
 public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
@@ -148,8 +155,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         super.onPostExecute(lineData);
         if(lastValue != 0){
 
-
-
             if(dataFormat.equals(context.getString(R.string.pref_data_format_mmol))){
 
                 lastValueText.setText(String.format("%.1f",lastValue));
@@ -183,9 +188,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                             .getBackground();
                     animation1.start();
                     animation2.start();
-
-
-
                     break;
                 case UP_ARROW :
 
@@ -262,7 +264,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         }
 
-
         chart.getViewPortHandler().fitScreen();
         chart.setData(lineData);
         // zooming 과 과련된 부분들
@@ -275,13 +276,10 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         float xRangeMaximum = 60 * showHours / dataInterval;
         float limitXRangeMaximum = 60 * limitHours / dataInterval;
 
-
-
-        Log.v("showHours",""+showHours);
-        Log.v("limitHours",""+limitHours);
-        Log.v("limitXRangeMaximum",""+limitXRangeMaximum);
-        Log.v("xRangeMaximum",""+xRangeMaximum);
-
+//        Log.v("showHours",""+showHours);
+//        Log.v("limitHours",""+limitHours);
+//        Log.v("limitXRangeMaximum",""+limitXRangeMaximum);
+//        Log.v("xRangeMaximum",""+xRangeMaximum);
 
         chart.setVisibleXRangeMinimum(xRangeMaximum);
         chart.setVisibleXRangeMaximum(xRangeMaximum);
@@ -297,8 +295,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
         chart.setVisibleXRangeMaximum(limitXRangeMaximum);
         chart.setVisibleXRangeMinimum(1);
 
-        Log.v(TAG,"Load Graph Data");
-
+        Log.v(TAG,"Load Graph Data Complete");
 
         // Dialog remove
 
@@ -306,6 +303,21 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
     }
 
+
+    /**
+     *
+     * DB에서 Converted Data를 불러와서 그래프를 그려주기 위한
+     *
+     * LineData를 생성한다.
+     *
+     *
+     *  만약 Converted 된 Data 가 없다면
+     *
+     *  Raw Data를 그대로 그려주게 된다.
+     *
+     * @param voids
+     * @return 생성된 라인데이터를 리턴해준다.
+     */
     @Override
     protected LineData doInBackground(Void... voids) {
 
@@ -360,12 +372,12 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
                 String type = cursor.getString(COL_GLUCOSE_TYPE);
                 int index = getIndexOfEntries(currentDate,currentMilliseconds);
-//
-                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
-                Log.v ("cursor" ,"type : " +  type);
-                Log.v("cursor",  "Converted VALUE :  " +convertedData);
-                Log.v ("cursor" ,"index : " +  index );
-                Log.v ("cursor" ,"______________________");
+
+//                Log.v ("cursor" ,"date : " +  Utility.formatDate(currentDate));
+//                Log.v ("cursor" ,"type : " +  type);
+//                Log.v("cursor",  "Converted VALUE :  " +convertedData);
+//                Log.v ("cursor" ,"index : " +  index );
+//                Log.v ("cursor" ,"______________________");
 
                 if(index < 0){
                     continue;
@@ -374,7 +386,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
                     lastDataIndex = index;
                 }
 
-                if(type.equals(HealthContract.GlucoseEntry.BLEUTOOTH)){
+                if(type.equals(HealthContract.GlucoseEntry.BLUETOOTH)){
                     myEntries.add(new MyEntry(index,convertedData,BLUETOOTH_COLOR,Utility.formatDate(currentDate)));
                 }else{
                     myEntries.add(new MyEntry(index,convertedData,NFC_COLOR,Utility.formatDate(currentDate)));
