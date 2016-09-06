@@ -21,8 +21,9 @@
     <string name="user_setting">User</string>
 
     <!-- PREFENCE-->
-    
+
     <string name="pref_graph_title">Graph Setting</string>
+    <string name="pref_algorithm_title">Algorithm Setting</string>
     <string name="pref_notification_title">Notification Setting</string>
 
     <!--Preference Limit Hours-->
@@ -142,6 +143,19 @@
     <string name="pref_Hypoglycemia_label">Hypoglycemia</string>
     <string name="pref_Hypoglycemia_summary">Set the Hypoglycemia</string>
     <string name="pref_Hypoglycemia_default">80</string>
+
+
+
+    <!-- Algorithm factor-->
+
+
+    <string name="pref_algorithm_calibration_key" translatable="false">calibration</string>
+    <string name="pref_algorithm_calibration_label">Calibration</string>
+    <string name="pref_algorithm_calibration_summary">Set the Calibration Parameter</string>
+    <string name="pref_algorithm_calibration_default">0</string>
+
+
+
 
     <string name="action_settings" translatable="false">Settings</string>
     <string name="chart_description">Glucose Chart</string>

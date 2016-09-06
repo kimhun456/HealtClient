@@ -33,6 +33,7 @@ public class SettingActivity extends PreferenceActivity
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_data_interval_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_limit_hours_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_show_hours_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_algorithm_calibration_key)));
 
     }
 

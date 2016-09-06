@@ -223,16 +223,16 @@ public class InsertService extends IntentService {
         //NFC 데이터 처리.
         if(MyType==1){
             Log.d(TAG, "MyType == 1");
-            //type = HealthContract.GlucoseEntry.NFC;//byteTostr(buf[0], buf[1]);
-            deviceID = byteTostr(buf[2],buf[3]);
+            //type = HealthContract.GlucoseEntry.NFC;//byteToString(buf[0], buf[1]);
+            deviceID = byteToString(buf[2],buf[3]);
             sessionManager.setDeviceID(deviceID);
-            battery = byteToint(buf[4],buf[5]);
+            battery = byteToInt(buf[4],buf[5]);
             numbering = (len - 6)/5;
 
             for(int i=0; i< numbering; i++){
 
-                rawData = byteToint(buf[6 + 5*i], buf[6 + 5*i + 1]);
-                temperature = byteToint(buf[ 6 + 5*i + 2], buf[6 + 5*i + 3], buf[6 + 5*i + 4]);
+                rawData = byteToInt(buf[6 + 5*i], buf[6 + 5*i + 1]);
+                temperature = byteToInt(buf[ 6 + 5*i + 2], buf[6 + 5*i + 3], buf[6 + 5*i + 4]);
 
                 Log.d(TAG, "rawData :" + rawData);
                 Log.d(TAG, "temperature : "+temperature);
@@ -258,36 +258,35 @@ public class InsertService extends IntentService {
                 if(i==0){
                     type = String.valueOf(0xff&buf[0]);
                     //type = String.valueOf(buf[0]);
-                    type = byteTostr(buf[0]);
+                    type = byteToString(buf[0]);
                     System.out.println("type : " + type);
                 }
                 //deviceID
                 else if(i==1){
                     deviceID = String.valueOf((0xff&buf[2]<<8) | (0xff&buf[1]));
                     //deviceID = String.valueOf(buf[1]<<8 | buf[2]);
-                    deviceID = byteTostr(buf[2],buf[1]);
-                    System.out.println("deviceID : "+ deviceID);
+                    deviceID = byteToString(buf[2],buf[1]);
+                    sessionManager.setDeviceID(deviceID);
                 }
                 //nubmering
                 else if(i==3){
                     numbering = (0xff&buf[5]<<16)  | (0xff&buf[4]<<8) | (0xff&buf[3]);
                     //numbering = buf[3]<<16  | buf[4]<<8 | buf[5];
-                    numbering = byteToint(buf[5], buf[4], buf[3]);
+                    numbering = byteToInt(buf[5], buf[4], buf[3]);
                     System.out.println("numbering : "+ numbering);
                 }
                 //battery
                 else if(i==6){
                     battery = (0xff&buf[7]<<8) | (0xff&buf[6]);
                     //battery = buf[6]<<8 | buf[7];
-                    battery = byteToint(buf[7],buf[6]);
+                    battery = byteToInt(buf[7],buf[6]);
                     System.out.println("battery : "+ battery);
                 }
-                //수정 앞으로 해야될 부분
-                //gluecoseData & temperature;
+
                 else{
                     // 첫번째 정수
                     if((i-8)%5 == 0){
-                        rawData = byteTodouble(buf[i]);
+                        rawData = byteToDouble(buf[i]);
                     }
                     // 두번째 정수
                     if((i-9)%5 == 0 && buf[i] != 0){
@@ -303,20 +302,12 @@ public class InsertService extends IntentService {
                         temperature += 0xff&buf[i]<<8;
 
                         //insert
-                        System.out.print("rawData : "+ rawData);
-                        System.out.println("  temperature : "+ temperature);
-
+                        Log.v(TAG,"rawData : "+ rawData);
+                        Log.v(TAG,"  temperature : "+ temperature);
 
                         GlucoseData data = new GlucoseData();
-                        if(type.equals(HealthContract.GlucoseEntry.NFC)){
-                            data.setType(HealthContract.GlucoseEntry.NFC);
-                        }else{
-                            data.setType(HealthContract.GlucoseEntry.BLUETOOTH);
-                        }
-
                         String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
-                        if(MyType == 0) data.setType(HealthContract.GlucoseEntry.BLUETOOTH);
-                        else data.setType(HealthContract.GlucoseEntry.NFC);
+                        data.setType(HealthContract.GlucoseEntry.BLUETOOTH);
                         data.setDate(date);
                         data.setRawData(rawData);
                         data.setTemperature(temperature);
@@ -339,23 +330,6 @@ public class InsertService extends IntentService {
 
 
         return map;
-    }
-
-
-    public int byteToint(byte first_buf, byte second_buf){
-        return ((first_buf & 0xff)<<8 | (second_buf & 0xff));
-    }
-    public int byteToint(byte first_buf, byte second_buf, byte third_buf){
-        return ((first_buf & 0xff)<<16 | (second_buf & 0xff)<<8 | (third_buf & 0xff));
-    }
-    public String byteTostr(byte buf){
-        return String.valueOf((buf&0xff));
-    }
-    public String byteTostr(byte first_buf, byte second_buf){
-        return String.valueOf(((first_buf)&0xff)<<8 | second_buf&0xff);
-    }
-    public double byteTodouble(byte buf){
-        return buf&0xff;
     }
 
 
@@ -491,9 +465,21 @@ public class InsertService extends IntentService {
     }
 
 
-    // 데이터들을 알고리즘을 활용하여 쓴다.
+    /**
+     *
+     * @param insertMap insertMap은 <날짜 , GlucoseData>로 되어 있는 해시맵이다.
+     *                  GlucoseData의 isConverted()를 이용하여 알고리즘이 적용되어 있는 값이면
+     *                  무시하고 다음 데이터로 넘어가게 된다.
+     *
+     * @return
+     */
     private HashMap< String ,GlucoseData>  takeAlgorithm(HashMap< String, GlucoseData> insertMap){
 
+        float param = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.pref_algorithm_calibration_key),"0"));
+
+        Log.v(TAG," param : "+param);
 
         final int rateINC_MORE = 2;
         final int rateINC_LESS = 1;
@@ -506,25 +492,34 @@ public class InsertService extends IntentService {
 
             GlucoseData glucoseData = insertMap.get(key);
 
+            // 지금 데이터가 이미 알고리즘을 통해 Converted 되었다면 다음으로 넘긴다.
             if(glucoseData.isConverted()){
-
-//                Log.v(TAG, "date : " + glucoseData.getDate() + " is converted");
                 continue;
             }
 
+            //지금 데이터의 날짜를 가지고 온다.
             String currentDate  = glucoseData.getDate();
 
+            // 3분 전 데이터를 가지고 오는 부분.
             String threeDayAgoKey = getPrevKey(currentDate,3);
+
+            //6분 전 데이터를 가지고 오는 부분.
             String sixDayAgoKey = getPrevKey(currentDate,6);
 
+            // 3분전과 6분전 데이터 중에 하나라도 없다면 다음 데이터로 넘긴다.
             if(insertMap.get(threeDayAgoKey) == null ||  insertMap.get(sixDayAgoKey) == null){
                 glucoseData.setConvert(false);
 //                Log.v(TAG, " date : " + glucoseData.getDate() + "  3 or 6 day ago is not possible");
                 continue;
             }
 
+            // 현재 데이터의 RAW 값을 가지고 온다.
             double currentData = glucoseData.getRawData();
+
+            // 3분전 데이터의  RAW 값을 가지고 온다.
             double threeMinPastData = insertMap.get(threeDayAgoKey).getRawData();
+
+            // 6분전 데이터의  RAW 값을 가지고 온다.
             double sixMinPastData = insertMap.get(sixDayAgoKey).getRawData();
 
             double Diff_F = currentData - threeMinPastData;
@@ -572,11 +567,16 @@ public class InsertService extends IntentService {
             if(currentData > 185)
                 Compensated_Glimp_change = Compensated_Glimp_change+10;
 
+
+            // Converted된 데이터를 셋하는 부분.
             glucoseData.setConvertedData(currentData + Compensated_Glimp_change);
+
+            // 데이터에 Convert되었다고 체크해둔다.
             glucoseData.setConvert(true);
 
 //            Log.v(TAG , " converted Data is " +(currentData + Compensated_Glimp_change));
 
+            // 만약 지금 데이터가 데이터베이스에 있었는데 수정되었으면 수정되었다고 표시한다.
             if(glucoseData.isInDataBase()){
                 glucoseData.setModifed(true);
             }
@@ -664,6 +664,7 @@ public class InsertService extends IntentService {
         );
 
 
+        // 수정된 부분은 한번에 DB에서 UPDATE 하게 한다.
         try {
             getApplicationContext().getContentResolver().applyBatch(
                     HealthContract.CONTENT_AUTHORITY,operations);
@@ -687,6 +688,25 @@ public class InsertService extends IntentService {
         return Utility.formatDate(currentMiili);
 
     }
+
+
+    public int byteToInt(byte first_buf, byte second_buf){
+        return ((first_buf & 0xff)<<8 | (second_buf & 0xff));
+    }
+    public int byteToInt(byte first_buf, byte second_buf, byte third_buf){
+        return ((first_buf & 0xff)<<16 | (second_buf & 0xff)<<8 | (third_buf & 0xff));
+    }
+    public String byteToString(byte buf){
+        return String.valueOf((buf&0xff));
+    }
+    public String byteToString(byte first_buf, byte second_buf){
+        return String.valueOf(((first_buf)&0xff)<<8 | second_buf&0xff);
+    }
+    public double byteToDouble(byte buf){
+        return buf&0xff;
+    }
+
+
 
 
 }

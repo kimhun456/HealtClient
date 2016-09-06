@@ -1,29 +1,26 @@
-package org.swmem.healthclient.Nfc;
+package org.swmem.healthclient.NFC;
 
 /**
  * Created by Woo on 2016-08-29.
  */
 
-import android.app.Activity;
-import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.nfc.tech.NfcV;
-import android.os.Bundle;
-import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.swmem.healthclient.R;
 import org.swmem.healthclient.service.InsertService;
 
 import java.io.IOException;
 
 /**
  * Created by Woo on 2016-08-27.
+ *
+ *
  */
-public class NfcvFunction {
+public class NFCvManager {
 
     static String TAG = "NfcVFunction";
     private Tag mytag;
@@ -31,7 +28,7 @@ public class NfcvFunction {
 
     Context mContext;
 
-    NfcvFunction(Context context) {
+    public NFCvManager(Context context) {
         this.mContext = context;
     }
 

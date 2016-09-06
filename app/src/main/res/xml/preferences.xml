@@ -2,7 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-
     <PreferenceCategory
         android:title="@string/pref_graph_title"
         android:icon="@drawable/ic_graph">
@@ -82,5 +81,22 @@
             android:defaultValue="@string/pref_enable_Hypoglycemia_notifications_default" />
 
     </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="@string/pref_algorithm_title"
+        android:icon="@drawable/ic_graph">
+
+        <EditTextPreference
+            android:title="@string/pref_algorithm_calibration_label"
+            android:key="@string/pref_algorithm_calibration_key"
+            android:defaultValue="@string/pref_algorithm_calibration_default"
+            android:summary="@string/pref_algorithm_calibration_summary"
+            android:inputType="numberDecimal"
+            android:singleLine="true" />
+
+
+    </PreferenceCategory>
+
 
 </PreferenceScreen>

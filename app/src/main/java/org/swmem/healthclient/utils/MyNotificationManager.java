@@ -12,6 +12,8 @@ import org.swmem.healthclient.R;
 
 /**
  * Created by hyunjae on 16. 8. 4.
+ *
+ * 알림을 관리하는 매니저
  */
 public class MyNotificationManager {
 

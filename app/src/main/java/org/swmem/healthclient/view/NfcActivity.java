@@ -16,8 +16,7 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import org.swmem.healthclient.Nfc.NfcvFunction;
-import org.swmem.healthclient.view.GraphFragment;
+import org.swmem.healthclient.NFC.NFCvManager;
 import org.swmem.healthclient.R;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ public class NfcActivity extends Activity {
     NfcAdapter nfcAdapter = GraphFragment.nfcAdapter;
 
     private Tag mytag;
-    private NfcvFunction myNfcvFunction;
+    private NFCvManager myNFCvManager;
     Vibrator vibe;
 
     @Override
@@ -42,7 +41,7 @@ public class NfcActivity extends Activity {
 
         super.onCreate(savedInstanceState);
 
-        myNfcvFunction =  new NfcvFunction(getApplicationContext());
+        myNFCvManager =  new NFCvManager(getApplicationContext());
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -88,7 +87,7 @@ public class NfcActivity extends Activity {
             try {
 
                 //오류 발생했을 경우.
-                if(myNfcvFunction.read(mytag) == false){
+                if(myNFCvManager.read(mytag) == false){
                     Toast.makeText(getApplicationContext(),"다시 태깅해주세요.", Toast.LENGTH_SHORT).show();
                     vibe.vibrate(100); //0.1초 진동.
                 }
