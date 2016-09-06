@@ -12,7 +12,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.swmem.healthclient.db.GlucoseData;
-import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.R;
 import org.swmem.healthclient.utils.SessionManager;
@@ -21,7 +20,6 @@ import org.swmem.healthclient.db.HealthContract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.IntToDoubleFunction;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -35,8 +33,6 @@ public class InsertService extends IntentService {
     final int MINUTES = 60 * SECONDS;
     final int HOURS = 60 * MINUTES;
     final int DAYS = 24 * HOURS;
-
-
 
     public InsertService() {
         super("InsertService");
@@ -81,7 +77,7 @@ public class InsertService extends IntentService {
 
             if (test != null) {
                 for(int i=0; i<len; i++)
-                    Logs.d(TAG, ""+ (0xff&test[i]));
+                    Log.d(TAG, ""+ (0xff&test[i]));
             }
 
             HashMap<String, GlucoseData> insertMap;
@@ -218,8 +214,6 @@ public class InsertService extends IntentService {
         double temperature=0;
         int count = 0;
 
-        GlucoseData data = new GlucoseData();
-
         //NFC 데이터 처리.
         if(MyType==1){
             Log.d(TAG, "MyType == 1");
@@ -235,6 +229,8 @@ public class InsertService extends IntentService {
 
                 Log.d(TAG, "rawData :" + rawData);
                 Log.d(TAG, "temperature : "+temperature);
+
+                GlucoseData data = new GlucoseData();
 
                 data.setRawData(rawData);
                 data.setTemperature(temperature);
@@ -305,6 +301,7 @@ public class InsertService extends IntentService {
                         System.out.println("  temperature : "+ temperature);
 
 
+                        GlucoseData data = new GlucoseData();
                         if(type.equals(HealthContract.GlucoseEntry.NFC)){
                             data.setType(HealthContract.GlucoseEntry.NFC);
                         }else{

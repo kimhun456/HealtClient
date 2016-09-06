@@ -35,7 +35,6 @@ import org.swmem.healthclient.bluetooth.ConnectionInfo;
 import org.swmem.healthclient.bluetooth.TransactionBuilder;
 import org.swmem.healthclient.bluetooth.TransactionReceiver;
 import org.swmem.healthclient.utils.AppSettings;
-import org.swmem.healthclient.utils.Logs;
 
 
 public class ScanService extends Service {
@@ -62,7 +61,7 @@ public class ScanService extends Service {
 
 	@Override
 	public void onCreate() {
-		Logs.d(TAG, "# Service - onCreate() starts here");
+		Log.d(TAG, "# Service - onCreate() starts here");
 		
 		mContext = getApplicationContext();
 		initialize();
@@ -70,7 +69,7 @@ public class ScanService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Logs.d(TAG, "# Service - onStartCommand() starts here");
+		Log.d(TAG, "# Service - onStartCommand() starts here");
 		
 		// If service returns START_STICKY, android restarts service automatically after forced close.
 		// At this time, onStartCommand() method in service must handle null intent.
@@ -79,34 +78,34 @@ public class ScanService extends Service {
 	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig){
-		Logs.d(TAG, "# Service -Configuration changed");
+		Log.d(TAG, "# Service -Configuration changed");
 		// This prevents reload after configuration changes
 		super.onConfigurationChanged(newConfig);
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		Logs.d(TAG, "# Service - onBind()");
+		Log.d(TAG, "# Service - onBind()");
 		return mBinder;
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		Logs.d(TAG, "# Service - onUnbind()");
+		Log.d(TAG, "# Service - onUnbind()");
 		stopSelf();
 		return true;
 	}
 	
 	@Override
 	public void onDestroy() {
-		Logs.d(TAG, "# Service - onDestroy()");
+		Log.d(TAG, "# Service - onDestroy()");
 		finalizeService();
 		mServiceHandler = null;
 	}
 	
 	@Override
 	public void onLowMemory (){
-		Logs.d(TAG, "# Service - onLowMemory()");
+		Log.d(TAG, "# Service - onLowMemory()");
 		// onDestroy is not always called when applications are finished by Android system.
 		finalizeService();
 	}
@@ -116,7 +115,7 @@ public class ScanService extends Service {
 	 *	Private methods
 	 ******************************************************/
 	private void initialize() {
-		Logs.d(TAG, "# Service : initialize ---");
+		Log.d(TAG, "# Service : initialize ---");
 		
 		AppSettings.initializeAppSettings(mContext);
 		//startServiceMonitoring();
@@ -157,7 +156,7 @@ public class ScanService extends Service {
 	 ******************************************************/
 	public void finalizeService() {
 
-		Logs.d(TAG, "# Service : finalize ---");
+		Log.d(TAG, "# Service : finalize ---");
 		
 		// Stop the bluetooth session
 		mBluetoothAdapter = null;
@@ -172,7 +171,7 @@ public class ScanService extends Service {
 	 * @param h
 	 */
 	public void setupService(Handler h) {
-		Logs.d(TAG, "# Service - Setup Service");
+		Log.d(TAG, "# Service - Setup Service");
 		mActivityHandler = h;
 		
 		// Double check BT manager instance

@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.swmem.healthclient.utils.Logs;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -17,7 +15,7 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
-
+import android.util.Log;
 
 
 public class BleManager {
@@ -74,7 +72,7 @@ public class BleManager {
 	/**
 	 * Constructor. Prepares a new Bluetooth session.
 	 * @param context  The UI Activity Context
-	 * @param handler  A Listener to receive messages back to the UI Activity
+	 * @param h  A Listener to receive messages back to the UI Activity
 	 */
 	private BleManager(Context context, Handler h) {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -141,13 +139,13 @@ public class BleManager {
 	 */
 	private int checkGattServices(List<BluetoothGattService> gattServices) {
 		if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-			Logs.d("# BluetoothAdapter not initialized");
+			Log.d(TAG,"# BluetoothAdapter not initialized");
 			return -1;
 		}
 
 		for (BluetoothGattService gattService : gattServices) {
 			// Default service info
-			Logs.d("# GATT Service: "+gattService.toString());
+			Log.d(TAG,"# GATT Service: "+gattService.toString());
 
 			// Remember service
 			mGattServices.add(gattService);
@@ -157,7 +155,7 @@ public class BleManager {
 			for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
 				// Remember characteristic
 				mGattCharacteristics.add(gattCharacteristic);
-				Logs.d("# GATT Char: "+gattCharacteristic.toString());
+				Log.d(TAG,"# GATT Char: "+gattCharacteristic.toString());
 
 				boolean isWritable = isWritableCharacteristic(gattCharacteristic);
 				if(isWritable) {
@@ -187,10 +185,10 @@ public class BleManager {
 		final int charaProp = chr.getProperties();
 		if (((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE) |
 				(charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
-			Logs.d("# Found writable characteristic");
+			Log.d(TAG,"# Found writable characteristic");
 			return true;
 		} else {
-			Logs.d("# Not writable characteristic");
+			Log.d(TAG,"# Not writable characteristic");
 			return false;
 		}
 	}
@@ -200,10 +198,10 @@ public class BleManager {
 
 		final int charaProp = chr.getProperties();
 		if((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-			Logs.d("# Found readable characteristic");
+			Log.d(TAG,"# Found readable characteristic");
 			return true;
 		} else {
-			Logs.d("# Not readable characteristic");
+			Log.d(TAG,"# Not readable characteristic");
 			return false;
 		}
 	}
@@ -213,10 +211,10 @@ public class BleManager {
 
 		final int charaProp = chr.getProperties();
 		if((charaProp & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-			Logs.d("# Found notification characteristic");
+			Log.d(TAG,"# Found notification characteristic");
 			return true;
 		} else {
-			Logs.d("# Not notification characteristic");
+			Log.d(TAG,"# Not notification characteristic");
 			return false;
 		}
 	}
@@ -230,7 +228,7 @@ public class BleManager {
 	 */
 	public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
 		if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-			Logs.d("# BluetoothAdapter not initialized");
+			Log.d(TAG,"# BluetoothAdapter not initialized");
 			return;
 		}
 		mBluetoothGatt.readCharacteristic(characteristic);
@@ -245,7 +243,7 @@ public class BleManager {
 	public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
 											  boolean enabled) {
 		if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-			Logs.d("# BluetoothAdapter not initialized");
+			Log.d(TAG,"# BluetoothAdapter not initialized");
 			return;
 		}
 		mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
@@ -367,7 +365,7 @@ public class BleManager {
 		BluetoothDevice device =
 				BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
 		if (device == null) {
-			Logs.d("# Device not found.  Unable to connect.");
+			Log.d(TAG,"# Device not found.  Unable to connect.");
 			return false;
 		}
 
@@ -391,7 +389,7 @@ public class BleManager {
 	 */
 	public void disconnect() {
 		if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-			Logs.d("# BluetoothAdapter not initialized");
+			Log.d(TAG,"# BluetoothAdapter not initialized");
 			return;
 		}
 		mBluetoothGatt.disconnect();
@@ -399,7 +397,7 @@ public class BleManager {
 
 	public boolean write(BluetoothGattCharacteristic chr, byte[] data) {
 		if (mBluetoothGatt == null) {
-			Logs.d(TAG, "# BluetoothGatt not initialized");
+			Log.d(TAG, "# BluetoothGatt not initialized");
 			return false;
 		}
 		BluetoothGattCharacteristic writableChar = null;
@@ -412,25 +410,25 @@ public class BleManager {
 					}
 				}
 				if(writableChar == null) {
-					Logs.d(TAG, "# Write failed - No available characteristic");
+					Log.d(TAG, "# Write failed - No available characteristic");
 					return false;
 				}
 			} else {
 				if(isWritableCharacteristic(mDefaultChar)) {
-					Logs.d("# Default GattCharacteristic is PROPERY_WRITE | PROPERTY_WRITE_NO_RESPONSE");
+					Log.d(TAG,"# Default GattCharacteristic is PROPERY_WRITE | PROPERTY_WRITE_NO_RESPONSE");
 					writableChar = mDefaultChar;
 				} else {
-					Logs.d("# Default GattCharacteristic is not writable");
+					Log.d(TAG,"# Default GattCharacteristic is not writable");
 					mDefaultChar = null;
 					return false;
 				}
 			}
 		} else {
 			if (isWritableCharacteristic(chr)) {
-				Logs.d("# user GattCharacteristic is PROPERY_WRITE | PROPERTY_WRITE_NO_RESPONSE");
+				Log.d(TAG,"# user GattCharacteristic is PROPERY_WRITE | PROPERTY_WRITE_NO_RESPONSE");
 				writableChar = chr;
 			} else {
-				Logs.d("# user GattCharacteristic is not writable");
+				Log.d(TAG,"# user GattCharacteristic is not writable");
 				return false;
 			}
 		}
@@ -470,7 +468,7 @@ public class BleManager {
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
 				mState = STATE_CONNECTED;
-				Logs.d(TAG, "# Connected to GATT server.");
+				Log.d(TAG, "# Connected to GATT server.");
 				// 현재의 DB정보를 표시할 방법 필요
 				if(Myflag == 0) {
 					//new MyNotificationManager(mContext).makeNotification(" Connected ", "Bluetooth 대기 중 입니다. (최대 1분 소요)");
@@ -483,7 +481,7 @@ public class BleManager {
 
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				mState = STATE_IDLE;
-				Logs.d(TAG, "# Disconnected from GATT server.");
+				Log.d(TAG, "# Disconnected from GATT server.");
 				//new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요."  );
 				Myflag = 0;
 				mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_IDLE, 0).sendToTarget();
@@ -501,10 +499,10 @@ public class BleManager {
 		// New services discovered
 		public void onServicesDiscovered(BluetoothGatt gatt, int status) {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
-				Logs.d(TAG, "# New GATT service discovered.");
+				Log.d(TAG, "# New GATT service discovered.");
 				checkGattServices(gatt.getServices());
 			} else {
-				Logs.d(TAG, "# onServicesDiscovered received: " + status);
+				Log.d(TAG, "# onServicesDiscovered received: " + status);
 			}
 		}
 
@@ -513,7 +511,7 @@ public class BleManager {
 		public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				// We've received data from remote
-				Logs.d(TAG, "# Read characteristic: "+characteristic.toString());
+				Log.d(TAG, "# Read characteristic: "+characteristic.toString());
             	
             	/*
             	 * onCharacteristicChanged callback receives same message
@@ -539,7 +537,7 @@ public class BleManager {
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			// We've received data from remote
-			Logs.d(TAG, "# onCharacteristicChanged: "+characteristic.toString());
+			Log.d(TAG, "# onCharacteristicChanged: "+characteristic.toString());
 
 			final byte[] data = characteristic.getValue();
 			byte[] Realdata = new byte[data.length];
@@ -552,7 +550,7 @@ public class BleManager {
 					stringBuilder.append(String.format("%02X ", byteChar));
 					baos.write((0xff)&byteChar); pos++;
 				}
-				Logs.d(TAG, "길이 : "+ data.length);
+				Log.d(TAG, "길이 : "+ data.length);
 				Realdata = baos.toByteArray();
 
 				//stringBuilder.append(data);

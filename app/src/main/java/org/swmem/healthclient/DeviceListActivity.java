@@ -23,11 +23,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -36,7 +34,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.swmem.healthclient.bluetooth.BleManager;
-import org.swmem.healthclient.utils.Logs;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -239,7 +236,7 @@ public class DeviceListActivity extends Activity {
     		new BluetoothAdapter.LeScanCallback() {
     	@Override
     	public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-            Logs.d("# Scan device rssi is " + rssi);
+            Log.d(TAG,"# Scan device rssi is " + rssi);
             runOnUiThread(new Runnable() {
             	@Override
             	public void run() {

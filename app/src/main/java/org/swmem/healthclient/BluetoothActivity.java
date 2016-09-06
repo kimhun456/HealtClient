@@ -37,7 +37,6 @@ import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.service.ScanService;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
-import org.swmem.healthclient.utils.Logs;
 import org.swmem.healthclient.utils.SessionManager;
 import org.swmem.healthclient.utils.ShareDataBaseTask;
 
@@ -349,7 +348,7 @@ public class BluetoothActivity extends AppCompatActivity
      * Initialization / Finalization
      */
     private void initialize() {
-        Logs.d(TAG, "# Activity - initialize()");
+        Log.d(TAG, "# Activity - initialize()");
 
         // Use this check to determine whether BLE is supported on the device. Then
         // you can selectively disable BLE-related features.
@@ -379,7 +378,7 @@ public class BluetoothActivity extends AppCompatActivity
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode,resultCode,data);
-        Logs.d(TAG, "onActivityResult " + resultCode);
+        Log.d(TAG, "onActivityResult " + resultCode);
 
         switch(requestCode) {
             case Constants.REQUEST_CONNECT_DEVICE:
@@ -408,7 +407,7 @@ public class BluetoothActivity extends AppCompatActivity
                     mService.setupBLE();
                 } else {
                     // User did not enable Bluetooth or an error occured
-                    Logs.e(TAG, "BT is not enabled");
+                    Log.e(TAG, "BT is not enabled");
                     Toast.makeText(this, R.string.bt_not_enabled_leaving, Toast.LENGTH_SHORT).show();
                 }
                 break;
