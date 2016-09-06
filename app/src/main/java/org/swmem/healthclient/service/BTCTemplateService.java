@@ -76,9 +76,15 @@ public class BTCTemplateService extends Service {
 		
 		mContext = getApplicationContext();
 
+		// 블루투스 연결상태 초기화
+		SharedPreferences pref = getSharedPreferences("Connstat", 0);
+		SharedPreferences.Editor editor = pref.edit();
+		editor.putInt("stat", 1);
+		editor.apply();
+
 		initialize();
 	}
-	
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "# Service - onStartCommand() starts here");
@@ -107,7 +113,7 @@ public class BTCTemplateService extends Service {
 		}
 		return Service.START_STICKY;
 	}
-	
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig){
 		Log.d(TAG, "# Service -Configuration changed");
@@ -126,13 +132,13 @@ public class BTCTemplateService extends Service {
 		Log.d(TAG, "# Service - onUnbind()");
 		return true;
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		Log.d(TAG, "# Service - onDestroy()");
 		finalizeService();
 	}
-	
+
 	@Override
 	public void onLowMemory (){
 		Log.d(TAG, "# Service - onLowMemory()");
@@ -140,37 +146,36 @@ public class BTCTemplateService extends Service {
 		finalizeService();
 	}
 
-	
+
 	/*****************************************************
 	 *	Private methods
 	 ******************************************************/
 	private void initialize() {
 		Log.d(TAG, "# Service : initialize ---");
-		
+
 		AppSettings.initializeAppSettings(mContext);
-		startServiceMonitoring();
-		
+
 		// Use this check to determine whether BLE is supported on the device. Then
 		// you can selectively disable BLE-related features.
 		if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
 		    Toast.makeText(this, R.string.bt_ble_not_supported, Toast.LENGTH_SHORT).show();
 		    mIsBleSupported = false;
 		}
-		
+
 		// Make instances
 		mConnectionInfo = ConnectionInfo.getInstance(mContext);
 		mCommandParser = new TransactionReceiver.CommandParser();
-		
+
 		// Get local Bluetooth adapter
 		if(mBluetoothAdapter == null)
 			mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		
+
 		// If the adapter is null, then Bluetooth is not supported
 		if (mBluetoothAdapter == null) {
 			Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
 			return;
 		}
-		
+
 		if (!mBluetoothAdapter.isEnabled()) {
 			// BT is not on, need to turn on manually.
 			// Activity will do this.
@@ -180,7 +185,7 @@ public class BTCTemplateService extends Service {
 			}
 		}
 	}
-	
+
 	/**
 	 * Send message to device.
 	 * @param message		message to send
@@ -201,7 +206,7 @@ public class BTCTemplateService extends Service {
 	public void finalizeService() {
 
 		Log.d(TAG, "# Service : finalize ---");
-		
+
 		// Stop the bluetooth session
 		mBluetoothAdapter = null;
 		if (mBleManager != null) {
@@ -209,7 +214,7 @@ public class BTCTemplateService extends Service {
 		}
 		mBleManager = null;
 	}
-	
+
     /**
      * Setup and initialize BLE manager
      */
@@ -244,19 +249,7 @@ public class BTCTemplateService extends Service {
 			}
 		}
 	}
-	
-	/**
-	 * Start service monitoring. Service monitoring prevents
-	 * unintended close of service.
-	 */
-	public void startServiceMonitoring() {
-		if(AppSettings.getBgService()) {
-			Log.d(TAG, "# Start Monitoring");
-			ServiceMonitoring.startMonitoring(mContext);
-		} else {
-			ServiceMonitoring.stopMonitoring(mContext);
-		}
-	}
+
 	public void DetectErrorStartTimer(){ // 프로토콜이 틀렸을 시 실행.
 		// 이미 켜져있음
 		if(StartTimer == 1) return;
@@ -297,7 +290,7 @@ public class BTCTemplateService extends Service {
 		timer.schedule(SendError, 10000);
 	}
 
-	
+
 	/*****************************************************
 	 *	Handler, Listener, Timer, Sub classes
 	 ******************************************************/
@@ -306,7 +299,7 @@ public class BTCTemplateService extends Service {
 			return BTCTemplateService.this;
 		}
 	}
-	
+
     /**
      * Receives messages from bluetooth manager
      */
@@ -363,8 +356,8 @@ public class BTCTemplateService extends Service {
 
 				// 외주분 확인용 Write (지울 예정)
 				{
-					byte[] send = new byte[]{(byte) 0xff, 0x02};
-					mBleManager.write(null, send);
+					//byte[] send = new byte[]{(byte) 0xff, 0x02};
+					//mBleManager.write(null, send);
 				}
 
 				// 저장된 패킷을 얻어옴
@@ -450,7 +443,7 @@ public class BTCTemplateService extends Service {
 					editor.apply();
 				}else{
 					Log.d(TAG, "Protocol Error!!");
-					//DetectErrorStartTimer();
+							DetectErrorStartTimer();
 				}
 				// send bytes in the buffer to activity
 				break;

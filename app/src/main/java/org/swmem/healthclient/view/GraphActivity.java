@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +18,8 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -42,6 +45,7 @@ import org.swmem.healthclient.utils.SessionManager;
 import org.swmem.healthclient.utils.ShareDataBaseTask;
 
 import java.util.Timer;
+import java.util.jar.Manifest;
 
 public class GraphActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -62,6 +66,10 @@ public class GraphActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //권한 설정
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION ,android.Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
+        }
         mActivityHandler = new ActivityHandler();
         AppSettings.initializeAppSettings(getApplicationContext());
         setContentView(R.layout.activity_draw);
@@ -109,6 +117,7 @@ public class GraphActivity extends AppCompatActivity
         }
         doStartService();
     }
+
 
     public void sessionManage(SessionManager sessionManager){
 
