@@ -310,7 +310,6 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
      *
      * LineData를 생성한다.
      *
-     *
      *  만약 Converted 된 Data 가 없다면
      *
      *  Raw Data를 그대로 그려주게 된다.
@@ -515,10 +514,7 @@ public class GraphLoadTask extends AsyncTask<Void,Void,LineData>{
 
         long diff = findMiiliSeconds - pastMilliseconds;
 
-
-        int index  = (int) (diff / (MINUTES * dataInterval)) + 1;
-
-        return index;
+        return (int) (diff / (MINUTES * dataInterval)) + 1;
 
     }
 

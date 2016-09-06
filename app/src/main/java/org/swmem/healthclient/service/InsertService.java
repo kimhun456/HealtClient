@@ -33,6 +33,12 @@ import java.util.HashMap;
  *  Insert Service 에서 데이터를 판별하고 데이터가 적절하다면
  *  알고리즘을 거쳐서 데이터베이스에 들어가게 된다.
  *
+ *  이곳에서는 데이터가 데이터베이스의 row에 해당하는 GlucoseData 가 주로 사용되게 된다.
+ *  또한 각각의 GlucoseData는 날짜마다 한개의 데이터를 갖고 있기 때문에
+ *  HashMap<날짜, 데이터> 형식으로 저장되어 있다.
+ *
+ *
+ *
  */
 public class InsertService extends IntentService {
 
@@ -50,7 +56,6 @@ public class InsertService extends IntentService {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         Log.v(TAG,"Insert Start !!! ");
-//        Toast.makeText(this, "Inserting..." , Toast.LENGTH_SHORT).show();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -67,136 +72,56 @@ public class InsertService extends IntentService {
 
         // 현재시간
         long currentTimeMillis =  System.currentTimeMillis();
+
         if (intent != null) {
 
+
+            // 세션 매니저가 세션을 기록하는 부분.
             SessionManager sessionManager = new SessionManager(getApplicationContext());
             sessionManager.setExist(true);
             sessionManager.setDeviceConnectTime(System.currentTimeMillis());
             sessionManager.setDeviceID("deviceID");
-            byte[] test = null;
-            int len = 0, MyType = -1;
+
+
+            byte[] byteData;
+            int len;
+            int MyType;
 
             // intent로 받은 byte배열과 숫자, 타입을 받음
-            test = intent.getByteArrayExtra("RealData");
+            byteData = intent.getByteArrayExtra("RealData");
             len = intent.getIntExtra("RealCnt",0);
             MyType = intent.getIntExtra("MyType",-1);
 
-            if (test != null) {
+            if (byteData != null) {
                 for(int i=0; i<len; i++)
-                    Log.d(TAG, ""+ (0xff&test[i]));
+                    Log.d(TAG, ""+ (0xff&byteData[i]));
             }
 
             HashMap<String, GlucoseData> insertMap;
             if(MyType == 2) { // 랜덤 Data일 때
                 insertMap = makeRandomInsertMap();
-            }else { // 그 외의 정상 테이터를 받았을 때 (MyType 0 : Bluetooth, MyType 1 : NFC)
-                insertMap = byteDecoding(test, len, MyType,sessionManager);
             }
-            HashMap<String, GlucoseData> dbMap = getDBHashmap(currentTimeMillis);
+            else{ // 그 외의 정상 테이터를 받았을 때 (MyType 0 : Bluetooth, MyType 1 : NFC)
+                insertMap = byteDecoding(byteData, len, MyType,sessionManager);
+            }
 
+            // DB에 있는 지금부터 하루치 데이터를 가지고옴.
+            HashMap<String, GlucoseData> dbMap = getDBHashMap(currentTimeMillis);
+
+            // 현재 입력된 데이터와 디비에 입력된 데이터를 합침.
             dbMap = convertDBMap(insertMap, dbMap);
 
+            // 알고리즘을 이용하는 부분.
             takeAlgorithm(dbMap);
 
+            // 데이터베이스에 처리된 데이터를 넣는 부분.
             insertDataBase(dbMap);
 
+            // 알람을 주는 부분.
             doNotification(dbMap);
 
         }
     }
-
-    public boolean doNotification(HashMap<String , GlucoseData> insertMap){
-
-        long currentmiili = Utility.getCurrentDate();
-        long min = 5 *DAYS;
-        String lastKey = null;
-        for(String key : insertMap.keySet()){
-
-            long date = Utility.cursorDateToLong(key);
-
-
-            long diff = (currentmiili - date);
-
-            if(diff < min){
-                min = diff;
-                lastKey = key;
-            }
-        }
-
-        if(lastKey == null){
-
-            Log.v(TAG, "do not found last date");
-            return false;
-        }
-
-        boolean realTimeNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(getString(R.string.pref_enable_real_time_notifications_key),false);
-
-        boolean hyperNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(getString(R.string.pref_enable_Hyperglycemia_notifications_key),false);
-
-        boolean hypoNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(getString(R.string.pref_enable_Hypoglycemia_notifications_key),false);
-
-        float highGlucose = Float.parseFloat(PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext())
-                .getString(getString(R.string.pref_Hyperglycemia_key),"200"));
-        float lowGlucose = Float.parseFloat(PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext())
-                .getString(getString(R.string.pref_Hypoglycemia_key),"80"));
-
-        GlucoseData glucoseData = insertMap.get(lastKey);
-
-
-        Log.v(TAG, lastKey + "");
-
-        if(realTimeNotiEnable){
-            double data;
-            if(glucoseData.isConverted()){
-                data = glucoseData.getConvertedData();
-
-            }else{
-                data = glucoseData.getRawData();
-            }
-            new MyNotificationManager(getApplicationContext()).makeNotification("현재 혈당량",  String.format("%.2f",data) + " " + getString(R.string.mgdl) );
-
-        }
-
-
-        if(hyperNotiEnable){
-
-            double data;
-            if(glucoseData.isConverted()){
-                data = glucoseData.getConvertedData();
-
-            }else{
-                data = glucoseData.getRawData();
-            }
-
-            if(data > highGlucose){
-                new MyNotificationManager(getApplicationContext()).makeNotification("고혈당 위험! ", "현재 혈당 :  " +  String.format("%.2f",data)+ " " + getString(R.string.mgdl)  );
-            }
-        }
-
-
-        if(hypoNotiEnable){
-
-            double data;
-            if(glucoseData.isConverted()){
-                data = glucoseData.getConvertedData();
-
-            }else{
-                data = glucoseData.getRawData();
-            }
-
-            if(data < lowGlucose){
-                new MyNotificationManager(getApplicationContext()).makeNotification("저혈당 위험! ", "현재 혈당 : " +  String.format("%.2f",data)+ " " + getString(R.string.mgdl) );
-            }
-        }
-
-        return true;
-    }
-
 
     @Override
     public void onDestroy() {
@@ -207,12 +132,25 @@ public class InsertService extends IntentService {
     }
 
 
+    /**
+     *
+     *  NFC나 Bluetooth를 통해 불러오는 byte[] 데이터를
+     *  GlucoseData형식으로 바꾸는 부분이다.
+     *
+     *  즉, 프로토콜을 해석하는 부분.
+     *
+     * @param buf NFC나 Bluetooth를 통해 불러오는 byte[] 데이터 이다.
+     * @param len byte[]의 길이
+     * @param MyType 현재 NFC 혹은 BLUETOOTH 인지 식별하는 부분.
+     * @param sessionManager 세션관리자.
+     * @return HashMap
+     */
     public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len, int MyType, SessionManager sessionManager){
 
 
         HashMap<String,GlucoseData> map = new HashMap<>();
 
-        String type = "";
+        String type;
         String deviceID ="";
         int numbering;
         int battery;
@@ -256,31 +194,17 @@ public class InsertService extends IntentService {
 
                 //type
                 if(i==0){
-                    type = String.valueOf(0xff&buf[0]);
-                    //type = String.valueOf(buf[0]);
                     type = byteToString(buf[0]);
                     System.out.println("type : " + type);
                 }
                 //deviceID
                 else if(i==1){
-                    deviceID = String.valueOf((0xff&buf[2]<<8) | (0xff&buf[1]));
-                    //deviceID = String.valueOf(buf[1]<<8 | buf[2]);
                     deviceID = byteToString(buf[2],buf[1]);
                     sessionManager.setDeviceID(deviceID);
                 }
-                //nubmering
-                else if(i==3){
-                    numbering = (0xff&buf[5]<<16)  | (0xff&buf[4]<<8) | (0xff&buf[3]);
-                    //numbering = buf[3]<<16  | buf[4]<<8 | buf[5];
-                    numbering = byteToInt(buf[5], buf[4], buf[3]);
-                    System.out.println("numbering : "+ numbering);
-                }
                 //battery
                 else if(i==6){
-                    battery = (0xff&buf[7]<<8) | (0xff&buf[6]);
-                    //battery = buf[6]<<8 | buf[7];
                     battery = byteToInt(buf[7],buf[6]);
-                    System.out.println("battery : "+ battery);
                 }
 
                 else{
@@ -301,7 +225,6 @@ public class InsertService extends IntentService {
                     else if(i>=12 && (i-12)%5 == 0){
                         temperature += 0xff&buf[i]<<8;
 
-                        //insert
                         Log.v(TAG,"rawData : "+ rawData);
                         Log.v(TAG,"  temperature : "+ temperature);
 
@@ -325,14 +248,21 @@ public class InsertService extends IntentService {
         }
 
         
-        //// TODO: 2016-09-06 배터리로 노티피케이션 하는 부분.
+        // TODO: 2016-09-06 배터리로 노티피케이션 하는 부분.
+
 
 
 
         return map;
     }
 
-
+    /**
+     *
+     *  랜덤으로 데이터를 만드는 함수.
+     *  디버깅용이다.
+     *
+     * @return   HashMap
+     */
     private HashMap<String , GlucoseData> makeRandomInsertMap(){
 
         HashMap<String,GlucoseData> map = new HashMap<>();
@@ -380,8 +310,15 @@ public class InsertService extends IntentService {
     }
 
 
+    /**
+     *
+     * 데이터베이스에서 현재 시각으로부터 하루치의 데이터를 불러오는 작업을 하는 함수.
+     *
+     * @param currentTimeMillis 현재시각.
+     * @return HashMap
+     */
+    private HashMap< String ,GlucoseData> getDBHashMap(long currentTimeMillis){
 
-    private HashMap< String ,GlucoseData> getDBHashmap(long currentTimeMillis){
 
         HashMap< String, GlucoseData> glucoseDataHashMap = new HashMap<>();
 
@@ -428,17 +365,26 @@ public class InsertService extends IntentService {
             double rawData = cursor.getDouble(COL_GLUCOSE_RAW_VALUE);
             double convertedData = cursor.getDouble(COL_GLUCOSE_GLUCOSE_VALUE);
             double temperature = cursor.getDouble(COL_GLUCOSE_TEMPEATURE_VALUE);
-            String sesorID = cursor.getString(COL_GLUCOSE_DEVICE_ID);
+            String sensorID = cursor.getString(COL_GLUCOSE_DEVICE_ID);
             String date = cursor.getString(COL_GLUCOSE_TIME);
             String type = cursor.getString(COL_GLUCOSE_TYPE);
             boolean isConverted;
 
-            if(convertedData == 0.0){
+            if(convertedData == 0.0)
                 isConverted = false;
-            }else{
+            else
                 isConverted = true;
-            }
-            GlucoseData data = new GlucoseData(rawData,convertedData,temperature,sesorID, date ,type, isConverted, true , false );
+
+            GlucoseData data = new GlucoseData(
+                    rawData,
+                    convertedData,
+                    temperature,
+                    sensorID,
+                    date,
+                    type,
+                    isConverted,
+                    true,
+                    false);
             glucoseDataHashMap.put(date,data);
 
 //            Log.v(TAG , " DB 안에 있던 데이터들 : " + date);
@@ -451,6 +397,14 @@ public class InsertService extends IntentService {
     }
 
 
+    /**
+     *
+     * 데이터베이스에 있는 값과 현재입력된 값을 합치는 부분.
+     *
+     * @param insertMap 현재 입력된 값
+     * @param dbMap DB에 저장되어 있던 값
+     * @return HashMap 합쳐진 값.
+     */
     private HashMap< String ,GlucoseData> convertDBMap(HashMap< String, GlucoseData> insertMap, HashMap< String, GlucoseData> dbMap){
 
         for(String key : insertMap.keySet()){
@@ -467,11 +421,10 @@ public class InsertService extends IntentService {
 
     /**
      *
-     * @param insertMap insertMap은 <날짜 , GlucoseData>로 되어 있는 해시맵이다.
-     *                  GlucoseData의 isConverted()를 이용하여 알고리즘이 적용되어 있는 값이면
-     *                  무시하고 다음 데이터로 넘어가게 된다.
+     * 알고리즘을 취하는 부분.
      *
-     * @return
+     * @param insertMap insertMap은 <날짜 , GlucoseData>로 되어 있는 해시맵이다.
+     * @return Converted된 Map이 리턴되게 된다.
      */
     private HashMap< String ,GlucoseData>  takeAlgorithm(HashMap< String, GlucoseData> insertMap){
 
@@ -588,12 +541,17 @@ public class InsertService extends IntentService {
     }
 
 
+    /**
+     *  데이터베이스에 Insert하는 부분.
+     *
+     * @param insertMap 디비에 넣는 부분.
+     * @return 되었는지 boolean 값을 준다.
+     */
     private boolean insertDataBase(HashMap< String, GlucoseData> insertMap){
 
         ArrayList<ContentValues> addList = new ArrayList<>();
 
         ArrayList<ContentProviderOperation> operations = new ArrayList<>();
-
 
         for(String key : insertMap.keySet()){
 
@@ -674,6 +632,98 @@ public class InsertService extends IntentService {
             e.printStackTrace();
         }
 
+
+        return true;
+    }
+
+
+    public boolean doNotification(HashMap<String , GlucoseData> insertMap){
+
+        long currentmiili = Utility.getCurrentDate();
+        long min = 5 *DAYS;
+        String lastKey = null;
+        for(String key : insertMap.keySet()){
+
+
+            long date = Utility.cursorDateToLong(key);
+            long diff = (currentmiili - date);
+
+            if(diff < min){
+                min = diff;
+                lastKey = key;
+            }
+        }
+
+        if(lastKey == null){
+
+            Log.v(TAG, "do not found last date");
+            return false;
+        }
+
+        boolean realTimeNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean(getString(R.string.pref_enable_real_time_notifications_key),false);
+
+        boolean hyperNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean(getString(R.string.pref_enable_Hyperglycemia_notifications_key),false);
+
+        boolean hypoNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean(getString(R.string.pref_enable_Hypoglycemia_notifications_key),false);
+
+        float highGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.pref_Hyperglycemia_key),"200"));
+        float lowGlucose = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.pref_Hypoglycemia_key),"80"));
+
+        GlucoseData glucoseData = insertMap.get(lastKey);
+
+
+        Log.v(TAG, lastKey + "");
+
+        if(realTimeNotiEnable){
+            double data;
+            if(glucoseData.isConverted()){
+                data = glucoseData.getConvertedData();
+
+            }else{
+                data = glucoseData.getRawData();
+            }
+            new MyNotificationManager(getApplicationContext()).makeNotification("현재 혈당량",  String.format("%.2f",data) + " " + getString(R.string.mgdl) );
+
+        }
+
+
+        if(hyperNotiEnable){
+
+            double data;
+            if(glucoseData.isConverted()){
+                data = glucoseData.getConvertedData();
+
+            }else{
+                data = glucoseData.getRawData();
+            }
+
+            if(data > highGlucose){
+                new MyNotificationManager(getApplicationContext()).makeNotification("고혈당 위험! ", "현재 혈당 :  " +  String.format("%.2f",data)+ " " + getString(R.string.mgdl)  );
+            }
+        }
+
+
+        if(hypoNotiEnable){
+
+            double data;
+            if(glucoseData.isConverted()){
+                data = glucoseData.getConvertedData();
+
+            }else{
+                data = glucoseData.getRawData();
+            }
+
+            if(data < lowGlucose){
+                new MyNotificationManager(getApplicationContext()).makeNotification("저혈당 위험! ", "현재 혈당 : " +  String.format("%.2f",data)+ " " + getString(R.string.mgdl) );
+            }
+        }
 
         return true;
     }
