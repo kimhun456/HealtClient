@@ -24,7 +24,6 @@ public class NFCvManager {
 
     static String TAG = "NfcVFunction";
     private Tag mytag;
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
     Context mContext;
 
@@ -36,21 +35,21 @@ public class NFCvManager {
         Log.d(TAG, "read");
         mytag = tag;
 
-        //read_data(실제로 그래프를 그릴 raw데이터)
+        //read_data(그래프 Activity로 넘길 raw데이터)
         byte[] real_data = new byte[10000];
         int real_data_length=0;
 
-        //temp data;(카드에서 받은 All 데이터)
+        //temp data;(Tag에서 받은 All 데이터)
         int temp_data_length = 0;
         byte[] temp_data = new byte[10000];
 
-        //write command = 모듈이 "MAKE"가 아닌것을 확인 후 포인터 G = "READ " 기록
+        //write command = 모듈(F)이 "MAKE"가 아닌것을 확인 후 포인터 G = "READ" 기록
         byte[] write_response;
         int write_start_position = 0;
         int write_end_position = 4;
         byte[] write_data ;
 
-        //write2 command = 데이터를 모두 수신 후 포인터 G =  " " 기록
+        //write2 command = 데이터를 모두 수신 후 포인터 G =" " 기록
         byte[] write2_response ;
         int write2_start_position = 0;
         int write2_end_position = 4;
@@ -60,8 +59,8 @@ public class NFCvManager {
         byte[] write3_response;
         int write3_start_position = 0;
         int write3_end_position = 2;
-        byte write3_pointer_D1=0; //포인터 E(9메모리)임시 저장.(다음위치)
-        byte write3_pointer_D2=0; //포인터 E(10메모리)임시 저장. (다음위치)
+        byte write3_pointer_D1=0; //포인터 E(10메모리)임시 저장.(다음위치)
+        byte write3_pointer_D2=0; //포인터 E(11메모리)임시 저장. (다음위치)
 
         //read할때마다 사용하는 Command
         int read_sector_position = 0;
@@ -86,10 +85,11 @@ public class NFCvManager {
 
                 read_response = new byte[] {(byte) 0x0A}; //초기화.
 
+                //총 2047블록으로, 1섹터에 256블록의 구조로 읽는다. 총 8섹터로 8*256 = 2047블록.
                 readCmd = new byte[]{
                         (byte) 0x0A, (byte) 0x23, //multiblock
-                        (byte) read_moveblock_position, //block address
-                        (byte) read_sector_position, //sector address
+                        (byte) read_moveblock_position, //block address(0->32->64->96->128->160->192->224->0)
+                        (byte) read_sector_position, //sector address(0~7)
                         (byte) read_block}; //31block씩 read*/
 
                 read_response = nfcvTag.transceive(readCmd); //readCmd 배열을 이용하여 해당 위치의 데이터를 읽어옴.
@@ -100,12 +100,12 @@ public class NFCvManager {
                     temp_data[temp_data_length++] = read_response[j]; //임시 배열에 저장
                 }
 
-                //데이터 시작위치 & 데이터 끝위치.
+                //데이터 끝위치.
                 if(checkDE && temp_data_length>=8){
-                    int temp= byteToint(temp_data[8], temp_data[9]);
-                    data_end_position = byteToint(temp_data[10], temp_data[11]);
-                    write3_pointer_D1 = temp_data[10];
-                    write3_pointer_D2 = temp_data[11];
+                    int temp= byteToint(temp_data[8], temp_data[9]); //오버라이팅 확인
+                    data_end_position = byteToint(temp_data[10], temp_data[11]); //데이터 끝위치+1 확인.
+                    write3_pointer_D1 = temp_data[10]; //끝위치 저장(나중에 읽음 표시)
+                    write3_pointer_D2 = temp_data[11]; //끝위치 저장(나중에 읽음 표시)
                     checkDE = false;
 
                     Log.d(TAG, "temp : " + temp); //overwrite
