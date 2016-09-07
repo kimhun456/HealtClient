@@ -13,7 +13,7 @@ import android.util.Log;
 import org.swmem.healthclient.db.GlucoseData;
 import org.swmem.healthclient.utils.MyNotificationManager;
 import org.swmem.healthclient.R;
-import org.swmem.healthclient.utils.SessionManager;
+import org.swmem.healthclient.utils.DeviceManager;
 import org.swmem.healthclient.utils.Utility;
 import org.swmem.healthclient.db.HealthContract;
 
@@ -77,10 +77,10 @@ public class InsertService extends IntentService {
 
 
             // 세션 매니저가 세션을 기록하는 부분.
-            SessionManager sessionManager = new SessionManager(getApplicationContext());
-            sessionManager.setExist(true);
-            sessionManager.setDeviceConnectTime(System.currentTimeMillis());
-            sessionManager.setDeviceID("deviceID");
+            DeviceManager deviceManager = new DeviceManager(getApplicationContext());
+            deviceManager.setExist(true);
+            deviceManager.setDeviceConnectTime(System.currentTimeMillis());
+            deviceManager.setDeviceID("deviceID");
 
 
             byte[] byteData;
@@ -102,7 +102,7 @@ public class InsertService extends IntentService {
                 insertMap = makeRandomInsertMap();
             }
             else{ // 그 외의 정상 테이터를 받았을 때 (MyType 0 : Bluetooth, MyType 1 : NFC)
-                insertMap = byteDecoding(byteData, len, MyType,sessionManager);
+                insertMap = byteDecoding(byteData, len, MyType, deviceManager);
             }
 
             // DB에 있는 지금부터 하루치 데이터를 가지고옴.
@@ -142,10 +142,10 @@ public class InsertService extends IntentService {
      * @param buf NFC나 Bluetooth를 통해 불러오는 byte[] 데이터 이다.
      * @param len byte[]의 길이
      * @param MyType 현재 NFC 혹은 BLUETOOTH 인지 식별하는 부분.
-     * @param sessionManager 세션관리자.
+     * @param deviceManager 세션관리자.
      * @return HashMap
      */
-    public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len, int MyType, SessionManager sessionManager){
+    public HashMap<String , GlucoseData> byteDecoding(byte[] buf, int len, int MyType, DeviceManager deviceManager){
 
 
         HashMap<String,GlucoseData> map = new HashMap<>();
@@ -153,7 +153,7 @@ public class InsertService extends IntentService {
         String type;
         String deviceID ="";
         int numbering;
-        int battery;
+        float battery;
         double rawData=0;
         double temperature=0;
         int count = 0;
@@ -163,8 +163,9 @@ public class InsertService extends IntentService {
             Log.d(TAG, "MyType == 1");
             //type = HealthContract.GlucoseEntry.NFC;//byteToString(buf[0], buf[1]);
             deviceID = byteToString(buf[2],buf[3]);
-            sessionManager.setDeviceID(deviceID);
+            deviceManager.setDeviceID(deviceID);
             battery = byteToInt(buf[4],buf[5]);
+            deviceManager.setRawVoltage(battery);
             numbering = (len - 6)/5;
 
             for(int i=0; i< numbering; i++){
@@ -200,11 +201,12 @@ public class InsertService extends IntentService {
                 //deviceID
                 else if(i==1){
                     deviceID = byteToString(buf[2],buf[1]);
-                    sessionManager.setDeviceID(deviceID);
+                    deviceManager.setDeviceID(deviceID);
                 }
                 //battery
                 else if(i==6){
                     battery = byteToInt(buf[7],buf[6]);
+                    deviceManager.setRawVoltage(battery);
                 }
 
                 else{

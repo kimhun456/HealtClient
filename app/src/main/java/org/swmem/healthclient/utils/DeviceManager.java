@@ -15,9 +15,9 @@ import java.util.Locale;
  *
  * Created by hyunjae on 16. 8. 2.
  */
-public class SessionManager {
+public class DeviceManager {
 
-    private final String TAG = "SessionManager";
+    private final String TAG = "DeviceManager";
 
     private final int EXPIRED_DAY = 3;
 
@@ -31,15 +31,50 @@ public class SessionManager {
     private SharedPreferences sharedPreferences;
     private long deviceConnectTime;
     private String deviceID;
+    private float rawVoltage;
+    private int batteryPercent;
 
-    public SessionManager(Context context){
+    public float getRawVoltage() {
+        rawVoltage = sharedPreferences.getFloat(mContext.getString(R.string.pref_session_battery_voltage_key),0.0f);
+        return rawVoltage;
+    }
+
+    public void setRawVoltage(float rawVoltage) {
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat(mContext.getString(R.string.pref_session_battery_voltage_key) , rawVoltage);
+        editor.commit();
+        this.rawVoltage = rawVoltage;
+
+        float VBAT_A = rawVoltage *2;
+        int tmp = (int) ((VBAT_A - 3.3) / 0.9)* 100;
+        setBatteryPercent(tmp);
+    }
+
+    public int getBatteryPercent() {
+        batteryPercent = sharedPreferences.getInt(mContext.getString(R.string.pref_session_battery_percent_key),100);
+        return batteryPercent;
+    }
+
+    public void setBatteryPercent(int batteryPercent) {
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(mContext.getString(R.string.pref_session_battery_percent_key) , batteryPercent);
+        editor.commit();
+        this.batteryPercent = batteryPercent;
+    }
+
+
+
+    public DeviceManager(Context context){
         this.mContext = context;
         sharedPreferences =  PreferenceManager
                 .getDefaultSharedPreferences(context);
         exist = getExist();
         deviceConnectTime = getDeviceConnectTime();
         deviceID = getDeviceID();
-
+        batteryPercent = getBatteryPercent();
+        rawVoltage = getRawVoltage();
     }
 
     public String formatDate(long dateInMilliseconds) {
@@ -113,7 +148,8 @@ public class SessionManager {
                 setExist(false);
                 setDeviceConnectTime(0);
                 setDeviceID("");
-                return;
+                setBatteryPercent(100);
+                setRawVoltage(0.0f);
             }
 
         }

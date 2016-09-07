@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.PermissionInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,11 +40,10 @@ import org.swmem.healthclient.service.InsertService;
 import org.swmem.healthclient.service.ScanService;
 import org.swmem.healthclient.utils.AppSettings;
 import org.swmem.healthclient.utils.Constants;
-import org.swmem.healthclient.utils.SessionManager;
+import org.swmem.healthclient.utils.DeviceManager;
 import org.swmem.healthclient.utils.ShareDataBaseTask;
 
 import java.util.Timer;
-import java.util.jar.Manifest;
 
 public class GraphActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -56,7 +54,7 @@ public class GraphActivity extends AppCompatActivity
     private ScanService mService;
     private Timer mRefreshTimer = null;
     private ActivityHandler mActivityHandler;
-    private SessionManager sessionManager;
+    private DeviceManager deviceManager;
     static  private Intent Blecon = null;
 
     private ImageView mImageBT = null;
@@ -97,8 +95,8 @@ public class GraphActivity extends AppCompatActivity
                 emailText.setText(sharedPreferences.getString(getString(R.string.pref_user_email_key)
                         ,getString(R.string.pref_user_email_default)));
 
-                sessionManager = new SessionManager(getApplicationContext());
-                sessionManage(sessionManager);
+                deviceManager = new DeviceManager(getApplicationContext());
+                sessionManage(deviceManager);
             }
         };
 
@@ -119,15 +117,15 @@ public class GraphActivity extends AppCompatActivity
     }
 
 
-    public void sessionManage(SessionManager sessionManager){
+    public void sessionManage(DeviceManager deviceManager){
 
         // 여기부터 셋팅
-        sessionManager.sync();
+        deviceManager.sync();
 
         Log.v(TAG,"Session Manage");
 
 
-        if(sessionManager.getExist()){
+        if(deviceManager.getExist()){
 
             View view = findViewById(R.id.divider);
             view.setVisibility(View.VISIBLE);
@@ -139,16 +137,37 @@ public class GraphActivity extends AppCompatActivity
             LinearLayout linearLayout3 = (LinearLayout)findViewById(R.id.start_time_layout);
             linearLayout3.setVisibility(View.VISIBLE);
 
-            TextView deviceIDtext = (TextView)findViewById(R.id.device_id);
-            deviceIDtext.setText(sessionManager.getDeviceID());
+            LinearLayout batteryLayout = (LinearLayout)findViewById(R.id.battery_layout);
+            batteryLayout.setVisibility(View.VISIBLE);
 
-            String deviceConnectTimeStr = sessionManager.formatDate(sessionManager.getDeviceConnectTime());
+            TextView deviceIDtext = (TextView)findViewById(R.id.device_id);
+            deviceIDtext.setText(deviceManager.getDeviceID());
+
+            String deviceConnectTimeStr = deviceManager.formatDate(deviceManager.getDeviceConnectTime());
             TextView startTimeText = (TextView)findViewById(R.id.start_time);
             startTimeText.setText(deviceConnectTimeStr);
 
-            String diffStr = sessionManager.getRemainTime(System.currentTimeMillis(),sessionManager.getDeviceConnectTime());
+            String diffStr = deviceManager.getRemainTime(System.currentTimeMillis(), deviceManager.getDeviceConnectTime());
             TextView remain_time = (TextView)findViewById(R.id.remain_time);
             remain_time.setText(diffStr);
+
+            int batteryPercent = deviceManager.getBatteryPercent();
+            String batteryString = batteryPercent+"%";
+            TextView batteryText = (TextView)findViewById(R.id.battery_content);
+            batteryText.setText(batteryString);
+
+            ImageView img = (ImageView)findViewById(R.id.battery_image);
+            if(batteryPercent >75){
+                img.setImageResource(R.drawable.battery_100);
+            }else if(batteryPercent>50){
+                img.setImageResource(R.drawable.battery_75);
+            }else if(batteryPercent>25){
+                img.setImageResource(R.drawable.battery_50);
+            }else{
+                img.setImageResource(R.drawable.battery_25);
+            }
+
+
         }else{
 
             View view = findViewById(R.id.divider);
