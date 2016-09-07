@@ -297,14 +297,16 @@ public class GraphFragment extends Fragment implements LoaderManager .LoaderCall
     }
 
     private void doNfc(){
-        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext());
+        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext()); //nfc어댑터 값을 받아온다.
 
+        //갑싱 있다면 애니메이션 화면(NfcActivity)로.
         if(nfcAdapter.isEnabled()){
 
             Intent intent =new Intent(getActivity(), NfcActivity.class);
             startActivity(intent);
 
         }
+        //없다면 NFC활성화 화면으로.
         else{
             Snackbar.make(rootView,"NFC 활성화 해주세요",Snackbar.LENGTH_LONG).show();
             // 4.2.2 (API 17) 부터 NFC 설정 환경이 변경됨.

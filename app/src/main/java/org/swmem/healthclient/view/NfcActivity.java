@@ -38,11 +38,11 @@ public class NfcActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "oncreate");
-
         super.onCreate(savedInstanceState);
 
         myNFCvManager =  new NFCvManager(getApplicationContext());
 
+        //애니메이션 생성.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         setContentView(R.layout.activity_nfc);

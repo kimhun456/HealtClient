@@ -78,6 +78,7 @@ public class NFCvManager {
 
         int error = 1;
         NfcV nfcvTag = NfcV.get(mytag);  //ISO 15693 NFCv 사용.
+
         while (error != 0) {
             try {
                 nfcvTag.close();
@@ -113,11 +114,13 @@ public class NFCvManager {
 
                     //오버라이팅 아닌경우.
                     if(temp == 0){
+                        Log.d(TAG , "No - Over write");
                         Overwrite_flag =false;
                         data_length = data_end_position;
                     }
                     //오버라이팅인 경우
                     else if(temp == 1){
+                        Log.d(TAG , "Over write");
                         Overwrite_flag = true;
                         data_length = 8192;
                     }
