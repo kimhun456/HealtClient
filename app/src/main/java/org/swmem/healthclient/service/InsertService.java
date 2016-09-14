@@ -131,7 +131,6 @@ public class InsertService extends IntentService {
         super.onDestroy();
     }
 
-
     /**
      *
      *  NFC나 Bluetooth를 통해 불러오는 byte[] 데이터를
@@ -169,8 +168,11 @@ public class InsertService extends IntentService {
 
             for(int i=0; i< numbering; i++){
 
-                rawData = byteToInt(buf[6 + 5*i], buf[6 + 5*i + 1]);
-                temperature = byteToInt(buf[ 6 + 5*i + 2], buf[6 + 5*i + 3], buf[6 + 5*i + 4]);
+                /*rawData = byteToInt(buf[6 + 5*i], buf[6 + 5*i + 1]);
+                temperature = byteToInt(buf[ 6 + 5*i + 2], buf[6 + 5*i + 3], buf[6 + 5*i + 4]);*/
+
+                rawData = byteToInt(buf[6 + 5*i + 4], buf[6 + 5*i + 3], buf[6 + 5*i + 2]);
+                temperature = byteToInt(buf[6 + 5*i + 1], buf[6 + 5*i]);
 
                 Log.d(TAG, "rawData :" + rawData);
                 Log.d(TAG, "temperature : "+temperature);

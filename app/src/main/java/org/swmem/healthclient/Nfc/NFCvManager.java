@@ -1,4 +1,4 @@
-package org.swmem.healthclient.NFC;
+package org.swmem.healthclient.Nfc;
 
 /**
  * Created by Woo on 2016-08-29.
