@@ -281,6 +281,12 @@ public class BTCTemplateService extends Service {
 				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 					BluetoothAdapter.getDefaultAdapter().enable();
 				}
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+					BluetoothAdapter.getDefaultAdapter().enable();
+				}
 				StartTimer = 0;
 			}
 		};
@@ -373,7 +379,7 @@ public class BTCTemplateService extends Service {
 
 				byte[] data = (byte[]) msg.obj;
 				// 외주분 확인용 Read (지울 예정)
-				Toast.makeText(getApplicationContext(),"READ : "+data[0], Toast.LENGTH_SHORT).show();
+				//Toast.makeText(getApplicationContext(),"READ : "+data[0], Toast.LENGTH_SHORT).show();
 
 				// 프로토콜, 패킷 확인 과정
 				if(data.length > 3 && (0xff&data[0]) == 255 && (0xff&data[1]) == write_packet2) {
@@ -402,10 +408,11 @@ public class BTCTemplateService extends Service {
 
 						// 정상 받은 상태를 write
 						byte[] send = new byte[]{(byte) 0xff, 0x00, 0x02, 0x00, 0x00, 0x00};
-						send[3] = (byte) write_packet1;
-						send[4] = (byte) write_packet2;
-						for (int i = 0; i < 6; i++) send[5] ^= send[i];
+						send[3] = (byte)write_packet1;
+						send[4] = (byte)write_packet2;
+						for (int i = 0; i < 5; i++) send[5] ^= send[i];
 						mBleManager.write(null, send);
+						Log.d(TAG, "Write!!");
 
 						// 패킷 증가
 						write_packet2++;

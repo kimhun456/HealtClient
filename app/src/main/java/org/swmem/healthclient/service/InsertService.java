@@ -691,8 +691,10 @@ public class InsertService extends IntentService {
             }else{
                 data = glucoseData.getRawData();
             }
+            Log.v(TAG, "알림 갱신!!");
             new MyNotificationManager(getApplicationContext()).makeNotification("현재 혈당량",  String.format("%.2f",data) + " " + getString(R.string.mgdl) );
-
+        }else{
+            Log.v(TAG, "알림 갱신 실패!!");
         }
 
 

@@ -372,7 +372,6 @@ public class BleManager {
 		mGattServices.clear();
 		mGattCharacteristics.clear();
 		mWritableCharacteristics.clear();
-
 		mBluetoothGatt = device.connectGatt(c, bAutoReconnect, mGattCallback);
 		mDefaultDevice = device;
 
@@ -435,7 +434,7 @@ public class BleManager {
 
 		writableChar.setValue(data);
 		writableChar.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
-		writableChar.setWriteType(BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE);
+		//writableChar.setWriteType(BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE);
 		mBluetoothGatt.writeCharacteristic(writableChar);
 		mDefaultChar = writableChar;
 		return true;
@@ -485,7 +484,7 @@ public class BleManager {
 				//new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요."  );
 				Myflag = 0;
 				mHandler.obtainMessage(MESSAGE_STATE_CHANGE, STATE_IDLE, 0).sendToTarget();
-				mBluetoothGatt = null;
+				//mBluetoothGatt = null;
 				mGattServices.clear();
 				mDefaultService = null;
 				mGattCharacteristics.clear();
