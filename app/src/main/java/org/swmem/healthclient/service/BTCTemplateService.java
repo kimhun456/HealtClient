@@ -232,13 +232,6 @@ public class BTCTemplateService extends Service {
      */
 	public void connectDevice(String address) {
 		// Service가 종료되도 패킷을 저장하고 로드 가능.
-		// 저장 패킷 초기화 부분
-		SharedPreferences pref = getSharedPreferences("Bledata", 0);
-		SharedPreferences.Editor editor = pref.edit();
-		editor = pref.edit();
-		editor.putInt("packet1", 0);
-		editor.putInt("packet2", 0);
-		editor.apply();
 
 		if(address != null && mBleManager != null) {
 			// Bluetooth 연결
@@ -272,6 +265,14 @@ public class BTCTemplateService extends Service {
 
 				// bluetooth disconnect!!
 				BluetoothAdapter.getDefaultAdapter().disable();
+
+				// Disconnect상태
+				new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요."  );
+				pref = getSharedPreferences("Connstat", 0);
+				SharedPreferences.Editor editor = pref.edit();
+				editor.putInt("stat", 1);
+				editor.apply();
+
 				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 					BluetoothAdapter.getDefaultAdapter().enable();
 				}
@@ -287,6 +288,7 @@ public class BTCTemplateService extends Service {
 				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 					BluetoothAdapter.getDefaultAdapter().enable();
 				}
+
 				StartTimer = 0;
 			}
 		};
@@ -331,6 +333,14 @@ public class BTCTemplateService extends Service {
 
 				case BleManager.STATE_CONNECTED:
 					Log.d(TAG, "Service Connected");
+					// 저장 패킷 초기화 부분
+					pref = getSharedPreferences("Bledata", 0);
+					SharedPreferences.Editor editor = pref.edit();
+					editor = pref.edit();
+					editor.putInt("packet1", 0);
+					editor.putInt("packet2", 0);
+					editor.apply();
+
 					// Bluetooth 연결 상태를 저장하고 얻어옴
 					pref = getSharedPreferences("Connstat", 0);
 					flag = pref.getInt("stat",1);
@@ -338,7 +348,7 @@ public class BTCTemplateService extends Service {
 						new MyNotificationManager(mContext).makeNotification(" Connected ", "Bluetooth 대기 중 입니다. (최대 1분 소요)");
 
 						pref = getSharedPreferences("Connstat", 0);
-						SharedPreferences.Editor editor = pref.edit();
+						editor = pref.edit();
 						editor.putInt("stat", 0);
 						editor.apply();
 					}
@@ -346,12 +356,19 @@ public class BTCTemplateService extends Service {
 
 				case BleManager.STATE_IDLE:
 					Log.d(TAG, "Service Idle");
-					// Idle상태가 Disconnect상태
-					new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요."  );
-					pref = getSharedPreferences("Connstat", 0);
-					SharedPreferences.Editor editor = pref.edit();
-					editor.putInt("stat", 1);
-					editor.apply();
+
+					pref = getSharedPreferences("Bledata", 0);
+					write_packet2 = pref.getInt("packet2",-1);
+					write_packet1 = pref.getInt("packet1",-1);
+
+					if(write_packet1 == 0 && write_packet2 == 0) {
+						// Disconnect상태
+						new MyNotificationManager(mContext).makeNotification(" Disconnected ", "Bluetooth 연결 상태를 확인해주세요.");
+						pref = getSharedPreferences("Connstat", 0);
+						editor = pref.edit();
+						editor.putInt("stat", 1);
+						editor.apply();
+					}
 					break;
 				}
 				break;
