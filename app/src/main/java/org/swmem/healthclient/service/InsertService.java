@@ -5,6 +5,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.OperationApplicationException;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -158,6 +159,18 @@ public class InsertService extends IntentService {
         double temperature=0;
         int count = 0;
 
+        float param = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.pref_algorithm_calibration_key),"0"));
+
+        SharedPreferences pref = getSharedPreferences("MyCalibration", 0);
+        float compare = pref.getFloat("Compare",-1);
+        float value = pref.getFloat("Value", -1);
+        double offset = 0;
+        if(compare != param){
+            offset = param - value;
+        }
+
         //NFC 데이터 처리.
         if(MyType==1){
             Log.d(TAG, "MyType == 1");
@@ -177,7 +190,15 @@ public class InsertService extends IntentService {
                 Log.d(TAG, "temperature : "+temperature);
 
                 GlucoseData data = new GlucoseData();
+
+                // rawData =a*rawData+b;
+                // 원하는 식
                 data.setRawData(rawData);
+                pref = getSharedPreferences("MyCalibration", 0);
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putFloat("Value", (float)rawData);
+                editor.apply();
+
                 data.setTemperature(temperature);
                 String date = Utility.formatDate(Utility.getCurrentDate() - (count * MINUTES));
                 data.setType(HealthContract.GlucoseEntry.NFC);
@@ -190,7 +211,7 @@ public class InsertService extends IntentService {
                 count++;
             }
         }
-        else{
+        else{ //ble
             for(int i=0; i<len; i++){
 
                 //type
@@ -248,7 +269,10 @@ public class InsertService extends IntentService {
 
             }
         }
-
+        pref = getSharedPreferences("MyCalibration", 0);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putFloat("Compare", param);
+        editor.apply();
         
         // TODO: 2016-09-06 배터리로 노티피케이션 하는 부분.
 
@@ -433,6 +457,7 @@ public class InsertService extends IntentService {
         float param = Float.parseFloat(PreferenceManager
                 .getDefaultSharedPreferences(getApplicationContext())
                 .getString(getString(R.string.pref_algorithm_calibration_key),"0"));
+
 
         Log.v(TAG," param : "+param);
 

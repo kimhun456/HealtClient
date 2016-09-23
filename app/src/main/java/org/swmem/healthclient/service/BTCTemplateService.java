@@ -66,7 +66,7 @@ public class BTCTemplateService extends Service {
 
 	static String address = null;
 	private int flag = 1, MyCnt=0;
-	private byte[] MySource = new byte[1000];
+	private byte[] MySource = new byte[3000];
 	private int StartTimer = 0;
 	private int write_packet1=0, write_packet2=0;
 
