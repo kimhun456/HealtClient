@@ -66,7 +66,7 @@ public class BTCTemplateService extends Service {
 
 	static String address = null;
 	private int flag = 1, MyCnt=0;
-	private byte[] MySource = new byte[3000];
+	private byte[] MySource = new byte[300000];
 	private int StartTimer = 0;
 	private int write_packet1=0, write_packet2=0;
 
@@ -258,9 +258,9 @@ public class BTCTemplateService extends Service {
 				write_packet1 = pref.getInt("packet1",-1);
 
 				byte[] send = new byte[]{(byte) 0xff, 0x00, 0x02, 0x00, 0x00, 0x00};
-				send[3] = (byte) write_packet1;
-				send[4] = (byte) write_packet2;
-				for (int i = 0; i < 6; i++) send[5] ^= send[i];
+				send[4] = (byte) write_packet1;
+				send[3] = (byte) write_packet2;
+				for (int i = 0; i < 5; i++) send[5] ^= send[i];
 				mBleManager.write(null, send);
 
 				// bluetooth disconnect!!
@@ -273,18 +273,8 @@ public class BTCTemplateService extends Service {
 				editor.putInt("stat", 1);
 				editor.apply();
 
-				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-					BluetoothAdapter.getDefaultAdapter().enable();
-				}
-				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-					BluetoothAdapter.getDefaultAdapter().enable();
-				}
-				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-					BluetoothAdapter.getDefaultAdapter().enable();
-				}
-				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-					BluetoothAdapter.getDefaultAdapter().enable();
-				}
+				while(!BluetoothAdapter.getDefaultAdapter().isEnabled());
+
 				if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 					BluetoothAdapter.getDefaultAdapter().enable();
 				}

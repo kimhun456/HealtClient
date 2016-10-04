@@ -267,15 +267,13 @@ public class GraphActivity extends AppCompatActivity
                 // background service로 블루투스가 작동되므로, activity에서 bluetooth restart.
                 // 기기에 따라 블루투스 restart시간 차이가 있어서 안전하게 3번 실행.
                 BluetoothAdapter.getDefaultAdapter().disable();
+
+                while(!BluetoothAdapter.getDefaultAdapter().isEnabled());
+
                 if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
                     BluetoothAdapter.getDefaultAdapter().enable();
                 }
-                if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                    BluetoothAdapter.getDefaultAdapter().enable();
-                }
-                if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                    BluetoothAdapter.getDefaultAdapter().enable();
-                }
+
                 break;
         }
 
