@@ -256,19 +256,21 @@ public class InsertService extends IntentService {
         if(MyType==1){
             Log.d(TAG, "MyType == 1");
             //type = HealthContract.GlucoseEntry.NFC;//byteToString(buf[0], buf[1]);
-            deviceID = byteToString(buf[2],buf[3]);
+            deviceID = byteToString(buf[3],buf[2]);
             deviceManager.setDeviceID(deviceID);
-            battery = byteToInt(buf[4],buf[5]);
+            battery = byteToInt(buf[5],buf[4]);
             deviceManager.setRawVoltage(battery);
             numbering = (len - 6)/5;
 
+            Log.d(TAG, "numbering : "+numbering);
+
             for(int i=0; i< numbering; i++){
 
-                rawData = byteToInt(buf[6 + 5*i], buf[6 + 5*i + 1]);
-                temperature = byteToInt(buf[ 6 + 5*i + 2], buf[6 + 5*i + 3], buf[6 + 5*i + 4]);
+                temperature = byteToInt(buf[6 + 5*i], buf[6 + 5*i +1]);
+                rawData = byteToInt(buf[ 6 + 5*i + 2], buf[6 + 5*i + 3], buf[6 + 5*i + 4]);
 
-                Log.d(TAG, "rawData :" + rawData);
-                Log.d(TAG, "temperature : "+temperature);
+                /*Log.d(TAG, "rawData :" + rawData);
+                Log.d(TAG, "temperature : "+temperature);*/
 
                 GlucoseData data = new GlucoseData();
 
@@ -354,8 +356,6 @@ public class InsertService extends IntentService {
         SharedPreferences.Editor editor = pref.edit();
         editor.putFloat("Compare", param);
         editor.apply();
-        
-        // TODO: 2016-09-06 배터리로 노티피케이션 하는 부분.
 
 
 

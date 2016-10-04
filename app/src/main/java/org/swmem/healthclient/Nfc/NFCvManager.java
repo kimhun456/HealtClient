@@ -103,10 +103,10 @@ public class NFCvManager {
 
                 //데이터 끝위치.
                 if(checkDE && temp_data_length>=8){
-                    int temp= byteToint(temp_data[8], temp_data[9]); //오버라이팅 확인
-                    data_end_position = byteToint(temp_data[10], temp_data[11]); //데이터 끝위치+1 확인.
-                    write3_pointer_D1 = temp_data[10]; //끝위치 저장(나중에 읽음 표시)
-                    write3_pointer_D2 = temp_data[11]; //끝위치 저장(나중에 읽음 표시)
+                    int temp= byteToint(temp_data[9], temp_data[8]); //오버라이팅 확인
+                    data_end_position = byteToint(temp_data[11], temp_data[10]); //데이터 끝위치+1 확인.
+                    write3_pointer_D1 = temp_data[11]; //끝위치 저장(나중에 읽음 표시)
+                    write3_pointer_D2 = temp_data[10]; //끝위치 저장(나중에 읽음 표시)
                     checkDE = false;
 
                     Log.d(TAG, "temp : " + temp); //overwrite
@@ -135,14 +135,15 @@ public class NFCvManager {
 
                 //"MAKE" 확인
                 if (checkMAKE && temp_data_length >= 16) {
-                    if ((temp_data[12] == 0x4D )&& (temp_data[13] == 0x41) && (temp_data[14] == 0x4B )&& (temp_data[15] == 0x45)) {
-                        Toast.makeText(mContext.getApplicationContext(), "Device가 기록중입니다.", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "MAKE error");
-                        return false;
-                    }
+                    if ((temp_data[12] == 0x45 )&& (temp_data[13] == 0x4B) && (temp_data[14] == 0x41 )&& (temp_data[15] == 0x4D)) {
 
-                    //"READ" 기록
-                    else if (temp_data[12] == 0x20 && temp_data[13] == 0x20 && temp_data[14] == 0x20 && temp_data[15] == 0x20){
+                        long current = System.currentTimeMillis();
+
+                        Log.v(TAG,"current : " + current);
+
+                        Log.v(TAG,"before while");
+                        while( System.currentTimeMillis()  - current < 2000 );
+                        Log.v(TAG,"after while");
                         int write_error=1;
 
                         while(write_error!=0){
@@ -154,7 +155,41 @@ public class NFCvManager {
                                 write_data = new byte[]{
                                         (byte)0x0A, (byte)0x21, //single block
                                         (byte) write_end_position, (byte) write_start_position, //address
-                                        (byte)0x52, (byte)0x45, (byte)0x41, (byte)0x44}; // "READ"
+                                        (byte)0x44, (byte)0x41, (byte)0x45, (byte)0x52}; // "READ"
+
+                                write_response = nfcvTag.transceive(write_data); //wrtie.
+
+                                if(write_response[0]==(byte)0x00 || write_response[0]==(byte)0x01){ //제대로 write했는지 확인.
+                                    Log.d(TAG, "Write -> READ complete");
+                                    write_error=0;
+                                    checkMAKE= false;
+                                }
+                            } catch (Exception e) {
+
+                                write_error++;
+                                if(write_error==100){
+                                    Log.e(TAG, "write _ error");
+                                    e.printStackTrace();
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+
+                    //"READ" 기록
+                    else if(temp_data[12] == 0x20 && temp_data[13] == 0x20 && temp_data[14] == 0x20 && temp_data[15] == 0x20){
+                        int write_error=1;
+
+                        while(write_error!=0){
+                            Log.d(TAG, "Write _ READ ");
+                            try {
+
+                                write_response = new byte[]{(byte)0xFF}; //초기화.
+
+                                write_data = new byte[]{
+                                        (byte)0x0A, (byte)0x21, //single block
+                                        (byte) write_end_position, (byte) write_start_position, //address
+                                        (byte)0x44, (byte)0x41, (byte)0x45, (byte)0x52}; // "READ"
 
                                 write_response = nfcvTag.transceive(write_data); //wrtie.
 
@@ -175,6 +210,8 @@ public class NFCvManager {
                         }
                     }
                     else{
+
+                        Log.v(TAG,"here");
                         return false;
                     }
                 }
@@ -261,6 +298,7 @@ public class NFCvManager {
                 if(error==100){
 
                     Log.e(TAG, "Tag was lost");
+                    Toast.makeText(mContext.getApplicationContext(), "10초 후에 ", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                     nfcvTag.close();
                     return false;
@@ -299,6 +337,7 @@ public class NFCvManager {
         //오버라이팅 아닌 경우
         else{
             //end->0
+            Log.d(TAG, "check : " + data_end_position);
             for(int i=data_end_position-1; i>=32; i--){
                 real_data[real_data_length++] = temp_data[i];
             }
