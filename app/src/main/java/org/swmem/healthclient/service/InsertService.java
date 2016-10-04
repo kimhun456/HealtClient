@@ -49,9 +49,11 @@ public class InsertService extends IntentService {
     final int HOURS = 60 * MINUTES;
     final int DAYS = 24 * HOURS;
 
+
     public InsertService() {
         super("InsertService");
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -106,6 +108,8 @@ public class InsertService extends IntentService {
                 insertMap = byteDecoding(byteData, len, MyType, deviceManager);
             }
 
+            TakeCalibration(insertMap);
+
             // DB에 있는 지금부터 하루치 데이터를 가지고옴.
             HashMap<String, GlucoseData> dbMap = getDBHashMap(currentTimeMillis);
 
@@ -123,6 +127,82 @@ public class InsertService extends IntentService {
 
         }
     }
+
+
+    void TakeCalibration(HashMap<String , GlucoseData> insertMap){
+
+        float calibration = Float.parseFloat(PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.pref_algorithm_calibration_key),"0"));
+
+
+        Log.v(TAG, "cali : " +calibration);
+
+        float prevCalibration = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getFloat(getApplicationContext().getString(R.string.algorithm_prev_calibration_key),0.0f);
+
+        Log.v(TAG, "prevCalibration : " +prevCalibration);
+
+        float compareValue = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getFloat(getApplicationContext().getString(R.string.algorithm_compare_value_key),0.0f);
+
+        Log.v(TAG, "compareValue : " +compareValue);
+
+
+        if(calibration == 0){
+            compareValue =  0.0f;
+        }
+
+        if( calibration !=0  && calibration != prevCalibration){
+
+            SharedPreferences.Editor editor = PreferenceManager
+                    .getDefaultSharedPreferences(getApplicationContext()).edit();
+            editor.putFloat(getApplicationContext().getString(R.string.algorithm_prev_calibration_key) , calibration);
+            editor.commit();
+
+
+            long max = 0;
+            for(String key : insertMap.keySet()){
+
+                long current = Utility.cursorDateToLong(key);
+
+                if(max < current){
+                    max = current;
+                }
+
+            }
+
+            String recentKey = Utility.formatDate(max);
+            Log.v(TAG,recentKey);
+
+            GlucoseData data = insertMap.get(recentKey);
+
+            Log.v(TAG,data.getDate());
+            Log.v(TAG,data.getRawData() +"");
+
+            editor.putFloat(getApplicationContext().getString(R.string.algorithm_compare_value_key)
+                    , (float)(calibration - data.getRawData()));
+            editor.commit();
+
+            compareValue =  (float)(calibration - data.getRawData());
+
+        }
+
+
+
+        Log.v(TAG, "compareValue : " +compareValue);
+
+        for(String key : insertMap.keySet()){
+            GlucoseData dataa = insertMap.get(key);
+            dataa.setRawData(dataa.getRawData() + compareValue);
+        }
+
+
+    }
+
+
 
     @Override
     public void onDestroy() {
@@ -167,6 +247,7 @@ public class InsertService extends IntentService {
         float compare = pref.getFloat("Compare",-1);
         float value = pref.getFloat("Value", -1);
         double offset = 0;
+
         if(compare != param){
             offset = param - value;
         }
@@ -454,12 +535,7 @@ public class InsertService extends IntentService {
      */
     private HashMap< String ,GlucoseData>  takeAlgorithm(HashMap< String, GlucoseData> insertMap){
 
-        float param = Float.parseFloat(PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext())
-                .getString(getString(R.string.pref_algorithm_calibration_key),"0"));
 
-
-        Log.v(TAG," param : "+param);
 
         final int rateINC_MORE = 2;
         final int rateINC_LESS = 1;
@@ -688,13 +764,13 @@ public class InsertService extends IntentService {
         }
 
         boolean realTimeNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(getString(R.string.pref_enable_real_time_notifications_key),false);
+                .getBoolean(getString(R.string.pref_enable_real_time_notifications_key),true);
 
         boolean hyperNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(getString(R.string.pref_enable_Hyperglycemia_notifications_key),false);
+                .getBoolean(getString(R.string.pref_enable_Hyperglycemia_notifications_key),true);
 
         boolean hypoNotiEnable = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(getString(R.string.pref_enable_Hypoglycemia_notifications_key),false);
+                .getBoolean(getString(R.string.pref_enable_Hypoglycemia_notifications_key),true);
 
         float highGlucose = Float.parseFloat(PreferenceManager
                 .getDefaultSharedPreferences(getApplicationContext())

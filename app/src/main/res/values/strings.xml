@@ -155,6 +155,18 @@
     <string name="pref_algorithm_calibration_default">0</string>
 
 
+    <string name="algorithm_prev_calibration_key" translatable="false">prevCalibration</string>
+    <string name="algorithm_prev_calibration_label">Prev Calibration</string>
+    <string name="algorithm_prev_calibration_default">0</string>
+
+
+    <string name="algorithm_compare_value_key" translatable="false">compareValue</string>
+    <string name="algorithm_compare_value_label">Calibration</string>
+    <string name="algorithm_compare_value_default">0</string>
+
+
+
+
 
     <string name="action_settings" translatable="false">Settings</string>
     <string name="chart_description">Glucose Chart</string>
